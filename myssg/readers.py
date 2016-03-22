@@ -10,6 +10,7 @@ from myssg.items import Item
 reload(sys)
 sys.setdefaultencoding('utf-8')
 
+
 class Reader(object):
     def __init__(self):
         pass
@@ -19,10 +20,10 @@ class Reader(object):
         items = list()
         for filename in os.listdir(d):
             filepath = os.path.join(d, filename)
-            url, extension = os.path.splitext(filename)
+            uri, extension = os.path.splitext(filename)
             extension = extension.strip('.')
             f = file(filepath)
-            item = Item(url=url, extension=extension, content=file(filepath).read())
+            item = Item(uri=uri, extension=extension, content=file(filepath).read())
             items.append(item)
         return items
 

@@ -1,8 +1,7 @@
-<html>
-<head>
-    <title>{{ item.url }}</title>
-</head>
-<body>
-    {{ item.content }}
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container">
+        {{ item.content }}
+    </div>
+{% endblock %}
