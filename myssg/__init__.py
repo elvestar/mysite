@@ -37,7 +37,7 @@ class MySSG(object):
         for item in all_items:
             if item.extension == 'md':
                 item.content = markdown(item.content)
-            elif item.extension == 'org':
+            elif item.extension == 'org' and item.uri == 'vim':
                 item.content = py_org(item.content)
             else:
                 pass

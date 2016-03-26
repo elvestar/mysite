@@ -29,16 +29,23 @@ class Rules(object):
         r'^( *)([+-]|\d+\.) [\s\S]+?'
         r'(?:'
         r'\n+(?=\1?(?:[-*_] *){3,}(?:\n+|$))'
-        r'|\n{2,}'
-        r'(?! )'
-        r'(?!\1(?:[+-]|\d+\.) )\n*'
-        r'|'
-        r'\s*$)'
+        r'|\n{2,}(?! )(?!\1(?:[+-]|\d+\.) )\n*'
+        r'|\n+(?=[^ +\-\d])'
+        r'|\s*$'
+        r')'
     )
     list_item = re.compile(
-        r'^(( *)(?:[+-]|\d+\.) [^\n]*'
-        r'(?:\n(?!\2(?:[+-]|\d+\.) )[^\n]*)*)',
+        r'^(( *)([+-]|\d+\.) ([^\n]*'
+        r'(?:\n(?!\2(?:[+-]|\d+\.) )[^\n]*)*))',
         flags=re.M
+    )
+    table = re.compile(
+        r'^ *\|(.+)\n'
+        r'*\|( *[-]+[-| +]*)\n'
+        r'((?: *\|.*(?:\n|$))*)\n*'
+    )
+    nptable = re.compile(
+        r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*'
     )
     source = re.compile(
         r'^ *#\+(?:BEGIN_SRC|begin_src) +([\S]*) *\n'
@@ -62,12 +69,13 @@ class Rules(object):
     )
     paragraph = re.compile(
         r'^((?:[^\n]+\n?(?!'
-        r'%s|%s|%s|%s'
+        r'%s|%s|%s|%s|%s'
         r'))+)\n*' % (
             _pure_pattern(source).replace(r'\1', r'\2'),
             _pure_pattern(list_block).replace(r'\1', r'\3'),
             _pure_pattern(heading),
             _pure_pattern(quote),
+            _pure_pattern(example),
         )
     )
     text = re.compile(r'^[^\n]+')
@@ -75,7 +83,7 @@ class Rules(object):
 
 class OrgParser(object):
     default_rule_keys = [
-        'newline', 'heading', 'list_block',
+        'newline', 'heading', 'list_block', 'table',
         'source', 'html', 'example', 'quote', 'center',
         'paragraph', 'text'
     ]
@@ -128,45 +136,53 @@ class OrgParser(object):
         self.doc_root.append(new_tag)
 
     def parse_list_block(self, m):
-        new_tag = self.doc_root.new_tag('ul')
+        new_tag = None
 
         cap = self.rules.list_item.findall(m.group(0))
 
-        _next = False
         length = len(cap)
-
         for i in range(length):
-            item = cap[i][0]
-
-            # remove the bullet
-            space = len(item)
-            # item = self.rules.list_bullet.sub('', item)
-
-            # outdent
-            # if '\n ' in item:
-            #     space = space - len(item)
-            #     pattern = re.compile(r'^ {1,%d}' % (space, flags=re.M)
-            #     item = pattern.sub('', item)
-
-            # determine whether item is loose or not
-            loose = _next
-            if not loose and re.search(r'\n\n(?!\s*$)', item):
-                loose = True
-
-            rest = len(item)
-            if i != length - 1 and rest:
-                _next = item[rest-1] == '\n'
-                if not loose:
-                    loose = _next
-
-            if loose:
-                t = 'loose_item_start'
-            else:
-                t = 'list_item_start'
+            bullet = cap[i][2]
+            item_content = cap[i][3]
+            if new_tag is None:
+                if bullet in ['+', '-']:
+                    new_tag = self.doc_root.new_tag('ul')
+                else:
+                    new_tag = self.doc_root.new_tag('ol')
 
             new_li_tag = self.doc_root.new_tag('li')
-            new_li_tag.string = item
+            new_li_tag.string = item_content
             new_tag.append(new_li_tag)
+
+        self.doc_root.append(new_tag)
+
+    def parse_table(self, m):
+        new_tag = self.doc_root.new_tag('table')
+        new_tag['class'] = 'table'
+
+        thead_str = re.sub(r'^ *| *\| *$', '', m.group(1))
+        new_tr_tag = self.doc_root.new_tag('tr')
+        for th_str in re.split(r' *\| *', thead_str):
+            new_th_tag = self.doc_root.new_tag('th')
+            new_th_tag.string = th_str
+            new_tr_tag.append(new_th_tag)
+        new_thead_tag = self.doc_root.new_tag('thead')
+        new_thead_tag.append(new_tr_tag)
+        new_tag.append(new_thead_tag)
+
+
+        tbody_str = re.sub(r'(?: *\| *)?\n$', '', m.group(3))
+        tbody_row_strs = tbody_str.split('\n')
+        new_tbody_tag = self.doc_root.new_tag('tbody')
+        for tbody_row_str in tbody_row_strs:
+            tbody_row_str = re.sub(r'^ *\| *| *\| *$', '', tbody_row_str)
+            new_tr_tag = self.doc_root.new_tag('tr')
+            for td_str in re.split(r' *\| *', tbody_row_str):
+                new_td_tag = self.doc_root.new_tag('td')
+                new_td_tag.string = td_str
+                new_tr_tag.append(new_td_tag)
+            new_tbody_tag.append(new_tr_tag)
+        new_tag.append(new_tbody_tag)
 
         self.doc_root.append(new_tag)
 
