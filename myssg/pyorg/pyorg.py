@@ -44,8 +44,8 @@ class Rules(object):
         r'*\|( *[-]+[-| +]*)\n'
         r'((?: *\|.*(?:\n|$))*)\n*'
     )
-    nptable = re.compile(
-        r'^ *(\S.*\|.*)\n *([-:]+ *\|[-| :]*)\n((?:.*\|.*(?:\n|$))*)\n*'
+    empty_table_row = re.compile(
+        r'^[| ]+$'
     )
     source = re.compile(
         r'^ *#\+(?:BEGIN_SRC|begin_src) +([\S]*) *\n'
@@ -69,11 +69,12 @@ class Rules(object):
     )
     paragraph = re.compile(
         r'^((?:[^\n]+\n?(?!'
-        r'%s|%s|%s|%s|%s'
+        r'%s|%s|%s|%s|%s|%s'
         r'))+)\n*' % (
             _pure_pattern(source).replace(r'\1', r'\2'),
             _pure_pattern(list_block).replace(r'\1', r'\3'),
             _pure_pattern(heading),
+            _pure_pattern(table),
             _pure_pattern(quote),
             _pure_pattern(example),
         )
@@ -94,6 +95,7 @@ class OrgParser(object):
         else:
             self.rules = Rules()
         self.doc_root = BeautifulSoup()
+        self.heading_count = 0
 
     def parse(self, text, rule_keys=None):
         text = text.rstrip('\n')
@@ -130,8 +132,10 @@ class OrgParser(object):
             self.doc_root.append(new_tag)
 
     def parse_heading(self, m):
-        level = len(m.group(1))
-        new_tag = self.doc_root.new_tag('h%d' % (level + 1))
+        level = len(m.group(1)) + 1
+        new_tag = self.doc_root.new_tag('h%d' % level)
+        self.heading_count += 1
+        new_tag['id'] = 'sec-%d' % self.heading_count
         new_tag.string = m.group(2)
         self.doc_root.append(new_tag)
 
@@ -158,7 +162,7 @@ class OrgParser(object):
 
     def parse_table(self, m):
         new_tag = self.doc_root.new_tag('table')
-        new_tag['class'] = 'table'
+        new_tag['class'] = 'table table-bordered'
 
         thead_str = re.sub(r'^ *| *\| *$', '', m.group(1))
         new_tr_tag = self.doc_root.new_tag('tr')
@@ -170,10 +174,13 @@ class OrgParser(object):
         new_thead_tag.append(new_tr_tag)
         new_tag.append(new_thead_tag)
 
-
+        new_tbody_tag = self.doc_root.new_tag('tbody')
         tbody_str = re.sub(r'(?: *\| *)?\n$', '', m.group(3))
         tbody_row_strs = tbody_str.split('\n')
-        new_tbody_tag = self.doc_root.new_tag('tbody')
+        # Remove empty row in table end first
+        for tbody_row_str in reversed(tbody_row_strs):
+            if self.rules.empty_table_row.match(tbody_row_str):
+                tbody_row_strs.remove(tbody_row_str)
         for tbody_row_str in tbody_row_strs:
             tbody_row_str = re.sub(r'^ *\| *| *\| *$', '', tbody_row_str)
             new_tr_tag = self.doc_root.new_tag('tr')

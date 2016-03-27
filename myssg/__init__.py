@@ -14,6 +14,7 @@ sys.path.append('./')
 from myssg.readers import Reader
 from myssg.writers import Writer
 from myssg.items import Item
+from myssg.filters.add_toc import add_toc
 from myssg.pyorg.pyorg import PyOrg
 
 
@@ -37,10 +38,14 @@ class MySSG(object):
         for item in all_items:
             if item.extension == 'md':
                 item.content = markdown(item.content)
-            elif item.extension == 'org' and item.uri == 'vim':
+            elif item.extension == 'org':
+            # elif item.extension == 'org' and item.uri == 'test':
                 item.content = py_org(item.content)
+                add_toc(item)
             else:
                 pass
+            # if True:
+            #     add_toc(item)
             writer.write(item, template)
 
         end_time = time.time()

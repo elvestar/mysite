@@ -2,6 +2,25 @@
 
 {% block content %}
     <div class="container">
-        {{ item.content }}
+    <div class="row">
+        <div class="col-md-9">
+            {{ item.content }}
+        </div>
+        <div class="col-md-3">
+            {{ item.toc }}
+        </div>
     </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" charset="utf-8">
+        $('#toc').affix({
+            offset: {
+                top: $('#toc').offset().top,
+                bottom: ($('#footer').outerHeight(true))
+            }
+        });
+    </script>
 {% endblock %}
