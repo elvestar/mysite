@@ -2,6 +2,7 @@
 
 import os
 import sys
+from datetime import datetime
 
 from myssg.items import Item
 
@@ -9,6 +10,10 @@ from myssg.items import Item
 # TODO 中文处理
 reload(sys)
 sys.setdefaultencoding('utf-8')
+
+
+def get_modify_datetime(path):
+    return datetime.fromtimestamp(os.path.getmtime(path))
 
 
 class Reader(object):
@@ -19,13 +24,14 @@ class Reader(object):
         d = './content'
         items = list()
         for filename in os.listdir(d):
-            filepath = os.path.join(d, filename)
+            path = os.path.join(d, filename)
             uri, extension = os.path.splitext(filename)
             extension = extension.strip('.')
-            f = file(filepath)
-            item = Item(uri=uri, extension=extension,
-                        content=file(filepath).read(),
-                        mtime=os.stat(filepath).st_mtime)
+            item = Item(uri=uri,
+                        extension=extension,
+                        content=file(path).read(),
+                        path=path,
+                        mtime=get_modify_datetime(path))
             items.append(item)
         return items
 

@@ -2,10 +2,11 @@
 
 
 class Item(object):
-    def __init__(self, uri, extension, content=None, mtime=None):
+    def __init__(self, uri, extension, content=None, path=None, mtime=None):
         self.uri = uri
         self.extension = extension
         self.content = content
+        self.path = path
         self.mtime = mtime
 
     def __str__(self):
