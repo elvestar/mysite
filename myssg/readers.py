@@ -23,7 +23,9 @@ class Reader(object):
             uri, extension = os.path.splitext(filename)
             extension = extension.strip('.')
             f = file(filepath)
-            item = Item(uri=uri, extension=extension, content=file(filepath).read())
+            item = Item(uri=uri, extension=extension,
+                        content=file(filepath).read(),
+                        mtime=os.stat(filepath).st_mtime)
             items.append(item)
         return items
 
