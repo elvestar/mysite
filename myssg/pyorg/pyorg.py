@@ -5,6 +5,9 @@ import sys
 import re
 
 from bs4 import BeautifulSoup
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import get_formatter_by_name
 
 
 def _gen_org_re_for_begin_end(key):
@@ -22,7 +25,6 @@ def _pure_pattern(regex):
     return pattern
 
 _emphasis_symbols = '\*=_/+'
-
 
 
 class Rules(object):
@@ -98,7 +100,7 @@ class Rules(object):
         r'^ ([%s])(\S[\s\S]+?)(?:\1 |\1$)' % _emphasis_symbols
     )
     emphasis_in_start = re.compile(
-        r'^([%s])(\S[\s\S]+?)(?:\1 |\1$)' % _emphasis_symbols
+        r'^ ?([%s])(\S[\s\S]+?)(?:\1 |\1$)' % _emphasis_symbols
     )
     footnote = re.compile(r'^\[\^([^\]]+)\]')
     inline_text = re.compile(
@@ -155,7 +157,6 @@ class OrgParser(object):
         self.switch_rules(rule_keys, in_text_start)
         while text:
             m = None
-            print(rule_keys)
             for key in rule_keys:
                 rule = getattr(self.rules, key)
                 m = rule.match(text)
@@ -175,9 +176,9 @@ class OrgParser(object):
 
     @staticmethod
     def switch_rules(rule_keys, in_text_start):
-        """ For some element, parse rules depends whether it is in text start.
+        """ For some elements, parse rules depends whether they are in text start.
 
-        For example, emphasis element(bold, italic, ...), if it is in text start,
+        For example, for emphasis element(bold, italic, ...), if it is in text start,
         there is not necessary a space before the emphasis symbol(*, /, ...).
         """
         rule_keys_map = {
@@ -259,9 +260,17 @@ class OrgParser(object):
         root.append(new_tag)
 
     def parse_source(self, m, root):
-        new_tag = root.new_tag('pre')
-        new_tag['class'] = 'src src-%s' % m.group(1)
-        new_tag.string = m.group(2)
+        lang = m.group(1)
+        formatter = get_formatter_by_name('html', cssclass='codehilite')
+        try:
+            lexer = get_lexer_by_name(lang)
+        except ValueError:
+            lexer = get_lexer_by_name('text')
+        result = highlight(m.group(2), lexer, formatter)
+
+        new_tag = self.doc_root.new_tag('div')
+        new_tag['class'] = 'src src-%s' % lang
+        new_tag.append(BeautifulSoup(result))
         root.append(new_tag)
 
     def parse_html(self, m, root):
