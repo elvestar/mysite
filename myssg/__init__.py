@@ -54,7 +54,8 @@ class MySSG(object):
             if item.extension == 'md':
                 item.content = markdown(item.content)
             # elif item.extension == 'org':
-            elif item.extension == 'org' and item.uri in ['mysql', 'flask']:
+            # elif item.extension == 'org' and item.uri in ['mysql', 'flask']:
+            elif item.extension == 'org' and item.uri in ['mysql']:
                 item.content = py_org(item.content)
                 add_toc(item)
             else:

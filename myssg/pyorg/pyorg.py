@@ -87,30 +87,22 @@ class Rules(object):
 
     # Inline rules
     escape = re.compile(r'^\\([\\`*{}\[\]()#+\-.!_>~|])')  # \* \+ \! ....
-    autolink = re.compile(r'^<([^ >]+(@|:)[^ >]+)>')
     link = re.compile(
         r'^\['
         r'\[([^\]]+)\]'
         r'(\[([^\]]+)\])?'
         r'\]'
     )
-    # r'''\s*(<)?([\s\S]*?)(?(2)>)(?:\s+['"]([\s\S]*?)['"])?\s*'''
-    reflink = re.compile(
-        r'^!?\[('
-        r'(?:\[[^^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*'
-        r')\]\s*\[([^^\]]*)\]'
-    )
-    nolink = re.compile(r'^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]')
     url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])''')
     emphasis = re.compile(
-        r'^ ([%s])([\s\S]+?)\1 ' % _emphasis_symbols
+        r'^ ([%s])(\S[\s\S]+?)(?:\1 |\1$)' % _emphasis_symbols
     )
-    code = re.compile(r'^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)')  # `code`
-    linebreak = re.compile(r'^ {2,}\n(?!\s*$)')
-    strikethrough = re.compile(r'^~~(?=\S)([\s\S]+?\S)~~')  # ~~word~~
+    emphasis_in_start = re.compile(
+        r'^([%s])(\S[\s\S]+?)(?:\1 |\1$)' % _emphasis_symbols
+    )
     footnote = re.compile(r'^\[\^([^\]]+)\]')
     inline_text = re.compile(
-        r'^[\s\S]+?(?= [%s]| {2,}\n|$)' % _emphasis_symbols
+        r'^[\s\S]+?(?= [%s]|https?://| {2,}\n|$)' % _emphasis_symbols
     )
 
 
@@ -121,7 +113,8 @@ class OrgParser(object):
         'paragraph', 'text'
     ]
     inline_rule_keys = [
-        'link', 'emphasis',
+        'url',
+        'link', 'emphasis_in_start',
         'inline_text',
         ]
     # inline_rule_keys = [
@@ -153,30 +146,49 @@ class OrgParser(object):
         return self.parse_by_rules(text, self.block_rule_keys, root)
 
     def parse_by_inline_rules(self, text, root=None):
-        print(text)
         return self.parse_by_rules(text, self.inline_rule_keys, root)
 
     def parse_by_rules(self, text, rule_keys, root=None):
         if root is None:
             root = self.doc_root
+        in_text_start = True
+        self.switch_rules(rule_keys, in_text_start)
         while text:
             m = None
+            print(rule_keys)
             for key in rule_keys:
                 rule = getattr(self.rules, key)
                 m = rule.match(text)
                 if m is None:
-                    print('not match rule:%s, data:%s' % (key, text))
                     continue
-
-                print('match rule:%s, data:%s' % (key, m.group(0)))
                 getattr(self, 'parse_%s' % key)(m, root)
                 break
             if m is not None:
                 text = text[len(m.group(0)):]
+                if in_text_start:
+                    in_text_start = False
+                    self.switch_rules(rule_keys, in_text_start)
                 continue
             if text is not None:  # pragma: no cover
                 raise RuntimeError('Infinite loop at: %s' % text)
         return root
+
+    @staticmethod
+    def switch_rules(rule_keys, in_text_start):
+        """ For some element, parse rules depends whether it is in text start.
+
+        For example, emphasis element(bold, italic, ...), if it is in text start,
+        there is not necessary a space before the emphasis symbol(*, /, ...).
+        """
+        rule_keys_map = {
+            'emphasis': 'emphasis_in_start',
+        }
+        if not in_text_start:
+            rule_keys_map = dict((v, k) for k, v in rule_keys_map.items())
+        for k, v in rule_keys_map.items():
+            if k in rule_keys:
+                index = rule_keys.index(k)
+                rule_keys[index] = v
 
     def parse_newline(self, m, root):
         length = len(m.group(0))
@@ -189,7 +201,7 @@ class OrgParser(object):
         new_tag = root.new_tag('h%d' % level)
         self.heading_count += 1
         new_tag['id'] = 'sec-%d' % self.heading_count
-        new_tag.string = m.group(2)
+        self.parse_by_inline_rules(m.group(2), new_tag)
         root.append(new_tag)
 
     def parse_list_block(self, m, root):
@@ -297,6 +309,13 @@ class OrgParser(object):
             new_tag.string = m.group(3)
         root.append(new_tag)
 
+    def parse_url(self, m, root):
+        new_tag = self.doc_root.new_tag('a')
+        new_tag['href'] = m.group(1)
+        new_tag['target'] = '_blank'
+        new_tag.string = m.group(1)
+        root.append(new_tag)
+
     def parse_emphasis(self, m, root):
         symbol = m.group(1)
         if symbol == '*':
@@ -310,12 +329,15 @@ class OrgParser(object):
         elif symbol == '+':
             tag_name = 'del'
         else:
-            raise RuntimeError('Not supportted emhpasis symbal: %s' % symbol)
+            raise RuntimeError('Not supportted emhpasis symbol: %s' % symbol)
         new_tag = self.doc_root.new_tag(tag_name)
         new_tag.string = m.group(2)
         if symbol == '_':
             new_tag['class'] = 'underline'
         root.append(new_tag)
+
+    def parse_emphasis_in_start(self, m, root):
+        return self.parse_emphasis(m, root)
 
     def parse_inline_text(self, m, root):
         root.append(m.group(0))

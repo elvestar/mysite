@@ -44,7 +44,10 @@ def add_toc(item):
 
 def create_toc_node(parent, heading):
     a = parent.new_tag('a', href='#' + heading['id'])
-    a.string = heading.string
+    if heading.text is not None:
+        a.string = heading.text
+    else:
+        a.string = str(heading)
     li = parent.new_tag('li')
     li.append(a)
     return li
