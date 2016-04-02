@@ -10,7 +10,7 @@ from bs4 import BeautifulSoup
 def _gen_org_re_for_begin_end(key):
     return (r'^ *#\+(?:BEGIN_%s|begin_%s) *\n'
             r'([\s\S]+?)\s*'
-            r' *#\+(?:END_%s|end_%s) *(?:\n+|$)'
+            r' *#\+(?:END_%s|end_%s)\s*(?:\n+|$)'
             %
             (key.upper(), key, key.upper(), key))
 
@@ -21,8 +21,12 @@ def _pure_pattern(regex):
         pattern = pattern[1:]
     return pattern
 
+_emphasis_symbols = '\*=_/+'
+
+
 
 class Rules(object):
+    # Block rules
     newline = re.compile(r'^\n+')
     heading = re.compile(r'^(\*{1,6}) +([^\n]+?)(?:\n+|$)')
     list_block = re.compile(
@@ -50,7 +54,7 @@ class Rules(object):
     source = re.compile(
         r'^ *#\+(?:BEGIN_SRC|begin_src) +([\S]*) *\n'
         r'([\s\S]+?)\s*'
-        r' *#\+(?:END_SRC|end_src) *(?:\n+|$)'
+        r' *#\+(?:END_SRC|end_src)\s*(?:\n+|$)'
     )
     html = re.compile(
         _gen_org_re_for_begin_end('html')
@@ -81,13 +85,51 @@ class Rules(object):
     )
     text = re.compile(r'^[^\n]+')
 
+    # Inline rules
+    escape = re.compile(r'^\\([\\`*{}\[\]()#+\-.!_>~|])')  # \* \+ \! ....
+    autolink = re.compile(r'^<([^ >]+(@|:)[^ >]+)>')
+    link = re.compile(
+        r'^\['
+        r'\[([^\]]+)\]'
+        r'(\[([^\]]+)\])?'
+        r'\]'
+    )
+    # r'''\s*(<)?([\s\S]*?)(?(2)>)(?:\s+['"]([\s\S]*?)['"])?\s*'''
+    reflink = re.compile(
+        r'^!?\[('
+        r'(?:\[[^^\]]*\]|[^\[\]]|\](?=[^\[]*\]))*'
+        r')\]\s*\[([^^\]]*)\]'
+    )
+    nolink = re.compile(r'^!?\[((?:\[[^\]]*\]|[^\[\]])*)\]')
+    url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])''')
+    emphasis = re.compile(
+        r'^ ([%s])([\s\S]+?)\1 ' % _emphasis_symbols
+    )
+    code = re.compile(r'^(`+)\s*([\s\S]*?[^`])\s*\1(?!`)')  # `code`
+    linebreak = re.compile(r'^ {2,}\n(?!\s*$)')
+    strikethrough = re.compile(r'^~~(?=\S)([\s\S]+?\S)~~')  # ~~word~~
+    footnote = re.compile(r'^\[\^([^\]]+)\]')
+    inline_text = re.compile(
+        r'^[\s\S]+?(?= [%s]| {2,}\n|$)' % _emphasis_symbols
+    )
+
 
 class OrgParser(object):
-    default_rule_keys = [
+    block_rule_keys = [
         'newline', 'heading', 'list_block', 'table',
         'source', 'html', 'example', 'quote', 'center',
         'paragraph', 'text'
     ]
+    inline_rule_keys = [
+        'link', 'emphasis',
+        'inline_text',
+        ]
+    # inline_rule_keys = [
+    #     'escape', 'autolink', 'url',
+    #     'footnote', 'link', 'reflink', 'nolink',
+    #     'emphasis', 'code',
+    #     'linebreak', 'strikethrough', 'inline_text',
+    #     ]
 
     def __init__(self, rules=None):
         if rules is not None:
@@ -97,49 +139,60 @@ class OrgParser(object):
         self.doc_root = BeautifulSoup()
         self.heading_count = 0
 
-    def parse(self, text, rule_keys=None):
+    def parse(self, text, block_rule_keys=None, inline_rule_keys=None):
         text = text.rstrip('\n')
 
-        if rule_keys is None:
-            rule_keys = self.default_rule_keys
-        # for key in rule_keys:
-        #     rule = getattr(self.rules, key)
-        #     print(rule.pattern)
+        if block_rule_keys is not None:
+            self.block_rule_keys = block_rule_keys
+        if inline_rule_keys is not None:
+            self.inline_rule_keys = inline_rule_keys
 
-        def try_parse(text):
+        return self.parse_by_block_rules(text, self.doc_root)
+
+    def parse_by_block_rules(self, text, root=None):
+        return self.parse_by_rules(text, self.block_rule_keys, root)
+
+    def parse_by_inline_rules(self, text, root=None):
+        print(text)
+        return self.parse_by_rules(text, self.inline_rule_keys, root)
+
+    def parse_by_rules(self, text, rule_keys, root=None):
+        if root is None:
+            root = self.doc_root
+        while text:
+            m = None
             for key in rule_keys:
                 rule = getattr(self.rules, key)
                 m = rule.match(text)
                 if m is None:
+                    print('not match rule:%s, data:%s' % (key, text))
                     continue
-                getattr(self, 'parse_%s' % key)(m)
-                return m
-            return None
 
-        while text:
-            m = try_parse(text)
+                print('match rule:%s, data:%s' % (key, m.group(0)))
+                getattr(self, 'parse_%s' % key)(m, root)
+                break
             if m is not None:
                 text = text[len(m.group(0)):]
                 continue
-            if text:  # pragma: no cover
+            if text is not None:  # pragma: no cover
                 raise RuntimeError('Infinite loop at: %s' % text)
-        return self.doc_root
+        return root
 
-    def parse_newline(self, m):
+    def parse_newline(self, m, root):
         length = len(m.group(0))
         if length > 1:
-            new_tag = self.doc_root.new_tag('br')
-            self.doc_root.append(new_tag)
+            new_tag = root.new_tag('br')
+            root.append(new_tag)
 
-    def parse_heading(self, m):
+    def parse_heading(self, m, root):
         level = len(m.group(1)) + 1
-        new_tag = self.doc_root.new_tag('h%d' % level)
+        new_tag = root.new_tag('h%d' % level)
         self.heading_count += 1
         new_tag['id'] = 'sec-%d' % self.heading_count
         new_tag.string = m.group(2)
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_list_block(self, m):
+    def parse_list_block(self, m, root):
         new_tag = None
 
         cap = self.rules.list_item.findall(m.group(0))
@@ -150,31 +203,31 @@ class OrgParser(object):
             item_content = cap[i][3]
             if new_tag is None:
                 if bullet in ['+', '-']:
-                    new_tag = self.doc_root.new_tag('ul')
+                    new_tag = root.new_tag('ul')
                 else:
-                    new_tag = self.doc_root.new_tag('ol')
+                    new_tag = root.new_tag('ol')
 
-            new_li_tag = self.doc_root.new_tag('li')
-            new_li_tag.string = item_content
+            new_li_tag = root.new_tag('li')
+            self.parse_by_inline_rules(item_content, new_li_tag)
             new_tag.append(new_li_tag)
 
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_table(self, m):
-        new_tag = self.doc_root.new_tag('table')
+    def parse_table(self, m, root):
+        new_tag = root.new_tag('table')
         new_tag['class'] = 'table table-bordered'
 
         thead_str = re.sub(r'^ *| *\| *$', '', m.group(1))
-        new_tr_tag = self.doc_root.new_tag('tr')
+        new_tr_tag = root.new_tag('tr')
         for th_str in re.split(r' *\| *', thead_str):
-            new_th_tag = self.doc_root.new_tag('th')
-            new_th_tag.string = th_str
+            new_th_tag = root.new_tag('th')
+            self.parse_by_inline_rules(th_str, new_th_tag)
             new_tr_tag.append(new_th_tag)
-        new_thead_tag = self.doc_root.new_tag('thead')
+        new_thead_tag = root.new_tag('thead')
         new_thead_tag.append(new_tr_tag)
         new_tag.append(new_thead_tag)
 
-        new_tbody_tag = self.doc_root.new_tag('tbody')
+        new_tbody_tag = root.new_tag('tbody')
         tbody_str = re.sub(r'(?: *\| *)?\n$', '', m.group(3))
         tbody_row_strs = tbody_str.split('\n')
         # Remove empty row in table end first
@@ -183,55 +236,89 @@ class OrgParser(object):
                 tbody_row_strs.remove(tbody_row_str)
         for tbody_row_str in tbody_row_strs:
             tbody_row_str = re.sub(r'^ *\| *| *\| *$', '', tbody_row_str)
-            new_tr_tag = self.doc_root.new_tag('tr')
+            new_tr_tag = root.new_tag('tr')
             for td_str in re.split(r' *\| *', tbody_row_str):
-                new_td_tag = self.doc_root.new_tag('td')
-                new_td_tag.string = td_str
+                new_td_tag = root.new_tag('td')
+                self.parse_by_inline_rules(td_str, new_td_tag)
                 new_tr_tag.append(new_td_tag)
             new_tbody_tag.append(new_tr_tag)
         new_tag.append(new_tbody_tag)
 
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_source(self, m):
-        new_tag = self.doc_root.new_tag('pre')
+    def parse_source(self, m, root):
+        new_tag = root.new_tag('pre')
         new_tag['class'] = 'src src-%s' % m.group(1)
         new_tag.string = m.group(2)
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_html(self, m):
+    def parse_html(self, m, root):
         new_tag = BeautifulSoup(m.group(1))
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_example(self, m):
-        new_tag = self.doc_root.new_tag('pre')
+    def parse_example(self, m, root):
+        new_tag = root.new_tag('pre')
         new_tag['class'] = 'example'
         new_tag.string = m.group(1)
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_quote(self, m):
-        new_tag = self.doc_root.new_tag('blockquote')
+    def parse_quote(self, m, root):
+        new_tag = root.new_tag('blockquote')
         new_tag.string = m.group(1)
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_verse(self, m):
+    def parse_verse(self, m, root):
         pass
 
-    def parse_center(self, m):
-        new_tag = self.doc_root.new_tag('div')
+    def parse_center(self, m, root):
+        new_tag = root.new_tag('div')
         new_tag.string = m.group(1)
         new_tag['class'] = 'center'
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
 
-    def parse_paragraph(self, m):
-        new_tag = self.doc_root.new_tag('p')
-        new_tag.string = m.group(1).rstrip('\n')
-        self.doc_root.append(new_tag)
+    def parse_paragraph(self, m, root):
+        new_tag = root.new_tag('p')
+        content = m.group(1).rstrip('\n')
+        self.parse_by_inline_rules(content, new_tag)
+        root.append(new_tag)
 
-    def parse_text(self, m):
-        new_tag = self.doc_root.new_tag('p')
+    def parse_text(self, m, root):
+        new_tag = root.new_tag('p')
         new_tag.string = m.group(0)
-        self.doc_root.append(new_tag)
+        root.append(new_tag)
+
+    def parse_link(self, m, root):
+        new_tag = self.doc_root.new_tag('a')
+        new_tag['href'] = m.group(1)
+        new_tag['target'] = '_blank'
+        if m.group(2) is None:
+            new_tag.string = m.group(1)
+        else:
+            new_tag.string = m.group(3)
+        root.append(new_tag)
+
+    def parse_emphasis(self, m, root):
+        symbol = m.group(1)
+        if symbol == '*':
+            tag_name = 'b'
+        elif symbol == '/':
+            tag_name = 'i'
+        elif symbol == '_':
+            tag_name = 'span'
+        elif symbol in ['~', '=']:
+            tag_name = 'code'
+        elif symbol == '+':
+            tag_name = 'del'
+        else:
+            raise RuntimeError('Not supportted emhpasis symbal: %s' % symbol)
+        new_tag = self.doc_root.new_tag(tag_name)
+        new_tag.string = m.group(2)
+        if symbol == '_':
+            new_tag['class'] = 'underline'
+        root.append(new_tag)
+
+    def parse_inline_text(self, m, root):
+        root.append(m.group(0))
 
 
 class PyOrg(object):
