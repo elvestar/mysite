@@ -10,14 +10,6 @@ from pygments.lexers import get_lexer_by_name
 from pygments.formatters import get_formatter_by_name
 
 
-def _gen_org_re_for_begin_end(key):
-    return (r'^ *#\+(?:BEGIN_%s|begin_%s) *\n'
-            r'([\s\S]+?)\s*'
-            r' *#\+(?:END_%s|end_%s)\s*(?:\n+|$)'
-            %
-            (key.upper(), key, key.upper(), key))
-
-
 def _pure_pattern(regex):
     pattern = regex.pattern
     if pattern.startswith('^'):
@@ -58,31 +50,21 @@ class Rules(object):
         r'([\s\S]+?)\s*'
         r' *#\+(?:END_SRC|end_src)\s*(?:\n+|$)'
     )
-    html = re.compile(
-        _gen_org_re_for_begin_end('html')
-    )
-    example = re.compile(
-        _gen_org_re_for_begin_end('example')
-    )
-    quote = re.compile(
-        _gen_org_re_for_begin_end('quote')
-    )
-    verse = re.compile(
-        _gen_org_re_for_begin_end('verse')
-    )
-    center = re.compile(
-        _gen_org_re_for_begin_end('center')
+    begin_xxx = re.compile(
+        r'^ *#\+(?:BEGIN_|begin_)'
+        r'(html|HTML|example|EXAMPLE|quote|QUOTE|verse|VERSE|center|CENTER) *\n'
+        r'([\s\S]+?)\s*'
+        r' *#\+(?:END_|end_)\1\s*(?:\n+|$)'
     )
     paragraph = re.compile(
         r'^((?:[^\n]+\n?(?!'
-        r'%s|%s|%s|%s|%s|%s'
+        r'%s|%s|%s|%s|%s'
         r'))+)\n*' % (
             _pure_pattern(source).replace(r'\1', r'\2'),
-            _pure_pattern(list_block).replace(r'\1', r'\3'),
+            _pure_pattern(begin_xxx).replace(r'\1', r'\4'),
+            _pure_pattern(list_block).replace(r'\1', r'\5'),
             _pure_pattern(heading),
             _pure_pattern(table),
-            _pure_pattern(quote),
-            _pure_pattern(example),
         )
     )
     text = re.compile(r'^[^\n]+')
@@ -111,7 +93,7 @@ class Rules(object):
 class OrgParser(object):
     block_rule_keys = [
         'newline', 'heading', 'list_block', 'table',
-        'source', 'html', 'example', 'quote', 'center',
+        'source', 'begin_xxx',
         'paragraph', 'text'
     ]
     inline_rule_keys = [
@@ -273,28 +255,28 @@ class OrgParser(object):
         new_tag.append(BeautifulSoup(result))
         root.append(new_tag)
 
-    def parse_html(self, m, root):
-        new_tag = BeautifulSoup(m.group(1))
-        root.append(new_tag)
+    def parse_begin_xxx(self, m, root):
+        symbol = m.group(1)
+        if symbol in ['html', 'HTML']:
+            new_tag = BeautifulSoup(m.group(2))
+        elif symbol in ['example', 'EXAMPLE']:
+            new_tag = root.new_tag('pre')
+            new_tag['class'] =  'example'
+            new_tag.string = m.group(2)
+        elif symbol in ['quote', 'QUOTE']:
+            new_tag = root.new_tag('blockquote')
+            new_tag.string = m.group(2)
+        elif symbol in ['verse', 'VERSE']:
+            new_tag = root.new_tag('p')
+            new_tag['class'] = 'verse'
+            new_tag.string = m.group(2)
+        elif symbol in ['center', 'CENTER']:
+            new_tag = root.new_tag('div')
+            new_tag['class'] = 'center'
+            new_tag.string = m.group(2)
+        else:
+            raise RuntimeError('Not supportted begin symbol: %s' % symbol)
 
-    def parse_example(self, m, root):
-        new_tag = root.new_tag('pre')
-        new_tag['class'] = 'example'
-        new_tag.string = m.group(1)
-        root.append(new_tag)
-
-    def parse_quote(self, m, root):
-        new_tag = root.new_tag('blockquote')
-        new_tag.string = m.group(1)
-        root.append(new_tag)
-
-    def parse_verse(self, m, root):
-        pass
-
-    def parse_center(self, m, root):
-        new_tag = root.new_tag('div')
-        new_tag.string = m.group(1)
-        new_tag['class'] = 'center'
         root.append(new_tag)
 
     def parse_paragraph(self, m, root):
