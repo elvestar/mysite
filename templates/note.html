@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block body_tag %}
+    <body class="note">
+{% endblock %}
+
+{% block content %}
+    <div>
+        <div class="note-header">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-9">
+                        <h1>{{ item.uri }}</h1>
+                        <p>{{ item.mtime }}</p>
+                    </div>
+                    <div class="col-md-3">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="container">
+            <div class="row ">
+                <div class="col-md-9 note-content-wrap">
+                    <article>
+                        {{ item.content }}
+                    </article>
+                </div>
+                <div class="col-md-3 sidebar-toc">
+                    {{ item.toc }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function() {
+            $('#toc').affix({
+                offset: {
+                    top: $('#toc').offset().top,
+                    bottom: ($('#footer').outerHeight(true))
+                }
+            });
+            $('body').scrollspy({ target: '#toc' });
+        })
+    </script>
+{% endblock %}

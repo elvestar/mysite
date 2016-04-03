@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <div class="container archives">
+        <div class="row">
+            <div class="col-md-9">
+                <div class="page-header">
+                    <h2>Archives</h2>
+                </div>
+                <div>
+                    <ul class="archives-item-list">
+                        {% for it in items %}
+                            <li>
+                                <span class="archives-date">{{ it.mtime.strftime('%Y-%m-%d') }}</span>
+                                <span class="archives-divider"> » </span>
+                                <a class="archives-title" href="{{ it.uri }}.html">{{ it.uri }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {#                <% items_group_by_year.each do |year, items_of_year| %>#}
+                    {#                <h3>#}
+                    {#                    <%= year %>#}
+                    {#                </h3>#}
+                    {#                <ul class="archives-item-list">#}
+                    {#                    <% items_of_year.each_with_index do |item, idx| %>#}
+                    {#                    <li>#}
+                    {#                        <span class="archives-date"><%= item[:date] %></span>#}
+                    {#                        <span class="archives-divider"> » </span>#}
+                    {#                        <a class="archives-title" href="<%= item.path %>"><%= item[:title] %>#}
+                    {#                        </a>#}
+                    {#                    </li>#}
+                    {#                    <% end %>#}
+                    {#                </ul>#}
+                    {#                <% end %>#}
+                </div>
+            </div>
+            <div class="col-md 3">
+            </div>
+        </div>
+        <div class="page-header">
+            <h1 class="title">归档 <small>共 {{ items|length }} 篇</small></h1>
+        </div>
+        <div>
+            <table>
+                <thead>
+                <tr>
+                    <th>标题</th>
+                    <th>字节数</th>
+                    <th>标签</th>
+                    <th>标识符</th>
+                    <th>创建日期</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for it in items %}
+                    <tr>
+                        <td><a href="{{ it.uri }}.html">{{ it.uri }}</a></td>
+                        <td>{{ it.content|length }}</td>
+                        <td>
+                            标签
+                        </td>
+                        <td>{{ it.path }}</td>
+                        <td>{{ it.mtime }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

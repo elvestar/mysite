@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.formatters import get_formatter_by_name
+import pangu
 
 
 def _pure_pattern(regex):
@@ -16,7 +17,7 @@ def _pure_pattern(regex):
         pattern = pattern[1:]
     return pattern
 
-_emphasis_symbols = '\*=_/+'
+_emphasis_symbols = '\*=_/+~'
 
 
 class Rules(object):
@@ -210,7 +211,7 @@ class OrgParser(object):
 
     def parse_table(self, m, root):
         new_tag = root.new_tag('table')
-        new_tag['class'] = 'table table-bordered'
+        # new_tag['class'] = 'table table-bordered'
 
         thead_str = re.sub(r'^ *| *\| *$', '', m.group(1))
         new_tr_tag = root.new_tag('tr')
@@ -331,7 +332,8 @@ class OrgParser(object):
         return self.parse_emphasis(m, root)
 
     def parse_inline_text(self, m, root):
-        root.append(m.group(0))
+        content = m.group(0).replace('\n', '')
+        root.append(pangu.spacing(content))
 
 
 class PyOrg(object):

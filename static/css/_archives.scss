@@ -1,0 +1,16 @@
+.archives {
+
+  .archives-item-list {
+    li {
+      list-style: circle;
+      margin: 3px 0;
+    }
+  }
+
+  .archives-date, .archives-divider {
+    color: #666;
+  }
+  .archives-divider {
+    margin: 0 3px;
+  }
+}

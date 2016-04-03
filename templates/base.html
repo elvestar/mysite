@@ -4,9 +4,12 @@
     <title>{{ item.uri }}</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/static/css/styles.css"/>
-    <link rel="stylesheet" href="/static/css/pygments.github.css"/>
+    <link rel="stylesheet" href="/static/css/pygments/default.css"/>
 </head>
-<body data-spy="scroll" data-target="#toc" >
+
+{% block body_tag %}
+    <body>
+{% endblock %}
 
 {% block navbar %}
     {% include '_partials/header.html' %}
@@ -15,14 +18,13 @@
 {% block content %}
 {% endblock %}
 
+{% block footer %}
+    {% include '_partials/footer.html' %}
+{% endblock %}
+
 {% block scripts %}
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
-{% endblock %}
-
-
-{% block footer %}
-    {% include '_partials/footer.html' %}
 {% endblock %}
 
 </body>

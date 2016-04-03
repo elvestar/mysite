@@ -35,44 +35,59 @@ signal.signal(signal.SIGINT, signal_handler)
 class MySSG(object):
     def __init__(self, settings=None):
         self.settings = settings
-        self.all_items = None
+        self.items = None
+        self.templates = dict()
         self.reader = Reader()
         self.writer = Writer()
 
     def run(self):
         start_time = time.time()
-        env = Environment(loader=FileSystemLoader('./templates/gitbook', ))
-        template = env.get_template('website/page.html')
+        env = Environment(loader=FileSystemLoader('./templates', ))
+        # env = Environment(loader=FileSystemLoader('./templates/gitbook', ))
+        template_names = ['note', 'archives']
+        # template_names = ['website/page']
+        for name in template_names:
+            template = env.get_template('%s.html' % name)
+            self.templates[name] = template
 
         # Init filters
         markdown = mistune.Markdown()
         py_org = PyOrg()
 
         # Handle items using filters
-        self.all_items = self.reader.read()
-        for item in self.all_items:
+        self.items = self.reader.read()
+        for item in self.items:
+            template = self.templates['note']
+            # template = self.templates['website/page']
             if item.extension == 'md':
                 item.content = markdown(item.content)
             # elif item.extension == 'org':
             # elif item.extension == 'org' and item.uri in ['mysql', 'flask']:
-            elif item.extension == 'org' and item.uri in ['mysql', 'pyorg']:
+            elif item.extension == 'org' and item.uri in ['mysql', 'pyorg', 'flask']:
                 item.content = py_org(item.content)
                 add_toc(item)
             else:
                 pass
-            # if True:
-            #     add_toc(item)
-            self.writer.write(item, template)
+            output = template.render(item=item)
+            self.writer.write(item, output)
+
+        self.generate_archives()
 
         end_time = time.time()
         print('Done: use time {:.2f}'.format(end_time - start_time))
 
+    def generate_archives(self):
+        archives_item = Item('archives', 'json')
+        template = self.templates['archives']
+        output = template.render(items=self.items, item=archives_item)
+        self.writer.write(archives_item, output)
+
     def watch_items(self):
         uri_set = set()
-        for item in self.all_items:
+        for item in self.items:
             uri_set.add(item.uri)
         while True:
-            for item in self.all_items:
+            for item in self.items:
                 new_mtime = self.reader.get_modify_datetime(item)
                 if new_mtime is None:
                     continue
@@ -95,7 +110,7 @@ class MySSG(object):
 
 class MySSGRequestHandler(SimpleHTTPRequestHandler):
     def do_GET(self):
-        self.path = 'output/' + self.path
+        # self.path = 'output/' + self.path
         SimpleHTTPRequestHandler.do_GET(self)
 
 

@@ -1,0 +1,64 @@
+#toc {
+  .nav>li>a {
+    color: #999;
+    border-left: 2px solid transparent;
+    padding: 4px 4px 4px 20px;
+    font-size: 13px;
+    font-weight: 400;
+  }
+
+  .nav .nav>li>a {
+    border-left: 1px solid transparent;
+    padding-top: 1px;
+    padding-bottom: 1px;
+    padding-left: 30px;
+    font-size: 12px;
+  }
+
+  /* active & hover links */
+  .nav>.active>a,
+  .nav>li>a:hover,
+  .nav>li>a:focus {
+    color: #666;
+    text-decoration: none;
+    background-color: transparent;
+    border-left-color: #999;
+  }
+  /* all active links */
+  .nav>.active>a,
+  .nav>.active:hover>a,
+  .nav>.active:focus>a {
+    font-weight: 700;
+  }
+  /* nested active links */
+  .nav .nav>.active>a,
+  .nav .nav>.active:hover>a,
+  .nav .nav>.active:focus>a {
+    font-weight: 700;
+  }
+
+  /* hide inactive nested list */
+  .nav ul.nav {
+    display: none;
+  }
+  /* show active nested list */
+  .nav>.active>ul.nav {
+    display: block;
+  }
+
+  .affix {
+    top: 10px;
+  }
+
+  .affix-bottom {
+    position: absolute;
+  }
+}
+
+#toc.affix {
+  top: 10px;
+}
+
+#toc.affix-bottom {
+  position: absolute;
+}
