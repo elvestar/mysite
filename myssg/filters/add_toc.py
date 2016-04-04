@@ -8,8 +8,9 @@ from bs4 import BeautifulSoup
 
 
 def add_toc(item):
-    soup = BeautifulSoup(item.content)
-    headings = soup.find_all(re.compile('^h[1-3]'))
+    soup = BeautifulSoup()
+    html_root = item.html_root
+    headings = html_root.find_all(re.compile('^h[2-3]'))
     toc = soup.new_tag('div', id='toc')
     cur_node = toc
 

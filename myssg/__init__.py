@@ -19,6 +19,7 @@ from myssg.readers import Reader
 from myssg.writers import Writer
 from myssg.items import Item
 from myssg.filters.add_toc import add_toc
+from myssg.filters.org_filter import org_filter
 from myssg.pyorg.pyorg import PyOrg
 
 import signal
@@ -61,13 +62,16 @@ class MySSG(object):
             # template = self.templates['website/page']
             if item.extension == 'md':
                 item.content = markdown(item.content)
-            # elif item.extension == 'org':
+                continue
+            elif item.extension == 'org':
             # elif item.extension == 'org' and item.uri in ['mysql', 'flask']:
-            elif item.extension == 'org' and item.uri in ['mysql', 'pyorg', 'flask']:
-                item.content = py_org(item.content)
+            # elif item.extension == 'org' and item.uri in ['mysql', 'pyorg', 'flask']:
+                py_org(item)
                 add_toc(item)
+                org_filter(item)
+                item.content = item.html_root.prettify()
             else:
-                pass
+                continue
             output = template.render(item=item)
             self.writer.write(item, output)
 

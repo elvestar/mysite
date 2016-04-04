@@ -57,13 +57,20 @@ class Rules(object):
         r'([\s\S]+?)\s*'
         r' *#\+(?:END_|end_)\1\s*(?:\n+|$)'
     )
+    clock_block = re.compile(
+        r'^( *CLOCK: +[\[<].*(\n|$))+'
+    )
+    clock_item = re.compile(
+        r'^ *CLOCK: +[\[<]([^\]]+)[\]>](?:--[\[<]([^\]]+)[\]>] +=> +([\d:]+) *)?\n?'
+    )
     paragraph = re.compile(
         r'^((?:[^\n]+\n?(?!'
-        r'%s|%s|%s|%s|%s'
+        r'%s|%s|%s|%s|%s|%s'
         r'))+)\n*' % (
             _pure_pattern(source).replace(r'\1', r'\2'),
             _pure_pattern(begin_xxx).replace(r'\1', r'\4'),
             _pure_pattern(list_block).replace(r'\1', r'\5'),
+            _pure_pattern(clock_block),
             _pure_pattern(heading),
             _pure_pattern(table),
         )
@@ -94,7 +101,7 @@ class Rules(object):
 class OrgParser(object):
     block_rule_keys = [
         'newline', 'heading', 'list_block', 'table',
-        'source', 'begin_xxx',
+        'source', 'begin_xxx', 'clock_block',
         'paragraph', 'text'
     ]
     inline_rule_keys = [
@@ -114,7 +121,12 @@ class OrgParser(object):
             self.rules = rules
         else:
             self.rules = Rules()
-        self.doc_root = BeautifulSoup()
+        self.soup = BeautifulSoup()
+        self.html_root = self.soup.new_tag('html')
+        self.head = self.soup.new_tag('head')
+        self.body = self.soup.new_tag('body')
+        self.html_root.append(self.head)
+        self.html_root.append(self.body)
         self.heading_count = 0
 
     def parse(self, text, block_rule_keys=None, inline_rule_keys=None):
@@ -124,8 +136,44 @@ class OrgParser(object):
             self.block_rule_keys = block_rule_keys
         if inline_rule_keys is not None:
             self.inline_rule_keys = inline_rule_keys
+        text_parts = re.split('\n(?!#\+)', text, maxsplit=1)
+        if len(text_parts) == 2:
+            meta_str = text_parts[0]
+            body_str = text_parts[1]
+        else:
+            meta_str = None
+            body_str = text_parts[0]
 
-        return self.parse_by_block_rules(text, self.doc_root)
+        if meta_str is not None:
+            self.parse_org_meta(meta_str, self.head)
+            if self.head.title is not None:
+                h1 = self.soup.new_tag('h1')
+                h1.string = self.head.title.string
+                h1['class'] = 'title'
+                self.heading_count += 1
+                h1['id'] = 'sec-%d' % self.heading_count
+                self.body.append(h1)
+
+        self.parse_by_block_rules(body_str, self.body)
+        return self.html_root
+
+    def parse_org_meta(self, text, root):
+        meta_re = re.compile(
+            r'^#\+([^:]+): *(.+)'
+        )
+        for line in text.strip('\n').split('\n'):
+            m = meta_re.match(line)
+            if m is not None:
+                meta_name = m.group(1).lower()
+                meta_content = m.group(2).strip()
+                if meta_name == 'title':
+                    meta = self.soup.new_tag('title')
+                    meta.string = meta_content
+                else:
+                    meta = self.soup.new_tag('meta', content=meta_content)
+                    meta['name'] = meta_name
+                self.head.append(meta)
+
 
     def parse_by_block_rules(self, text, root=None):
         return self.parse_by_rules(text, self.block_rule_keys, root)
@@ -135,7 +183,7 @@ class OrgParser(object):
 
     def parse_by_rules(self, text, rule_keys, root=None):
         if root is None:
-            root = self.doc_root
+            root = self.body
         in_text_start = True
         self.switch_rules(rule_keys, in_text_start)
         while text:
@@ -177,12 +225,12 @@ class OrgParser(object):
     def parse_newline(self, m, root):
         length = len(m.group(0))
         if length > 1:
-            new_tag = root.new_tag('br')
+            new_tag = self.soup.new_tag('br')
             root.append(new_tag)
 
     def parse_heading(self, m, root):
         level = len(m.group(1)) + 1
-        new_tag = root.new_tag('h%d' % level)
+        new_tag = self.soup.new_tag('h%d' % level)
         self.heading_count += 1
         new_tag['id'] = 'sec-%d' % self.heading_count
         self.parse_by_inline_rules(m.group(2), new_tag)
@@ -199,31 +247,31 @@ class OrgParser(object):
             item_content = cap[i][3]
             if new_tag is None:
                 if bullet in ['+', '-']:
-                    new_tag = root.new_tag('ul')
+                    new_tag = self.soup.new_tag('ul')
                 else:
-                    new_tag = root.new_tag('ol')
+                    new_tag = self.soup.new_tag('ol')
 
-            new_li_tag = root.new_tag('li')
+            new_li_tag = self.soup.new_tag('li')
             self.parse_by_inline_rules(item_content, new_li_tag)
             new_tag.append(new_li_tag)
 
         root.append(new_tag)
 
     def parse_table(self, m, root):
-        new_tag = root.new_tag('table')
+        new_tag = self.soup.new_tag('table')
         # new_tag['class'] = 'table table-bordered'
 
         thead_str = re.sub(r'^ *| *\| *$', '', m.group(1))
-        new_tr_tag = root.new_tag('tr')
+        new_tr_tag = self.soup.new_tag('tr')
         for th_str in re.split(r' *\| *', thead_str):
-            new_th_tag = root.new_tag('th')
+            new_th_tag = self.soup.new_tag('th')
             self.parse_by_inline_rules(th_str, new_th_tag)
             new_tr_tag.append(new_th_tag)
-        new_thead_tag = root.new_tag('thead')
+        new_thead_tag = self.soup.new_tag('thead')
         new_thead_tag.append(new_tr_tag)
         new_tag.append(new_thead_tag)
 
-        new_tbody_tag = root.new_tag('tbody')
+        new_tbody_tag = self.soup.new_tag('tbody')
         tbody_str = re.sub(r'(?: *\| *)?\n$', '', m.group(3))
         tbody_row_strs = tbody_str.split('\n')
         # Remove empty row in table end first
@@ -232,9 +280,9 @@ class OrgParser(object):
                 tbody_row_strs.remove(tbody_row_str)
         for tbody_row_str in tbody_row_strs:
             tbody_row_str = re.sub(r'^ *\| *| *\| *$', '', tbody_row_str)
-            new_tr_tag = root.new_tag('tr')
+            new_tr_tag = self.soup.new_tag('tr')
             for td_str in re.split(r' *\| *', tbody_row_str):
-                new_td_tag = root.new_tag('td')
+                new_td_tag = self.soup.new_tag('td')
                 self.parse_by_inline_rules(td_str, new_td_tag)
                 new_tr_tag.append(new_td_tag)
             new_tbody_tag.append(new_tr_tag)
@@ -251,28 +299,28 @@ class OrgParser(object):
             lexer = get_lexer_by_name('text')
         result = highlight(m.group(2), lexer, formatter)
 
-        new_tag = self.doc_root.new_tag('div')
+        new_tag = self.soup.new_tag('div')
         new_tag['class'] = 'src src-%s' % lang
-        new_tag.append(BeautifulSoup(result))
+        new_tag.append(BeautifulSoup(result, 'html.parser'))
         root.append(new_tag)
 
     def parse_begin_xxx(self, m, root):
         symbol = m.group(1)
         if symbol in ['html', 'HTML']:
-            new_tag = BeautifulSoup(m.group(2))
+            new_tag = BeautifulSoup(m.group(2), 'html.parser')
         elif symbol in ['example', 'EXAMPLE']:
-            new_tag = root.new_tag('pre')
+            new_tag = self.soup.new_tag('pre')
             new_tag['class'] =  'example'
             new_tag.string = m.group(2)
         elif symbol in ['quote', 'QUOTE']:
-            new_tag = root.new_tag('blockquote')
+            new_tag = self.soup.new_tag('blockquote')
             new_tag.string = m.group(2)
         elif symbol in ['verse', 'VERSE']:
-            new_tag = root.new_tag('p')
+            new_tag = self.soup.new_tag('p')
             new_tag['class'] = 'verse'
             new_tag.string = m.group(2)
         elif symbol in ['center', 'CENTER']:
-            new_tag = root.new_tag('div')
+            new_tag = self.soup.new_tag('div')
             new_tag['class'] = 'center'
             new_tag.string = m.group(2)
         else:
@@ -280,19 +328,44 @@ class OrgParser(object):
 
         root.append(new_tag)
 
+    def parse_clock_block(self, m, root):
+        table = self.soup.new_tag('table')
+        table['class'] = 'clock-table'
+        ths_str = ['开始', '结束', '耗时']
+        tr = self.soup.new_tag('tr')
+        for th_str in ths_str:
+            th = self.soup.new_tag('th')
+            th.string = th_str
+            tr.append(th)
+        table.append(tr)
+
+        for line in m.group(0).strip('\n').split('\n'):
+            tr = self.soup.new_tag('tr')
+            m = self.rules.clock_item.match(line)
+            for i in [1, 2, 3]:
+                td = self.soup.new_tag('td')
+                v = m.group(i)
+                if v is not None:
+                    td.string = v
+                else:
+                    td.string = 'None'
+                tr.append(td)
+            table.append(tr)
+        root.append(table)
+
     def parse_paragraph(self, m, root):
-        new_tag = root.new_tag('p')
+        new_tag = self.soup.new_tag('p')
         content = m.group(1).rstrip('\n')
         self.parse_by_inline_rules(content, new_tag)
         root.append(new_tag)
 
     def parse_text(self, m, root):
-        new_tag = root.new_tag('p')
+        new_tag = self.soup.new_tag('p')
         new_tag.string = m.group(0)
         root.append(new_tag)
 
     def parse_link(self, m, root):
-        new_tag = self.doc_root.new_tag('a')
+        new_tag = self.soup.new_tag('a')
         new_tag['href'] = m.group(1)
         new_tag['target'] = '_blank'
         if m.group(2) is None:
@@ -302,7 +375,7 @@ class OrgParser(object):
         root.append(new_tag)
 
     def parse_url(self, m, root):
-        new_tag = self.doc_root.new_tag('a')
+        new_tag = self.soup.new_tag('a')
         new_tag['href'] = m.group(1)
         new_tag['target'] = '_blank'
         new_tag.string = m.group(1)
@@ -322,7 +395,7 @@ class OrgParser(object):
             tag_name = 'del'
         else:
             raise RuntimeError('Not supportted emhpasis symbol: %s' % symbol)
-        new_tag = self.doc_root.new_tag(tag_name)
+        new_tag = self.soup.new_tag(tag_name)
         new_tag.string = m.group(2)
         if symbol == '_':
             new_tag['class'] = 'underline'
@@ -342,15 +415,12 @@ class PyOrg(object):
 
         self.tokens = []
 
-    def __call__(self, text):
-        return self.render(text)
+    def __call__(self, item):
+        return self.render(item)
 
-    def render(self, text):
+    def render(self, item):
         parser = OrgParser()
-        soup = parser.parse(text)
-        output = soup.prettify()
-
-        return output
+        item.html_root = parser.parse(item.content)
 
 
 if __name__ == '__main__':

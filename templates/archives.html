@@ -11,9 +11,9 @@
                     <ul class="archives-item-list">
                         {% for it in items %}
                             <li>
-                                <span class="archives-date">{{ it.mtime.strftime('%Y-%m-%d') }}</span>
+                                <span class="archives-date">{{ it.date.strftime('%Y-%m-%d') }}</span>
                                 <span class="archives-divider"> » </span>
-                                <a class="archives-title" href="{{ it.uri }}.html">{{ it.uri }}
+                                <a class="archives-title" href="{{ it.uri }}.html">{{ it.title }}
                                 </a>
                             </li>
                         {% endfor %}
@@ -55,10 +55,10 @@
                 <tbody>
                 {% for it in items %}
                     <tr>
-                        <td><a href="{{ it.uri }}.html">{{ it.uri }}</a></td>
+                        <td><a href="{{ it.uri }}.html">{{ it.title }}</a></td>
                         <td>{{ it.content|length }}</td>
                         <td>
-                            标签
+                            {{ item.tags }}
                         </td>
                         <td>{{ it.path }}</td>
                         <td>{{ it.mtime }}</td>
