@@ -8,6 +8,8 @@ body {
   /* height: 100%; */
   min-height: 100%;
   font-size: 16px;
+////  font-size: 0.625em;
+//    font-size: 10px;
   width: 100%;
   max-width: 100%;
   font-weight: 400;
@@ -20,6 +22,7 @@ p {
   //    overflow:hidden;
   word-wrap:break-word;
   word-break:normal;
+//  font-size: 1.4em;
 }
 
 pre {
@@ -27,7 +30,8 @@ pre {
 }
 
 h1 {
-  font-size: 40px;
+//  font-size: 40px;
+//  font-size: 4.8em;
   margin-top: 30px;
   margin-bottom: 20px;
 }
@@ -35,6 +39,7 @@ h1 {
 h2 {
   font-weight: bold;
   font-size: 28px;
+//  font-size: 3.6em;
   margin-top: 30px;
   margin-bottom: 20px;
   color: #333;
@@ -44,9 +49,21 @@ h2 {
 h3 {
   font-weight: 500;
   font-size: 20px;
+//  font-size: 2.4em;
   margin: 20px 0;
 }
 
+h4 {
+//  font-size: 2.1em;
+}
+
+h5 {
+//  font-size: 1.8em;
+}
+
+h6 {
+//  font-size: 1.6em;
+}
 h4,  h5,  h6 {
   font-size: 18px;
   margin: 15px 0;
@@ -69,6 +86,8 @@ table {
   border-collapse: collapse;
   border-spacing: 0;
   overflow: auto;
+//  font-size: 1.4em;
+  font-size: 14px;
   caption {
     text-align: center;
   }

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import print_function
 
 import sys
@@ -331,7 +332,7 @@ class OrgParser(object):
     def parse_clock_block(self, m, root):
         table = self.soup.new_tag('table')
         table['class'] = 'clock-table'
-        ths_str = ['开始', '结束', '耗时']
+        ths_str = ['Start', 'End', 'Cost']
         tr = self.soup.new_tag('tr')
         for th_str in ths_str:
             th = self.soup.new_tag('th')
