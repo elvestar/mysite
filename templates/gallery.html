@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+
+{% block body_tag %}
+    <body class="gallery">
+{% endblock %}
+
+{% block header %}
+   <header>
+      <div class="Logo">
+        <a href="/" class="img">
+          <span></span>
+          <span></span>
+          <span></span>
+          <span></span>
+        </a>
+        <span class="name">Zhong Yi</span>
+        <span class="text">
+            <a href="/gallery/">Gallery</a>
+        </span>
+      </div>
+    </header>
+{% endblock %}
+
+{% block content %}
+    <div class="Container">
+
+    <div class="Collections">
+
+        <div class="Collection" style="background-image: url(./2016-spring/imgs/2016-spring_20160411005902.png)">
+            <div class="contents">
+                <a href="./2016-spring/">2016 ‧ 春</a>
+            </div>
+        </div>
+        <div class="Collection" style="background-image: url(./playground/imgs/playground_20160413083401.png)">
+            <div class="contents">
+                <a href="./playground/">大操场</a>
+            </div>
+        </div>
+        <div class="Collection" style="background-image: url(./playground/imgs/playground_20160412011413.png)">
+            <div class="contents">
+                <a href="./playground/">大操场</a>
+            </div>
+        </div>
+        <div class="Collection" style="background-image: url(./2016-spring/imgs/2016-spring_20160413082141.png)">
+            <div class="contents">
+                <a href="./2016-spring/">2016 ‧ 春</a>
+            </div>
+        </div>
+        <div class="Collection" style="background-image: url(./2016-spring/imgs/2016-spring_20160411010216.png)">
+            <div class="contents">
+                <a href="./2016-spring/">2016 ‧ 春</a>
+            </div>
+        </div>
+        <div class="Collection" style="background-image: url(./playground/imgs/playground_20160412011544.png)">
+            <div class="contents">
+                <a href="./playground/">大操场</a>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block footer %}
+    <footer>
+        <ul>
+            <li class="title">Code</li>
+            <li><a href="//www.weibo.com/elvestar/">Weibo</a></li>
+            <li><a href="//github.com/elvestar">GitHub</a></li>
+        </ul>
+        <ul>
+            <li class="title">Photos</li>
+            <li><a href="/gallery">Gallery</a></li>
+            <li><a href="/blog/">Blog</a></li>
+        </ul>
+        <ul>
+            <li class="title">Contact</li>
+            <li>http://www.weibo.com/elvestare</li>
+        </ul>
+    </footer>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/bower_components/isotope/isotope.pkgd.min.js"></script>
+    <link rel="stylesheet" href="/static/bower_components/zoom.js/zoom.css"/>
+    <script src="/static/bower_components/zoom.js/zoom.js"></script>
+    <script src="/static/js/imagegrid.js"></script>
+{% endblock %}

@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+
 class Item(object):
     def __init__(self, uri, extension, content=None, path=None, mtime=None, html_root=None):
         self.uri = uri
@@ -10,6 +11,8 @@ class Item(object):
         self.path = path
         self.mtime = mtime
         self.html_root = html_root
+        self.output = None
+        self.output_path = None
 
         self.description = 'No description'
         self.date = datetime.fromtimestamp(0)

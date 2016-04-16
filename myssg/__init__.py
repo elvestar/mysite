@@ -5,22 +5,28 @@ import os
 import logging
 import threading
 import time
+import re
 from datetime import datetime, timedelta
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SimpleHTTPServer import SimpleHTTPRequestHandler
 
 from jinja2 import Environment, FileSystemLoader
 import mistune
+from bs4 import BeautifulSoup
 
 # TODO 不知道如何将当前目录加入PYTHONPATH
 import sys
 sys.path.append('./')
+# TODO 中文处理
+reload(sys)
+sys.setdefaultencoding('utf-8')
 
 from myssg.readers import Reader
 from myssg.writers import Writer
 from myssg.items import Item
 from myssg.filters.add_toc import add_toc
-from myssg.filters.org_filter import org_filter
+from myssg.filters.org_filter import org_filter, gallery_album_filter, gallery_filter
+from myssg.filters.reading_filter import reading_note_filter
 from myssg.pyorg.time_analyzer import TimeAnalyzer
 from myssg.pyorg.pyorg import PyOrg
 from myssg.settings import Settings
@@ -45,13 +51,15 @@ class MySSG(object):
         self.reader = Reader(settings)
         self.writer = Writer(settings)
         self.time_items = list()
+        self.reading_items = list()
 
     def run(self):
         start_time = time.time()
         env = Environment(loader=FileSystemLoader('./templates', ))
-        # env = Environment(loader=FileSystemLoader('./templates/gitbook', ))
-        template_names = ['note', 'archives', 'tms']
-        # template_names = ['website/page']
+        template_names = ['note', 'archives', 'blog', 'life',
+                          'time', 'tms',
+                          'gallery', 'gallery_album',
+                          'reading_note', 'reading_archives']
         for name in template_names:
             template = env.get_template('%s.html' % name)
             self.templates[name] = template
@@ -60,49 +68,113 @@ class MySSG(object):
         markdown = mistune.Markdown()
         py_org = PyOrg()
 
-        # Handle items using filters
         self.items = self.reader.read()
         for item in self.items:
-            template = self.templates['note']
-            # template = self.templates['website/page']
+            # Filter
+            if item.uri.startswith(('notes', 'blog', 'life', 'gallery')) and item.extension == 'html':
+                continue
+
+            # Compile
             if item.extension == 'md':
                 item.content = markdown(item.content)
-                # continue
             elif item.extension == 'org':
-            # elif item.extension == 'org' and item.uri in ['mysql', 'flask']:
-            # elif item.extension == 'org' and item.uri in ['mysql', 'pyorg', 'time', '2015', '2016']:
                 py_org(item)
-                add_toc(item)
                 org_filter(item)
+                if item.uri.startswith(('notes/', 'blog/', 'life/')):
+                    add_toc(item)
+                elif item.uri == 'gallery':
+                    gallery_filter(item)
+                elif item.uri.startswith('gallery/'):
+                    gallery_album_filter(item)
                 item.content = item.html_root.prettify()
+            elif item.extension == 'html':
+                item.html_root = BeautifulSoup(item.content)
+                if item.uri.startswith(('reading/notes/')):
+                    reading_note_filter(item)
+                    self.reading_items.append(item)
             else:
-                continue
-            if item.uri in ['time', '2015', '2016']:
+                pass
+
+            # Layout
+            if item.extension in ['css', 'js', 'json', 'jpg', 'png']:
+                item.output = item.content
+            elif item.uri.startswith('notes/'):
+                self.render_item_by_template(item, 'note')
+            elif item.uri.startswith('blog/'):
+                self.render_item_by_template(item, 'blog')
+            elif item.uri.startswith('life/'):
+                self.render_item_by_template(item, 'life')
+            elif item.uri.startswith('time/'):
+                self.render_item_by_template(item, 'time')
+            elif item.uri == 'gallery':
+                self.render_item_by_template(item, 'gallery')
+            elif item.uri.startswith('gallery/'):
+                self.render_item_by_template(item, 'gallery_album')
+            elif item.uri.startswith('reading/notes/'):
+                self.render_item_by_template(item, 'reading_note')
+            else:
+                item.output = item.content
+
+            # Router
+            if item.extension in ['css', 'js', 'map']:
+                item.output_path = item.uri + '.' + item.extension
+            elif item.extension in ['png', 'jpg']:
+                m = re.match(r'(.+)/(imgs/(.+)_\d+)', item.uri)
+                if m is None:
+                    item.output_path = item.uri + '.' + item.extension
+                else:
+                    item.output_path = m.group(1) + '/' + m.group(3) + '/' + m.group(2) + '.' + item.extension
+            elif item.extension in ['org', 'md', 'html']:
+                item.output_path = item.uri + '/index.html'
+            elif item.extension is None:
+                item.output_path = item.uri
+            else:
+                item.output_path = item.uri + '.' + item.extension
+
+            if item.uri.startswith('time/'):
                 self.time_items.append(item)
-            output = template.render(item=item)
-            self.writer.write(item, output)
+
+            # Output
+            self.writer.write(item)
 
         self.generate_archives()
-        self.generate_time_stats()
 
         end_time = time.time()
         print('Done: use time {:.2f}'.format(end_time - start_time))
 
+    def render_item_by_template(self, item, template_name):
+        template = self.templates[template_name]
+        item.output = template.render(item=item)
+        return
+
+    def generate_reading_archives(self):
+        reading_archives_item = Item('reading_archives', 'json')
+        reading_archives_item.output_path = 'reading/archives/index.html'
+        template = self.templates['reading_archives']
+        reading_archives_item.output = \
+            template.render(reading_items=self.reading_items, item=reading_archives_item)
+        self.writer.write(reading_archives_item)
+
     def generate_archives(self):
         archives_item = Item('archives', 'json')
+        archives_item.output_path = 'archives/index.html'
         template = self.templates['archives']
-        output = template.render(items=self.items, item=archives_item)
-        self.writer.write(archives_item, output)
+        archives_item.output = template.render(items=self.items, item=archives_item)
+        self.writer.write(archives_item)
+        self.generate_reading_archives()
+        self.generate_time_stats()
 
     def generate_time_stats(self):
         tms_item = Item('tms', 'json')
+        tms_item.output_path = 'time/date/index.html'
         ta = TimeAnalyzer()
         html_roots = [item.html_root for item in self.time_items]
         ta.batch_analyze(html_roots)
-        clock_items = ta.query_clock_items_by_date(date='2016-04-06')
+        clock_items = ta.query_clock_items_by_date(date='2016-04-16')
+        print(clock_items)
         template = self.templates['tms']
-        output = template.render(item=tms_item, clock_items=clock_items)
-        self.writer.write(tms_item, output)
+        tms_item.output = template.render(item=tms_item, clock_items=clock_items)
+        self.writer.write(tms_item)
 
     def watch_items(self):
         uri_set = set()
@@ -138,9 +210,11 @@ class MySSGRequestHandler(SimpleHTTPRequestHandler):
 
 if __name__ == '__main__':
     settings = Settings()
-    watchers = {'content': folder_watcher(settings.CONTENT_DIR,
-                                          [''],
-                                          ['.#*'])}
+    watchers = {
+        'content': folder_watcher(settings.CONTENT_DIR, [''], ['.#*']),
+        'templates': folder_watcher(settings.TEMPLATES_DIR, [''], ['.#*']),
+        'myssg': folder_watcher(settings.SSG_DIR, [''], ['.#*'])
+        }
     while True:
         modified = {k: next(v) for k, v in watchers.items()}
         if any(modified.values()):
@@ -149,16 +223,16 @@ if __name__ == '__main__':
             my_ssg = MySSG(settings)
             my_ssg.run()
 
-        time.sleep(0.5)
+        time.sleep(1)
 
-    # http_server = HTTPServer(('', 8000), MySSGRequestHandler)
-    # logging.warning(' * Stop http server')
-    # t = threading.Thread(target=http_server.serve_forever)
-    # t.start()
-    # logging.info(' * Start watching items')
-    # my_ssg.watch_items()
-    # http_server.shutdown()
-    # logging.warning(' * Stop watching items')
-    # t.join()
+        # http_server = HTTPServer(('', 8000), MySSGRequestHandler)
+        # logging.warning(' * Stop http server')
+        # t = threading.Thread(target=http_server.serve_forever)
+        # t.start()
+        # logging.info(' * Start watching items')
+        # my_ssg.watch_items()
+        # http_server.shutdown()
+        # logging.warning(' * Stop watching items')
+        # t.join()
 
 

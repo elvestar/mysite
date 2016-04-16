@@ -1,0 +1,18 @@
+{% extends "gallery.html" %}
+
+{% block content %}
+    <div>
+    {{ item.content }}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+    $('.grid').imageGrid();
+{#        $('.grid').isotope({#}
+{#            itemSelector: '.Image',#}
+{#            layoutMode: 'masonry'#}
+{#        });#}
+    </script>
+{% endblock %}

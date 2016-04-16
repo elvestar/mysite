@@ -63,7 +63,7 @@ class TimeAnalyzer(object):
                 else:
                     end_time = datetime.strptime(end_clock_str[0:10] + ' ' + end_clock_str[-5:],
                                                  '%Y-%m-%d %H:%M')
-                # 凌晨五点之后的才算今天的，此外的算昨天的
+                # We treat 5:00 am as beginning of a day
                 if start_time.hour >= 5:
                     date = start_time.date()
                 else:
@@ -85,8 +85,7 @@ class TimeAnalyzer(object):
                     level=level,
                     category=category,
                     project=project,
-                    time_cost=time_cost,
-                    )
+                    time_cost=time_cost)
                 db.session.add(clock_item)
         db.session.commit()
 
@@ -94,7 +93,7 @@ class TimeAnalyzer(object):
 
     def query_clock_items_by_date(self, date):
         clock_items = ClockItem.query.filter(db.func.date(ClockItem.date) == date).order_by(ClockItem.start_time).all()
-        # print(clock_items)
+        print(clock_items)
         return clock_items
 
     @staticmethod

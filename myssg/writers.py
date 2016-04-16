@@ -9,8 +9,13 @@ class Writer(object):
         self.output_dir = settings.OUTPUT_DIR
         pass
 
-    def write(self, item, output):
-        output_filepath = os.path.join(self.output_dir, item.uri + '.html')
-        f = file(output_filepath, 'w')
-        f.write(output)
+    def write(self, item):
+        path = os.path.join(self.output_dir, item.output_path)
+        try:
+            os.makedirs(os.path.dirname(path))
+        except Exception:
+            pass
+
+        f = file(path, 'w')
+        f.write(item.output)
         f.close()

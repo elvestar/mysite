@@ -95,7 +95,7 @@ class Rules(object):
     )
     footnote = re.compile(r'^\[\^([^\]]+)\]')
     inline_text = re.compile(
-        r'^[\s\S]+?(?= [%s]|https?://| {2,}\n|$)' % _emphasis_symbols
+        r'^[\s\S]+?(?= [%s]|\[\[|https?://| {2,}\n|$)' % _emphasis_symbols
     )
 
 
@@ -366,13 +366,19 @@ class OrgParser(object):
         root.append(new_tag)
 
     def parse_link(self, m, root):
-        new_tag = self.soup.new_tag('a')
-        new_tag['href'] = m.group(1)
-        new_tag['target'] = '_blank'
-        if m.group(2) is None:
-            new_tag.string = m.group(1)
+        link = m.group(1)
+        if link.endswith(('jpg', 'png')):
+            new_tag = self.soup.new_tag('img')
+            new_tag['src'] = link
+            new_tag['alt'] = link
         else:
-            new_tag.string = m.group(3)
+            new_tag = self.soup.new_tag('a')
+            new_tag['href'] = link
+            new_tag['target'] = '_blank'
+            if m.group(2) is None:
+                new_tag.string = m.group(1)
+            else:
+                new_tag.string = m.group(3)
         root.append(new_tag)
 
     def parse_url(self, m, root):

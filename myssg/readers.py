@@ -47,7 +47,8 @@ class Reader(object):
     def get_file_items(self):
         for root, dirs, files in os.walk(self.dir, followlinks=True):
             dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
-            print(dirs)
+            if len(files) > 20:
+                files = files[0:20]
             for f in files:
                 if not any(fnmatch.fnmatch(f, ignore) for ignore in self.ignore_files):
                     try:

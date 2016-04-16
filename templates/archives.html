@@ -10,29 +10,16 @@
                 <div>
                     <ul class="archives-item-list">
                         {% for it in items %}
+                            {% if it.extension in ['org', 'md'] %}
                             <li>
                                 <span class="archives-date">{{ it.date.strftime('%Y-%m-%d') }}</span>
                                 <span class="archives-divider"> » </span>
-                                <a class="archives-title" href="{{ it.uri }}.html">{{ it.title }}
+                                <a class="archives-title" href="/{{ it.uri }}">{{ it.title }}
                                 </a>
                             </li>
+                            {% endif %}
                         {% endfor %}
                     </ul>
-                    {#                <% items_group_by_year.each do |year, items_of_year| %>#}
-                    {#                <h3>#}
-                    {#                    <%= year %>#}
-                    {#                </h3>#}
-                    {#                <ul class="archives-item-list">#}
-                    {#                    <% items_of_year.each_with_index do |item, idx| %>#}
-                    {#                    <li>#}
-                    {#                        <span class="archives-date"><%= item[:date] %></span>#}
-                    {#                        <span class="archives-divider"> » </span>#}
-                    {#                        <a class="archives-title" href="<%= item.path %>"><%= item[:title] %>#}
-                    {#                        </a>#}
-                    {#                    </li>#}
-                    {#                    <% end %>#}
-                    {#                </ul>#}
-                    {#                <% end %>#}
                 </div>
             </div>
             <div class="col-md 3">
@@ -54,15 +41,19 @@
                 </thead>
                 <tbody>
                 {% for it in items %}
+                    {% if it.extension in ['org', 'md', 'html'] %}
                     <tr>
-                        <td><a href="{{ it.uri }}.html">{{ it.title }}</a></td>
+                        <td><a href="/{{ it.uri }}">
+                            {{ it.title if it.title else it.uri }}
+                        </a></td>
                         <td>{{ it.content|length }}</td>
                         <td>
                             {{ item.tags }}
                         </td>
-                        <td>{{ it.path }}</td>
-                        <td>{{ it.mtime }}</td>
+                        <td>{{ it.uri }}</td>
+                        <td>{{ it.mtime.strftime('%Y-%m-%d') }}</td>
                     </tr>
+                    {% endif %}
                 {% endfor %}
                 </tbody>
             </table>

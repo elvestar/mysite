@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="container archives">
+        <div class="row">
+            <div class="col-md-1"></div>
+            <div class="col-md-10">
+                <div class="page-header">
+                    <h2>读书笔记</h2>
+                </div>
+                <div>
+                    <ul class="archives-item-list">
+                        {% for it in reading_items %}
+                            <li>
+                                <span class="archives-date">{{ it.date.strftime('%Y-%m-%d') }}</span>
+                                <span class="archives-divider"> » </span>
+                                <a class="archives-title" href="/{{ it.uri }}">{{ it.title }}
+                                </a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            <div class="col-md-1"></div>
+        </div>
+    </div>
+{% endblock %}
