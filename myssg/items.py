@@ -17,6 +17,8 @@ class Item(object):
         self.description = 'No description'
         self.date = datetime.fromtimestamp(0)
         self.year = self.date.year
+        self.last_update = None
+        self.last_update_time = None
 
     def __str__(self):
         return '%s, %s, %s' % (self.__class__.__name__, self.uri, self.extension)

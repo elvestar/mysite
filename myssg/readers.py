@@ -47,8 +47,13 @@ class Reader(object):
     def get_file_items(self):
         for root, dirs, files in os.walk(self.dir, followlinks=True):
             dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
-            if '/reading' not in root and '/static' not in root:
-                if len(files) > 20:
+            if len(files) > 20:
+                if '/reading' in root:
+                    # files = files[0:12]
+                    pass
+                elif '/static' in root:
+                    pass
+                else:
                     files = files[0:3]
             for f in files:
                 if not any(fnmatch.fnmatch(f, ignore) for ignore in self.ignore_files):

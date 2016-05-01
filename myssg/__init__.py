@@ -61,7 +61,7 @@ class MySSG(object):
         template_names = ['note', 'archives', 'blog', 'life',
                           'time', 'tms',
                           'gallery', 'gallery_album',
-                          'reading_note', 'reading_archives']
+                          'reading_note', 'reading_archives', 'evernote']
         for name in template_names:
             template = self.env.get_template('%s.html' % name)
             self.templates[name] = template
@@ -71,6 +71,7 @@ class MySSG(object):
         py_org = PyOrg()
 
         self.items = self.reader.read()
+        read_end_time = time.time()
         for item in self.items:
             # Filter
             if item.uri.startswith(('notes', 'blog', 'life', 'gallery')) and item.extension == 'html':
@@ -98,6 +99,8 @@ class MySSG(object):
             else:
                 pass
 
+        compile_end_time = time.time()
+
         # 设置一些全局的模板变量
         self.set_template_context()
 
@@ -118,7 +121,7 @@ class MySSG(object):
             elif item.uri.startswith('gallery/'):
                 self.render_item_by_template(item, 'gallery_album')
             elif item.uri.startswith('reading/notes/'):
-                self.render_item_by_template(item, 'reading_note')
+                self.render_item_by_template(item, 'evernote')
             else:
                 item.output = item.content
 
@@ -144,10 +147,15 @@ class MySSG(object):
             # Output
             self.writer.write(item)
 
+        layout_end_time = time.time()
+
         self.generate_archives()
+        archive_end_time = time.time()
 
         end_time = time.time()
-        print('Done: use time {:.2f}'.format(end_time - start_time))
+        print('Done: use time {:.2f}, read time {:.2f}, complie time {:.2f}, layout time {:.2f}, archive time {:.2f}'
+              .format(end_time - start_time, read_end_time - start_time, compile_end_time - read_end_time,
+                      layout_end_time - compile_end_time, archive_end_time - layout_end_time))
 
     def set_template_context(self):
         self.env.globals.update(
