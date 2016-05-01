@@ -3,12 +3,13 @@ from __future__ import print_function
 
 import os
 import logging
-import threading
 import time
 import re
 from datetime import datetime, timedelta
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 from SimpleHTTPServer import SimpleHTTPRequestHandler
+from operator import itemgetter
+from itertools import groupby
 
 from jinja2 import Environment, FileSystemLoader
 import mistune
@@ -52,16 +53,17 @@ class MySSG(object):
         self.writer = Writer(settings)
         self.time_items = list()
         self.reading_items = list()
+        self.env = None
 
     def run(self):
         start_time = time.time()
-        env = Environment(loader=FileSystemLoader('./templates', ))
+        self.env = Environment(loader=FileSystemLoader('./templates', ))
         template_names = ['note', 'archives', 'blog', 'life',
                           'time', 'tms',
                           'gallery', 'gallery_album',
                           'reading_note', 'reading_archives']
         for name in template_names:
-            template = env.get_template('%s.html' % name)
+            template = self.env.get_template('%s.html' % name)
             self.templates[name] = template
 
         # Init filters
@@ -92,18 +94,23 @@ class MySSG(object):
                 if item.uri.startswith(('reading/notes/')):
                     reading_note_filter(item)
                     self.reading_items.append(item)
+                item.content = item.html_root.prettify()
             else:
                 pass
 
+        # 设置一些全局的模板变量
+        self.set_template_context()
+
+        for item in self.items:
             # Layout
             if item.extension in ['css', 'js', 'json', 'jpg', 'png']:
                 item.output = item.content
             elif item.uri.startswith('notes/'):
-                self.render_item_by_template(item, 'note')
+                self.render_item_by_template(item, 'blog')
             elif item.uri.startswith('blog/'):
                 self.render_item_by_template(item, 'blog')
             elif item.uri.startswith('life/'):
-                self.render_item_by_template(item, 'life')
+                self.render_item_by_template(item, 'blog')
             elif item.uri.startswith('time/'):
                 self.render_item_by_template(item, 'time')
             elif item.uri == 'gallery':
@@ -142,27 +149,39 @@ class MySSG(object):
         end_time = time.time()
         print('Done: use time {:.2f}'.format(end_time - start_time))
 
+    def set_template_context(self):
+        self.env.globals.update(
+            items=self.items,
+            time_items=self.time_items,
+            reading_items=self.reading_items,
+        )
+
     def render_item_by_template(self, item, template_name):
         template = self.templates[template_name]
         item.output = template.render(item=item)
         return
+
+    def generate_archives(self):
+        self.items.sort(key=itemgetter('date'), reverse=True)
+        map(lambda it: it.update(), self.items)
+        items_group_by_year = groupby(self.items, itemgetter('year'))
+        archives_item = Item('archives', 'json')
+        archives_item.output_path = 'archives/index.html'
+        template = self.templates['archives']
+        archives_item.output = template.render(items_group_by_year=items_group_by_year,
+                                               item=archives_item)
+        self.writer.write(archives_item)
+
+        self.generate_reading_archives()
+        # self.generate_time_stats()
 
     def generate_reading_archives(self):
         reading_archives_item = Item('reading_archives', 'json')
         reading_archives_item.output_path = 'reading/archives/index.html'
         template = self.templates['reading_archives']
         reading_archives_item.output = \
-            template.render(reading_items=self.reading_items, item=reading_archives_item)
+            template.render(item=reading_archives_item)
         self.writer.write(reading_archives_item)
-
-    def generate_archives(self):
-        archives_item = Item('archives', 'json')
-        archives_item.output_path = 'archives/index.html'
-        template = self.templates['archives']
-        archives_item.output = template.render(items=self.items, item=archives_item)
-        self.writer.write(archives_item)
-        self.generate_reading_archives()
-        self.generate_time_stats()
 
     def generate_time_stats(self):
         tms_item = Item('tms', 'json')
@@ -170,8 +189,7 @@ class MySSG(object):
         ta = TimeAnalyzer()
         html_roots = [item.html_root for item in self.time_items]
         ta.batch_analyze(html_roots)
-        clock_items = ta.query_clock_items_by_date(date='2016-04-16')
-        print(clock_items)
+        # clock_items = ta.query_clock_items_by_date(date='2016-04-16')
         template = self.templates['tms']
         tms_item.output = template.render(item=tms_item, clock_items=clock_items)
         self.writer.write(tms_item)

@@ -92,8 +92,16 @@ class TimeAnalyzer(object):
         return result
 
     def query_clock_items_by_date(self, date):
-        clock_items = ClockItem.query.filter(db.func.date(ClockItem.date) == date).order_by(ClockItem.start_time).all()
-        print(clock_items)
+        start_date = datetime(year=2015, month=4, day=1).date()
+        end_date = datetime.now().date()
+        cur_date = start_date
+        while cur_date <= end_date:
+            clock_items = ClockItem.query.filter(db.func.date(ClockItem.date) == cur_date).order_by(ClockItem.start_time).all()
+            cur_date += timedelta(days=1)
+            print(cur_date)
+            print(clock_items)
+
+        # print(clock_items)
         return clock_items
 
     @staticmethod

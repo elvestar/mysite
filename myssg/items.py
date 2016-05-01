@@ -16,6 +16,14 @@ class Item(object):
 
         self.description = 'No description'
         self.date = datetime.fromtimestamp(0)
+        self.year = self.date.year
 
     def __str__(self):
         return '%s, %s, %s' % (self.__class__.__name__, self.uri, self.extension)
+
+    def __getitem__(self, item):
+        return getattr(self, item)
+
+    def update(self):
+        self.year = self.date.year
+

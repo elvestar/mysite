@@ -1,19 +1,24 @@
 {% extends "base.html" %}
 
-{% block content %}
-    <div class="container">
-        <div class="row">
-            <div class="col-md-9">
-                <div class="alert alert-success" role="alert">
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                    上次更新于 {{ item.mtime.strftime('%Y-%m-%d %H:%M:%S') }}</div>
+{% block content_main %}
+    <div class="content_container">
+        <div class="post">
+            <h1 class="post-title">
+                {{ item.title }}
+            </h1>
+            <div class="post-meta">
+                {{ item.date.strftime('%Y-%m-%d') }}
+            </div>
+            <div class="post-content">
                 {{ item.content }}
             </div>
-            <div class="col-md-3">
-                {{ item.toc }}
-            </div>
         </div>
+
     </div>
+{% endblock %}
+
+{% block content_sidebar %}
+{#    {{ item.toc if item.toc }}#}
 {% endblock %}
 
 {% block scripts %}

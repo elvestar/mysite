@@ -1,27 +1,68 @@
 {% extends "base.html" %}
 
+{% block styles %}
+{% endblock %}
+
+{% block html_tag %}
+    <html class="evernote">
+{% endblock %}
+
+{% block body_tag %}
+    <body class="evernote">
+{% endblock %}
+
+{% block header %}
+
+{% endblock %}
+
 {% block content %}
-    <div class="container archives">
+    <div class="container">
         <div class="row">
-            <div class="col-md-1"></div>
-            <div class="col-md-10">
-                <div class="page-header">
-                    <h2>读书笔记</h2>
-                </div>
-                <div>
-                    <ul class="archives-item-list">
+
+            <div class="col-md-3 aside">
+                <div class="row">
+                    <div class="col-md-2 aside-1">
+                        <a href="/">
+                            <img src="/avatar.png" class="img-circle avatar">
+                        </a>
+                        <ul class="nav nav-pills nav-stacked">
+
+                            <li><a><i class="fa fa-search"></i></a></li>
+                            <li><a><i class="fa fa-diamond"></i></a></li>
+                            <li><a><i class="fa fa-heart"></i></a></li>
+
+                        </ul>
+                    </div>
+                    <div class="col-md-10 aside-2">
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search for...">
+                            <span class="input-group-btn">
+                            <button class="btn btn-default" type="button">Go!</button>
+                            </span>
+                        </div>
                         {% for it in reading_items %}
-                            <li>
-                                <span class="archives-date">{{ it.date.strftime('%Y-%m-%d') }}</span>
-                                <span class="archives-divider"> » </span>
-                                <a class="archives-title" href="/{{ it.uri }}">{{ it.title }}
-                                </a>
-                            </li>
+                            <div class="media">
+                                <div class="media-left media-middle">
+                                    <a href="#">
+                                        <img class="media-object" src="/avatar.png" alt="图片" style="width: 36px; height: 36px;">
+                                    </a>
+                                </div>
+                                <div class="media-body">
+                                    <h4 class="media-heading">{{ it.title }}</h4>
+                                    {{ it.last_note }}
+                                </div>
+                            </div>
                         {% endfor %}
-                    </ul>
+                    </div>
                 </div>
             </div>
-            <div class="col-md-1"></div>
+
+            <div class="col-md-9 content">
+            </div>
+
         </div>
     </div>
+{% endblock %}
+
+{% block footer %}
 {% endblock %}

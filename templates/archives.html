@@ -1,62 +1,21 @@
 {% extends 'base.html' %}
 
-{% block content %}
-    <div class="container archives">
-        <div class="row">
-            <div class="col-md-9">
-                <div class="page-header">
-                    <h2>Archives</h2>
-                </div>
-                <div>
-                    <ul class="archives-item-list">
-                        {% for it in items %}
-                            {% if it.extension in ['org', 'md'] %}
-                            <li>
-                                <span class="archives-date">{{ it.date.strftime('%Y-%m-%d') }}</span>
-                                <span class="archives-divider"> » </span>
-                                <a class="archives-title" href="/{{ it.uri }}">{{ it.title }}
-                                </a>
-                            </li>
-                            {% endif %}
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-            <div class="col-md 3">
-            </div>
-        </div>
-        <div class="page-header">
-            <h1 class="title">归档 <small>共 {{ items|length }} 篇</small></h1>
-        </div>
-        <div>
-            <table>
-                <thead>
-                <tr>
-                    <th>标题</th>
-                    <th>字节数</th>
-                    <th>标签</th>
-                    <th>标识符</th>
-                    <th>创建日期</th>
-                </tr>
-                </thead>
-                <tbody>
-                {% for it in items %}
-                    {% if it.extension in ['org', 'md', 'html'] %}
-                    <tr>
-                        <td><a href="/{{ it.uri }}">
-                            {{ it.title if it.title else it.uri }}
-                        </a></td>
-                        <td>{{ it.content|length }}</td>
-                        <td>
-                            {{ item.tags }}
-                        </td>
-                        <td>{{ it.uri }}</td>
-                        <td>{{ it.mtime.strftime('%Y-%m-%d') }}</td>
-                    </tr>
+{% block content_main %}
+    <div class="post">
+        <div class="post-archive">
+        {% for year, items_of_year in items_group_by_year %}
+            <h2>{{ year }}</h2>
+            <ul class="listing">
+                {% for it in items_of_year %}
+                    {% if it.extension in ['org', 'md'] %}
+                    <li>
+                        <span class="date">{{ it.date.strftime('%Y/%m/%d') }}</span>
+                        <a href="/{{ it.uri }}" title="{{ it.title }}">{{ it.title if it.title else it.uri }}</a>
+                    </li>
                     {% endif %}
                 {% endfor %}
-                </tbody>
-            </table>
+            </ul>
+        {% endfor %}
         </div>
     </div>
 {% endblock %}

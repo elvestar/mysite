@@ -1,25 +1,47 @@
 <!DOCTYPE html>
-<html>
+{% block html_tag %}
+    <html>
+{% endblock %}
+
 <head>
     <title>{{ item.title if item.title else item.uri }}</title>
     <link rel="stylesheet" href="/static/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="/static/bower_components/font-awesome/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="/static/css/styles.css"/>
-    <link rel="stylesheet" href="/static/css/pygments/default.css"/>
+    {% block styles %}
+        <link rel="stylesheet" href="/static/maupassant/pure-min.css"/>
+        <link rel="stylesheet" href="/static/maupassant/grids-responsive-min.css"/>
+        <link rel="stylesheet" href="/static/maupassant/styles.css"/>
+        <link rel="stylesheet" href="/static/css/pygments/default.css"/>
+    {% endblock %}
 </head>
 
 {% block body_tag %}
-    <body>
+    <body class="body_container">
 {% endblock %}
 
 {% block header %}
-    {% include '_partials/header.html' %}
+{#    {% include '_partials/header.html' %}#}
+    {% include 'maupassant/header.html' %}
 {% endblock %}
 
 {% block content %}
+    <div id="layout" class="pure-g">
+        <div class="pure-u-1 pure-u-md-3-4">
+            {% block content_main %}
+            {% endblock %}
+        </div>
+        <div class="pure-1 pure-1-4">
+            <div id="sidebar">
+                {% block content_sidebar %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block footer %}
-    {% include '_partials/footer.html' %}
+    {% include 'maupassant/footer.html' %}
 {% endblock %}
 
 {% block scripts %}
