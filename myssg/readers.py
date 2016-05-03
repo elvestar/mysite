@@ -49,18 +49,20 @@ class Reader(object):
             dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
             if len(files) > 20:
                 if '/reading' in root:
-                    # files = files[0:12]
+                    files = files[0:3]
                     pass
                 elif '/static' in root:
                     pass
                 else:
-                    files = files[0:3]
+                    files = files[0:20]
             for f in files:
                 if not any(fnmatch.fnmatch(f, ignore) for ignore in self.ignore_files):
                     try:
                         path = os.path.join(root, f)
                         uri, extension = os.path.splitext(path)
                         uri = uri.replace(self.dir, '')
+                        # if uri == 'index':
+                        #     uri = ''
                         extension = extension.strip('.')
                         file_item = {
                             'uri': uri,

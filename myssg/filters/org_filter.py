@@ -11,12 +11,17 @@ from PIL import Image
 def org_filter(item):
     html_root = item.html_root
 
+    h1 = html_root.body.h1
+    if h1 is not None:
+        h1.decompose()
+
     title = html_root.head.title
     if title is not None:
         item.title = title.string
     else:
         item.title = item.uri
 
+    # Set org item meta (such as date, tags)
     for meta in html_root.find_all('meta'):
         meta_name = meta['name']
         meta_content = meta['content']
@@ -27,11 +32,16 @@ def org_filter(item):
         else:
             setattr(item, meta_name, meta_content)
 
-    h1 = html_root.body.h1
-    if h1 is not None:
-        h1.decompose()
+    # Set org item summary
+    first_p = html_root.body.find(['p', 'ul', 'table'])
+    if first_p is None:
+        item.summary = 'No summary'
+    else:
+        item.summary = first_p.text
+
 
     item.html_root = html_root.body
+    item.html_root.name = 'article'
 
 
 def gallery_filter(item):

@@ -15,57 +15,84 @@
 
 {% endblock %}
 
-{% block content %}
+{% block main %}
     <div class="container">
         <div class="row">
 
             <div class="col-md-3 aside">
-                <div class="row">
-                    <div class="col-md-2 aside-1">
-                        <a href="/">
-                            <img src="/avatar.png" class="img-circle avatar">
-                        </a>
-                        <ul class="nav nav-pills nav-stacked">
+                {% block aside %}
 
-                            <li><a><i class="fa fa-search"></i></a></li>
-                            <li><a><i class="fa fa-diamond"></i></a></li>
-                            <li><a><i class="fa fa-heart"></i></a></li>
+                    <div class="row">
+                        <div class="col-md-2 aside-1">
+                            {% block aside1 %}
+                                <a href="/">
+                                    {#                            <img src="/avatar.png" class="">#}
+                                    <p class="img-circle avatar" style="font-size: 24px; font-weight: bold; margin-top: 6px">
+                                        仲
+                                    </p>
+                                </a>
+                                <ul class="nav nav-pills nav-stacked">
 
-                        </ul>
-                    </div>
-                    <div class="col-md-10 aside-2">
-                        <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Search for...">
-                            <span class="input-group-btn">
-                            <button class="btn btn-default" type="button">Go!</button>
-                            </span>
+                                    <li><a><i class="fa fa-search"></i></a></li>
+                                    <li><a><i class="fa fa-diamond"></i></a></li>
+                                    <li {% if item.uri.startswith('reading') %} class="active" {% endif %}><a href="/reading/"><i class="fa fa-bookmark"></i></a></li>
+                                    <li {% if item.uri.startswith('gallery') %} class="active" {% endif %}><a href="/gallery/"><i class="fa fa-photo"></i></a></li>
+                                    <li {% if item.uri.startswith('time') %} class="active" {% endif %}><a href="/time/"><i class="fa fa-bar-chart"></i></a></li>
+                                    <li {% if item.uri.startswith('life') %} class="active" {% endif %}><a href="/life/"><i class="fa fa-github-alt"></i></a></li>
+                                    <li style="position: absolute; bottom: 0; right: 0; left: 0; font-size: 10px"><a><i class="fa fa-battery-half"></i><span>50%</span></a></li>
+
+                                </ul>
+                            {% endblock %}
                         </div>
-                        {% for it in reading_items %}
-                            <div class="media">
-                                <div class="media-body">
-                                    <h4 class="media-heading"><a href="/{{ it.uri }}">{{ it.title }}</a></h4>
-                                    <div class="last-update">
-                                    <span class="last-update-time">{{ it.last_update_time.strftime('%y/%-m/%-d') }}</span>
-                                        {% if it.last_update|length > 35 %}
-                                            {{ it.last_update[0:32] }} ...
-                                        {% else %}
-                                            {{ it.last_update }}
-                                        {% endif %}
+
+                        <div class="col-md-10 aside-2">
+                            {% block aside2 %}
+                                <div class="p-b-xs">
+                                    <div class="input-group">
+                                        <input type="text" class="form-control" placeholder="Search for...">
+                                        <span class="input-group-btn">
+                                            <button class="btn btn-default" type="button">Go</button>
+                                        </span>
                                     </div>
                                 </div>
-                                <div class="media-right media-middle">
-                                    <a href="#">
-                                        <img class="media-object" src="/avatar.png" alt="图片" style="width: 36px; height: 36px;">
-                                    </a>
-                                </div>
-                            </div>
-                        {% endfor %}
+                                {% block aside2_content %}
+                                    {% for it in reading_items %}
+                                        <div class="media">
+                                            <div class="media-left media-top">
+                                                <a href="#">
+                                                    <img class="media-object" src="{{ it.cover_url }}" alt="图片">
+                                                </a>
+                                            </div>
+                                            <div class="media-body">
+                                                <h4 class="media-heading"><a href="/{{ it.uri }}">{{ it.title }}</a></h4>
+                                                <div class="last-update">
+                                                    <span class="last-update-time">
+                                                        <a href="/{{ it.uri }}#last-update">
+                                                            {{ it.last_update_time.strftime('%y/%-m/%-d') }}
+                                                        </a>
+                                                    </span>
+                                                    {% if it.last_update|length > 35 %}
+                                                        {{ it.last_update[0:32] }} ...
+                                                    {% else %}
+                                                        {{ it.last_update }}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                {% endblock %}
+                            {% endblock %}
+                        </div>
                     </div>
-                </div>
+                {% endblock %}
             </div>
 
             <div class="col-md-9 content">
-                {{ item.content }}
+                <div class="container">
+                    {% block content %}
+                        {{ item.content }}
+                    {% endblock %}
+                </div>
             </div>
 
         </div>

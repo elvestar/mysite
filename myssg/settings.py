@@ -8,4 +8,4 @@ class Settings(object):
     SSG_DIR = '/Users/elvestar/github/elvestar/myssg/myssg/'
     TEMPLATES_DIR = '/Users/elvestar/github/elvestar/myssg/templates/'
     IGNORE_DIRS = ['.git', 'log', 'scripts', '.idea']
-    IGNORE_FILES = ['*.scss', '.#*', '.DS_Store']
+    IGNORE_FILES = ['*.scss', '.#*', '.DS_Store', '#*#']

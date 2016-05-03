@@ -14,9 +14,11 @@ class Item(object):
         self.output = None
         self.output_path = None
 
-        self.description = 'No description'
         self.date = datetime.fromtimestamp(0)
         self.year = self.date.year
+        self.title = None
+        self.sub_title = None
+        self.summary = None
         self.last_update = None
         self.last_update_time = None
 

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    {% for it in items %}
+        <p>{{ it.title }} » {{ it.date }}</p>
+        <blockquote>{{ it.summary }}</blockquote>
+    {% endfor %}
+{% endblock %}
+
+{% block aside %}
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <h5 class="m-t-0">Latest Articles</h5>
+            <ul style="list-style: none; padding-left: 0;">
+                {% for it in blog_items %}
+                    <li><a href="/{{ it.uri }}">{{ it.title }}</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <h5 class="m-t-0">Yearly Archives<small> · <a href="">more</a></small></h5>
+            <ul style="list-style: none; padding-left: 0;">
+                {% for year, items_of_year in items_group_by_year %}
+                    <li><a href="/archives/#{{ year }}">{{ year }}({{ items_of_year|length }})</a></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endblock %}

@@ -1,2 +1,24 @@
-{% extends 'blog.html' %}
+{% extends 'evernote.html' %}
 
+{% block aside2_content %}
+    <div class="p-x-xs p-t">
+        <ul class="list-group">
+            <a class="list-group-item {% if item.uri == 'tms' %} active {% endif %}" href="/time/day/">时间分析</a>
+            <a class="list-group-item">按周统计</a>
+            <a class="list-group-item">按年统计</a>
+        </ul>
+
+        <ul class="list-group">
+            {% for it in time_items %}
+                <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="/{{ it.uri }}">
+                    {{ it.title }}
+                </a>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+
+{% block content %}
+    <h1 class="center">{{ item.title }}</h1>
+    {{ item.content }}
+{% endblock %}

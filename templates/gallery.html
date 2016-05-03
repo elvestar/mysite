@@ -1,7 +1,11 @@
 {% extends "base.html" %}
 
 {% block styles %}
-    <link rel="stylesheet" href="/static/css/styles.css"/>
+    {{ super }}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
 {% endblock %}
 
 {% block body_tag %}
@@ -25,7 +29,7 @@
     </header>
 {% endblock %}
 
-{% block content %}
+{% block main %}
     <div class="Container">
 
     <div class="Collections">
@@ -81,12 +85,4 @@
             <li>http://www.weibo.com/elvestare</li>
         </ul>
     </footer>
-{% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script src="/static/bower_components/isotope/isotope.pkgd.min.js"></script>
-    <link rel="stylesheet" href="/static/bower_components/zoom.js/zoom.css"/>
-    <script src="/static/bower_components/zoom.js/zoom.js"></script>
-    <script src="/static/js/imagegrid.js"></script>
 {% endblock %}

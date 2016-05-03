@@ -1,7 +1,18 @@
-{% extends "base.html" %}
+{% extends "evernote.html" %}
+
+{% block aside2_content %}
+    <div class="p-x-xs p-t-xs">
+        <ul class="list-group">
+            {% for it in life_items %}
+                <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="/{{ it.uri }}">
+                    {{ it.title }}
+                </a>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
 
 {% block content %}
-    <div class="container">
+    <h1 class="center">{{ item.title }}</h1>
     {{ item.content }}
-    </div>
 {% endblock %}
