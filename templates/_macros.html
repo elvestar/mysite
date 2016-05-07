@@ -6,11 +6,7 @@
                     <h4 class="list-group-item-heading">
                         {{ event.title }}
                         <small>
-                            {% if event.time %}
-                                {{ event.time.strftime('%Y-%m-%d %M:%M') }}
-                            {% else %}
-                                {{ event.date.strftime('%Y-%m-%d') }}
-                            {% endif %}
+                            {{ item_datetime(event) }}
                         </small>
                     </h4>
                     <p class="list-group-item-text">{{ event.summary }}</p>

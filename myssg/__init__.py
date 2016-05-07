@@ -31,6 +31,7 @@ from myssg.filters.reading_filter import reading_note_filter
 from myssg.pyorg.time_analyzer import TimeAnalyzer
 from myssg.pyorg.pyorg import PyOrg
 from myssg.settings import Settings
+from myssg.utils import Utils
 from myssg.watcher import file_watcher, folder_watcher
 
 import signal
@@ -57,6 +58,8 @@ class MySSG(object):
         self.life_items = list()
         self.photos_items = list()
         self.items_group_by_year = list()
+        self.events = list()
+        self.events_group_by_year = list()
         self.env = None
 
     def run(self):
@@ -117,7 +120,7 @@ class MySSG(object):
 
         compile_end_time = time.time()
 
-        # 设置一些全局的模板变量
+        # Set some global template variables
         self.set_template_context()
 
         for item in self.items:
@@ -179,6 +182,19 @@ class MySSG(object):
         self.items.sort(key=itemgetter('date'), reverse=True)
         for year, item_of_year in groupby(self.items, itemgetter('year')):
             self.items_group_by_year.append((year, list(item_of_year)))
+
+        # Events
+        for item in self.items:
+            if item.extension not in ['org', 'md']:
+                continue
+            self.events.append(item)
+            if item.events is not None:
+                self.events.extend(item.events)
+        map(lambda it: it.update(), self.events)
+        self.events.sort(key=itemgetter('date'), reverse=True)
+        for year, event_of_year in groupby(self.events, itemgetter('year')):
+            self.events_group_by_year.append((year, list(event_of_year)))
+
         self.reading_items.sort(key=itemgetter('last_update_time'), reverse=True)
         self.blog_items.sort(key=itemgetter('date'), reverse=True)
         self.life_items.sort(key=itemgetter('date'), reverse=True)
@@ -190,7 +206,21 @@ class MySSG(object):
             blog_items=self.blog_items,
             life_items=self.life_items,
             photos_items=self.photos_items,
+
+            events=self.events,
+            events_group_by_year=self.events_group_by_year,
+
+            item_url=Utils.item_url,
+            item_date=Utils.item_date,
+            item_date_slash=Utils.item_date_slash,
+            item_date_short=Utils.item_date_short,
+            item_datetime=Utils.item_datetime,
+            to_date=Utils.to_date,
+            to_date_slash=Utils.to_date_slash,
+            to_date_short=Utils.to_date_short,
+            to_datetime=Utils.to_datetime,
         )
+        # self.env.filters['item_date'] = U
 
     def render_item_by_template(self, item, template_name):
         template = self.templates[template_name]

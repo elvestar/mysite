@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 
 {% block content %}
-    {% for it in items %}
-        <p>{{ it.title }} » {{ it.date }}</p>
-        <blockquote>{{ it.summary }}</blockquote>
+    {% for event in events %}
+        <p><a href="{{ item_url(event) }}">{{ event.title }}</a> » {{ item_datetime(event) }}</p>
+        <blockquote>{{ event.summary }}</blockquote>
     {% endfor %}
 {% endblock %}
 
@@ -14,7 +14,7 @@
             <h5 class="m-t-0">Latest Articles</h5>
             <ul style="list-style: none; padding-left: 0;">
                 {% for it in blog_items %}
-                    <li><a href="/{{ it.uri }}">{{ it.title }}</a></li>
+                    <li><a href="{{ item_url(it) }}">{{ it.title }}</a></li>
                 {% endfor %}
             </ul>
         </div>

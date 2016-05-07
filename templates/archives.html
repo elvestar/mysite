@@ -7,7 +7,7 @@
             {% for it in items_of_year %}
                 {% if it.extension in ['org', 'md'] %}
                     <li>
-                        <span class="date">{{ it.date.strftime('%Y/%m/%d') }}</span>
+                        <span class="date">{{ item_date_slash(it) }}</span>
                         <a href="/{{ it.uri }}" title="{{ it.title }}">{{ it.title if it.title else it.uri }}</a>
                     </li>
                 {% endif %}

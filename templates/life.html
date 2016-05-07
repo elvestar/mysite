@@ -4,7 +4,7 @@
     <div class="p-x-xs p-t-xs">
         <ul class="list-group">
             {% for it in life_items %}
-                <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="/{{ it.uri }}">
+                <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="{{ item_url(it) }}">
                     {{ it.title }}
                 </a>
             {% endfor %}

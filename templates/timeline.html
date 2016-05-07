@@ -4,23 +4,30 @@
     <div class="container">
         <div class="row">
             <div class="col-md-9 timeline">
-                {% for year, items_of_year in items_group_by_year %}
+                {% for year, events_of_year in events_group_by_year %}
                     <div>
-                        <h2>{{ year }} 年 <small>共 {{ items_of_year|length }} 篇</small></h2>
+                        <h2>{{ year }} 年 <small>共 {{ events_of_year|length }} 篇</small></h2>
                         <ul>
-                            {% for it in items_of_year %}
-                                {% if it.extension in ['org', 'md'] %}
+                            {% for event in events_of_year %}
                                     <li class="text">
-                                        <a href="/{{ it.uri }}" target="_blank">
-                                            <h3>{{ it.title }}</h3>
-                                            <p>{{ it.summary }}</p>
+                                        <a href="/{{ event.uri }}" target="_blank">
+                                            <h3>{{ event.title }}</h3>
+                                            <p>{{ event.summary }}</p>
                             <span class="info">
-                                <em>{{ it.date.strftime('%-m月%-d日') }}</em>
-{#                                <small></small>#}
+                                <em>{{ event.date.strftime('%-m月%-d日') }}</em>
+                                    <small>
+                                        {% if event.is_event %}
+                                            {% if event.time %}
+                                                {{ event.time.strftime('%H时%M分') }}
+                                            {% endif %}
+                                            更新
+                                        {% else %}
+                                            新增
+                                        {% endif %}
+                                    </small>
                             </span>
                                         </a>
                                     </li>
-                                {% endif %}
                             {% endfor %}
 
                         </ul>

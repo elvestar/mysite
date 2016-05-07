@@ -51,8 +51,6 @@ class Reader(object):
                 if '/reading' in root:
                     files = files[0:3]
                     pass
-                elif '/static' in root:
-                    pass
                 else:
                     files = files[0:20]
             for f in files:

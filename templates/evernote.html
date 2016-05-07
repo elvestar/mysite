@@ -64,11 +64,10 @@
                                                 </a>
                                             </div>
                                             <div class="media-body">
-                                                <h4 class="media-heading"><a href="/{{ it.uri }}">{{ it.title }}</a></h4>
+                                                <h4 class="media-heading"><a href="{{ item_url(it) }}">{{ it.title }}</a></h4>
                                                 <div class="last-update">
                                                     <span class="last-update-time">
-                                                        <a href="/{{ it.uri }}#last-update">
-                                                            {{ it.last_update_time.strftime('%y/%-m/%-d') }}
+                                                        <a href="{{ item_url(it) }}#last-update">
                                                         </a>
                                                     </span>
                                                     {% if it.last_update|length > 35 %}

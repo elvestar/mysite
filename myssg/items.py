@@ -22,6 +22,7 @@ class Item(object):
         self.summary = None
         self.last_update = None
         self.last_update_time = None
+        self.is_event = False
         self.events = list()
 
     def __str__(self):

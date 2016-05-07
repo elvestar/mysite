@@ -100,17 +100,17 @@ def extract_events(item):
     event_tags = html_root.find_all(event_tag_names, text=re.compile(r'<\d{4}-\d{2}-\d{2}.*>'))
     for event_tag in event_tags:
         event_time = None
-        m = re.match(r'(.*?)\s*<(\d{4}-\d{2}-\d{2}).*(\d{2}:\d{2})?>', event_tag.string)
-        if m.group(3) is not None:
-            time_str = m.group(2) + ' ' + m.group(3)
-            event_time = datetime.strptime(time_str, '%Y-%m-%d %M:%S')
-            event_date = datetime.strptime(time_str, '%Y-%m-%d')
-            event_anchor = event_time.strftime('%Y%m%d%M%S')
-        else:
+        m = re.match(r'(.*?)\s*<(\d{4}-\d{2}-\d{2}).*(\d{2}:\d{2})>', event_tag.string)
+        if m is None:
+            m = re.match(r'(.*?)\s*<(\d{4}-\d{2}-\d{2}).*>', event_tag.string)
             time_str = m.group(2)
             event_date = datetime.strptime(time_str, '%Y-%m-%d')
             event_anchor = event_date.strftime('%Y%m%d')
-
+        else:
+            time_str = m.group(2) + ' ' + m.group(3)
+            event_time = datetime.strptime(time_str, '%Y-%m-%d %H:%M')
+            event_date = event_time
+            event_anchor = event_time.strftime('%Y%m%d%M%S')
         event_tag['id'] = event_anchor
 
         event_title = m.group(1)
@@ -129,6 +129,7 @@ def extract_events(item):
         if event_time is not None:
             event.time = event_time
         event.title = event_title
+        event.is_event = True
         first_p = event_tag.next_sibling
         if first_p is None:
             event.summary = 'No summary'
