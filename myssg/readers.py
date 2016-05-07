@@ -61,8 +61,6 @@ class Reader(object):
                         path = os.path.join(root, f)
                         uri, extension = os.path.splitext(path)
                         uri = uri.replace(self.dir, '')
-                        # if uri == 'index':
-                        #     uri = ''
                         extension = extension.strip('.')
                         file_item = {
                             'uri': uri,

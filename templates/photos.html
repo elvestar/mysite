@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1 class="center">{{ item.title }}</h1>
+    {{ item.content }}
+{% endblock %}
+
+{% block aside %}
+    <div class="m-t-lg">
+        <ul class="list-group">
+            {% for it in photos_items %}
+                <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="/{{ it.uri }}">
+                    {{ it.title }}
+                </a>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(document).ready(function() {
+            $('.grid').imageGrid();
+        });
+    </script>
+{% endblock %}

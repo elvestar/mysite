@@ -15,12 +15,14 @@ class Item(object):
         self.output_path = None
 
         self.date = datetime.fromtimestamp(0)
+        self.time = None
         self.year = self.date.year
         self.title = None
         self.sub_title = None
         self.summary = None
         self.last_update = None
         self.last_update_time = None
+        self.events = list()
 
     def __str__(self):
         return '%s, %s, %s' % (self.__class__.__name__, self.uri, self.extension)

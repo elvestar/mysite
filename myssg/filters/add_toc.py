@@ -14,8 +14,13 @@ def add_toc(item):
     toc = soup.new_tag('div', id='toc')
     cur_node = toc
 
+    # if item.uri == 'notes/chromium-base-library':
+    #     for child in html_root.children:
+    #         print(child)
     last_level = 0
     for i, heading in enumerate(headings):
+        # if item.uri == 'notes/chromium-base-library':
+        #     print(heading)
         level = int(heading.name[1:])
         logging.debug('item[%s], cur_level[%d], last_level[%d]'
                       % (item.uri, level, last_level))

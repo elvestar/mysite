@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 
+{% import '_macros.html' as macros %}
+
 {% block html_tag %}
     <html>
 {% endblock %}
 
 <head>
-    <title>{{ item.title if item.title else item.uri }}</title>
+    <title>{{ item.title if item.title else item.uri }} - 仲之地</title>
     <link rel="stylesheet" href="/static/node_modules/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/static/node_modules/font-awesome/css/font-awesome.min.css"/>
-    <link rel="stylesheet" href="/static/node_modules/pygments-css/default.css"/>
     <link rel="stylesheet" href="/static/node_modules/zoom.js/css/zoom.css"/>
+    <link rel="stylesheet" href="/static/node_modules/highlight.js/styles/tomorrow.css"/>
     <link rel="stylesheet" href="/static/css/styles.css"/>
     {% block styles %}
     {% endblock %}
@@ -47,7 +49,18 @@
     <script src="/static/node_modules/jquery/dist/jquery.min.js"></script>
     <script src="/static/node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
     <script src="/static/node_modules/zoom.js/dist/zoom.min.js"></script>
+
+    <script src="/static/js/highlight.min.js"></script>
     <script src="/static/js/imagegrid.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            $('pre code').each(function(i, block) {
+                hljs.highlightBlock(block);
+            });
+        });
+{#        hljs.initHighlightingOnLoad();#}
+    </script>
 {% endblock %}
 
 </body>

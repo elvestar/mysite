@@ -26,7 +26,7 @@ from myssg.readers import Reader
 from myssg.writers import Writer
 from myssg.items import Item
 from myssg.filters.add_toc import add_toc
-from myssg.filters.org_filter import org_filter, gallery_album_filter, gallery_filter
+from myssg.filters.org_filter import org_filter, photos_filter, gallery_filter
 from myssg.filters.reading_filter import reading_note_filter
 from myssg.pyorg.time_analyzer import TimeAnalyzer
 from myssg.pyorg.pyorg import PyOrg
@@ -55,6 +55,7 @@ class MySSG(object):
         self.blog_items = list()
         self.reading_items = list()
         self.life_items = list()
+        self.photos_items = list()
         self.items_group_by_year = list()
         self.env = None
 
@@ -64,7 +65,7 @@ class MySSG(object):
         template_names = ['note', 'blog', 'life',
                           'index', 'archives', 'timeline',
                           'time', 'tms', 'time_day', 'time_week',
-                          'gallery', 'gallery_album',
+                          'gallery', 'photos',
                           'reading', 'reading_note', 'reading_archives', 'evernote']
         for name in template_names:
             template = self.env.get_template('%s.html' % name)
@@ -91,8 +92,8 @@ class MySSG(object):
                     add_toc(item)
                 elif item.uri == 'gallery':
                     gallery_filter(item)
-                elif item.uri.startswith('gallery/'):
-                    gallery_album_filter(item)
+                elif item.uri.startswith('photos/'):
+                    photos_filter(item)
                 item.content = item.html_root.prettify()
             elif item.extension == 'html':
                 item.html_root = BeautifulSoup(item.content)
@@ -111,6 +112,8 @@ class MySSG(object):
                     self.time_items.append(item)
                 elif item.uri.startswith('life/'):
                     self.life_items.append(item)
+                elif item.uri.startswith('photos/'):
+                    self.photos_items.append(item)
 
         compile_end_time = time.time()
 
@@ -121,7 +124,7 @@ class MySSG(object):
             # Layout
             if item.extension in ['css', 'js', 'json', 'jpg', 'png']:
                 item.output = item.content
-            elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives']:
+            elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives', 'photos']:
                 self.render_item_by_template(item, item.uri)
             elif item.uri.startswith('notes'):
                 self.render_item_by_template(item, 'note')
@@ -131,6 +134,8 @@ class MySSG(object):
                 self.render_item_by_template(item, 'life')
             elif item.uri.startswith('time'):
                 self.render_item_by_template(item, 'time')
+            elif item.uri.startswith('photos'):
+                self.render_item_by_template(item, 'photos')
             elif item.uri.startswith('gallery/'):
                 self.render_item_by_template(item, 'gallery_album')
             elif item.uri.startswith('reading/notes/'):
@@ -184,6 +189,7 @@ class MySSG(object):
             reading_items=self.reading_items,
             blog_items=self.blog_items,
             life_items=self.life_items,
+            photos_items=self.photos_items,
         )
 
     def render_item_by_template(self, item, template_name):
@@ -199,7 +205,7 @@ class MySSG(object):
         # self.writer.write(archives_item)
 
         self.generate_reading_archives()
-        self.generate_time_stats()
+        # self.generate_time_stats()
 
     def generate_reading_archives(self):
         reading_archives_item = Item('reading_archives', 'json')
@@ -210,7 +216,8 @@ class MySSG(object):
         self.writer.write(reading_archives_item)
 
     def generate_time_stats(self):
-        tms_item = Item('tms', 'json')
+        tms_item = Item('time/tms', 'json')
+        tms_item.title = '时间分析'
         tms_item.output_path = 'time/day/index.html'
         ta = TimeAnalyzer()
         html_roots = [item.html_root for item in self.time_items]

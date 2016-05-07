@@ -6,9 +6,6 @@ import sys
 import re
 
 from bs4 import BeautifulSoup
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters import get_formatter_by_name
 import pangu
 
 
@@ -100,6 +97,11 @@ class Rules(object):
 
 
 class OrgParser(object):
+    # block_rule_keys = [
+    #     'newline', 'heading', 'list_block', 'table',
+    #     'source', 'begin_xxx', 'clock_block',
+    #     'paragraph', 'text'
+    # ]
     block_rule_keys = [
         'newline', 'heading', 'list_block', 'table',
         'source', 'begin_xxx', 'clock_block',
@@ -292,17 +294,13 @@ class OrgParser(object):
         root.append(new_tag)
 
     def parse_source(self, m, root):
-        lang = m.group(1)
-        formatter = get_formatter_by_name('html', cssclass='codehilite')
-        try:
-            lexer = get_lexer_by_name(lang)
-        except ValueError:
-            lexer = get_lexer_by_name('text')
-        result = highlight(m.group(2), lexer, formatter)
-
-        new_tag = self.soup.new_tag('div')
-        new_tag['class'] = 'src src-%s' % lang
-        new_tag.append(BeautifulSoup(result, 'html.parser'))
+        code_tag = self.soup.new_tag('code')
+        code_tag.string = m.group(2)
+        code_tag['class'] = m.group(1)
+        new_tag = self.soup.new_tag('pre')
+        # new_tag['class'] = 'src src-%s' % lang
+        new_tag.append(code_tag)
+        # new_tag.append(BeautifulSoup(result, 'html.parser'))
         root.append(new_tag)
 
     def parse_begin_xxx(self, m, root):

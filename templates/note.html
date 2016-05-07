@@ -22,6 +22,8 @@
         <div class="container">
             <div class="row ">
                 <div class="col-md-9 note-content-wrap">
+                    {{ macros.render_item_events(item) }}
+
                     {{ item.content }}
                 </div>
                 <div class="col-md-3 sidebar-toc">
