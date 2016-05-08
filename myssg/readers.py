@@ -27,6 +27,8 @@ class Reader(object):
     def read(self):
         items = list()
         for file_item in self.get_file_items():
+            # if file_item['uri'] not in ['time/time', 'time/analyzer']:
+            #     continue
             content = file(file_item['path']).read()
             item = Item(uri=file_item['uri'],
                         extension=file_item['extension'],
@@ -47,12 +49,9 @@ class Reader(object):
     def get_file_items(self):
         for root, dirs, files in os.walk(self.dir, followlinks=True):
             dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
-            if len(files) > 20:
-                if '/reading' in root:
-                    files = files[0:3]
-                    pass
-                else:
-                    files = files[0:20]
+            # limit = 10
+            # if len(files) > limit:
+            #     files = files[0:limit]
             for f in files:
                 if not any(fnmatch.fnmatch(f, ignore) for ignore in self.ignore_files):
                     try:

@@ -67,7 +67,7 @@ class MySSG(object):
         self.env = Environment(loader=FileSystemLoader('./templates', ))
         template_names = ['note', 'blog', 'life',
                           'index', 'archives', 'timeline',
-                          'time', 'tms', 'time_day', 'time_week',
+                          'time', 'tms', 'time_analyzer', 'time_year', 'time_month',
                           'gallery', 'photos',
                           'reading', 'reading_note', 'reading_archives', 'evernote']
         for name in template_names:
@@ -125,10 +125,11 @@ class MySSG(object):
 
         for item in self.items:
             # Layout
-            if item.extension in ['css', 'js', 'json', 'jpg', 'png']:
+            if item.extension in ['css', 'js', 'json', 'jpg', 'png', 'gif']:
                 item.output = item.content
-            elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives', 'photos']:
-                self.render_item_by_template(item, item.uri)
+            elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives', 'photos',
+                              'time/analyzer', 'time/year', 'time/month']:
+                self.render_item_by_template(item, item.uri.replace('/', '_'))
             elif item.uri.startswith('notes'):
                 self.render_item_by_template(item, 'note')
             elif item.uri.startswith('blog'):
@@ -149,7 +150,7 @@ class MySSG(object):
             # Router
             if item.extension in ['css', 'js', 'map']:
                 item.output_path = item.uri + '.' + item.extension
-            elif item.extension in ['png', 'jpg']:
+            elif item.extension in ['png', 'jpg', 'gif']:
                 m = re.match(r'(.+)/(imgs/(.+)_\d+)', item.uri)
                 if m is None:
                     item.output_path = item.uri + '.' + item.extension
@@ -169,7 +170,7 @@ class MySSG(object):
 
         layout_end_time = time.time()
 
-        self.generate_archives()
+        # self.generate_archives()
         archive_end_time = time.time()
 
         end_time = time.time()
@@ -228,14 +229,8 @@ class MySSG(object):
         return
 
     def generate_archives(self):
-        # archives_item = Item('archives', 'json')
-        # archives_item.output_path = 'archives/index.html'
-        # template = self.templates['archives']
-        # archives_item.output = template.render(item=archives_item)
-        # self.writer.write(archives_item)
-
-        self.generate_reading_archives()
-        # self.generate_time_stats()
+        # self.generate_reading_archives()
+        self.generate_time_stats()
 
     def generate_reading_archives(self):
         reading_archives_item = Item('reading_archives', 'json')
@@ -246,16 +241,17 @@ class MySSG(object):
         self.writer.write(reading_archives_item)
 
     def generate_time_stats(self):
-        tms_item = Item('time/tms', 'json')
-        tms_item.title = '时间分析'
-        tms_item.output_path = 'time/day/index.html'
-        ta = TimeAnalyzer()
+        start_time = time.time()
+        ta = TimeAnalyzer(self.settings)
         html_roots = [item.html_root for item in self.time_items]
-        # ta.batch_analyze(html_roots)
+        ta.batch_analyze(html_roots)
+        etl_end_time = time.time()
+        ta.dump_all()
+        dump_end_time = time.time()
         # clock_items = ta.query_clock_items_by_date(date='2016-04-16')
-        template = self.templates['time_day']
-        tms_item.output = template.render(item=tms_item)
-        self.writer.write(tms_item)
+        end_time = time.time()
+        print('Done[{:d} time items]: use time {:.2f}, etl time {:.2f}, dump time {:.2f}'
+              .format(len(self.time_items), end_time - start_time, etl_end_time - start_time, dump_end_time - etl_end_time))
 
     def watch_items(self):
         uri_set = set()

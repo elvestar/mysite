@@ -23,7 +23,7 @@ class Item(object):
         self.last_update = None
         self.last_update_time = None
         self.is_event = False
-        self.events = list()
+        self.events = list()  # Events belong to item
 
     def __str__(self):
         return '%s, %s, %s' % (self.__class__.__name__, self.uri, self.extension)

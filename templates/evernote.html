@@ -17,12 +17,12 @@
 
 {% block main %}
     <div class="container">
-        <div class="row">
+        <div class="row row-evernote">
 
             <div class="col-md-3 aside">
                 {% block aside %}
 
-                    <div class="row">
+                    <div class="row row-evernote">
                         <div class="col-md-2 aside-1">
                             {% block aside1 %}
                                 <a href="/">
@@ -68,6 +68,7 @@
                                                 <div class="last-update">
                                                     <span class="last-update-time">
                                                         <a href="{{ item_url(it) }}#last-update">
+                                                            {{ to_date_short(it.last_update_time) }}
                                                         </a>
                                                     </span>
                                                     {% if it.last_update|length > 35 %}

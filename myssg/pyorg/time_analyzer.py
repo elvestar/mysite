@@ -1,12 +1,19 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
+import os
+import json
 import re
 from datetime import datetime, timedelta
+from operator import itemgetter
+from itertools import groupby
 
 # TODO Use flask sqlalchemy temporarily
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+
+from myssg.utils import Utils
+
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://tms:tms@localhost:3306/tms?charset=utf8'
@@ -19,7 +26,7 @@ class ClockItem(db.Model):
     start_time = db.Column(db.DateTime, nullable=False)
     end_time = db.Column(db.DateTime, nullable=False)
     start_hour = db.Column(db.Integer, nullable=False)
-    date = db.Column(db.DateTime, nullable=False)
+    date = db.Column(db.DateTime, nullable=False, index=True)
     year = db.Column(db.Integer, nullable=False)
     month = db.Column(db.Integer, nullable=False)
     iso_year = db.Column(db.Integer, nullable=False)
@@ -35,12 +42,15 @@ class ClockItem(db.Model):
     def __repr__(self):
         return '%s-%s-%s' % (self.start_time, self.end_time, self.thing)
 
+    def __getitem__(self, item):
+        return getattr(self, item)
+
 db.create_all()
 
 
 class TimeAnalyzer(object):
-    def __init__(self):
-        pass
+    def __init__(self, settings):
+        self.settings = settings
 
     def batch_analyze(self, html_roots):
         result = None
@@ -91,19 +101,6 @@ class TimeAnalyzer(object):
 
         return result
 
-    def query_clock_items_by_date(self, date):
-        start_date = datetime(year=2015, month=4, day=1).date()
-        end_date = datetime.now().date()
-        cur_date = start_date
-        while cur_date <= end_date:
-            clock_items = ClockItem.query.filter(db.func.date(ClockItem.date) == cur_date).order_by(ClockItem.start_time).all()
-            cur_date += timedelta(days=1)
-            print(cur_date)
-            print(clock_items)
-
-        # print(clock_items)
-        return clock_items
-
     @staticmethod
     def get_thing_hierarchy(node):
         category = None
@@ -129,4 +126,40 @@ class TimeAnalyzer(object):
                 thing = category
         return category, project, thing, level
 
+    def dump_all(self):
+        self.dump_clock_items_by_date()
 
+    def dump_clock_items_by_date(self):
+        start_date = datetime(year=2015, month=4, day=1).date()
+        end_date = datetime.now().date()
+        cur_date = start_date
+        clock_items = ClockItem.query.order_by(ClockItem.start_time).all()
+        print(len(clock_items))
+        for ci_year, cis_of_year in groupby(clock_items, itemgetter('year')):
+            cis_of_year_dict = dict()
+            for ci_date, cis_of_date in groupby(clock_items, itemgetter('date')):
+                cis = list()
+                for ci in cis_of_date:
+                    cis.append((Utils.to_datetime(ci.start_time),
+                                Utils.to_datetime(ci.end_time),
+                                ci.time_cost,
+                                ci.category, ci.project, ci.thing))
+                ci_date_str = ci_date.strftime('%Y-%m-%d')
+                cis_of_year_dict[ci_date_str] = cis
+
+            file_path = os.path.join(self.settings.OUTPUT_DIR, 'time/data/cis_%s.json' % ci_year)
+            try:
+                os.makedirs(os.path.dirname(file_path))
+            except Exception:
+                pass
+
+            f = file(file_path, 'w')
+            f.write(json.dumps(cis_of_year_dict))
+            f.close()
+                # print(ci_date)
+        # for clock_item in clock_items:
+        #     print(clock_item)
+        # while cur_date <= end_date:
+        #     clock_items = ClockItem.query.filter(db.func.date(ClockItem.date) == cur_date).order_by(ClockItem.start_time).all()
+        #
+        #     cur_date += timedelta(days=1)

@@ -5,7 +5,7 @@ from __future__ import print_function, unicode_literals
 class Utils(object):
     @staticmethod
     def item_url(item):
-        return '/' + item.uri + '/'
+        return '/' + item.uri
 
     @staticmethod
     def to_date(dt):

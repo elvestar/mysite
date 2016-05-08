@@ -16,9 +16,5 @@
     <h1 class="center">{{ item.title }}</h1>
     {{ item.content }}
 
-    <div class="row">
-        <div class="col-md-6">
-            {{ macros.render_item_events(item) }}
-        </div>
-    </div>
+    {{ macros.render_item_events(item) }}
 {% endblock %}

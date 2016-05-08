@@ -365,7 +365,7 @@ class OrgParser(object):
 
     def parse_link(self, m, root):
         link = m.group(1)
-        if link.endswith(('jpg', 'png')):
+        if link.endswith(('jpg', 'png', 'gif')):
             new_tag = self.soup.new_tag('img')
             new_tag['src'] = link
             new_tag['alt'] = link

@@ -3,12 +3,6 @@
 {% block aside2_content %}
     <div class="p-x-xs p-t">
         <ul class="list-group">
-            <a class="list-group-item {% if item.uri == 'time/tms' %} active {% endif %}" href="/time/day/">时间分析</a>
-            <a class="list-group-item">按周统计</a>
-            <a class="list-group-item">按年统计</a>
-        </ul>
-
-        <ul class="list-group">
             {% for it in time_items %}
                 <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="{{ item_url(it) }}">
                     {{ it.title }}

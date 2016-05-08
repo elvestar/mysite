@@ -10,6 +10,7 @@ from PIL import Image
 
 from myssg.items import Item
 
+
 def org_filter(item):
     html_root = item.html_root
 
@@ -22,6 +23,10 @@ def org_filter(item):
         item.title = title.string
     else:
         item.title = item.uri
+
+    # Image zoom
+    for img in html_root.find_all('img'):
+        img['data-action'] = 'zoom'
 
     # Set org item meta (such as date, tags)
     for meta in html_root.find_all('meta'):
@@ -57,13 +62,8 @@ def photos_filter(item):
     soup = BeautifulSoup()
     html_root = item.html_root
     images = soup.new_tag('div')
-    images['class'] = 'Images grid'
+    images['class'] = 'grid'
     for img in html_root.find_all('img'):
-        image = soup.new_tag('div')
-        image['class'] = 'Image'
-        image_overlay = soup.new_tag('div')
-        image_overlay['class'] = 'Image-overlay'
-        image.append(image_overlay)
         img['data-action'] = 'zoom'
         # set image size
         img_path = '/Users/elvestar/github/elvestar/contents/photos/' + img['src']
@@ -80,14 +80,14 @@ def photos_filter(item):
         #     pass
         img['data-width'] = width / 2
         img['data-height'] = height / 2
+        image = soup.new_tag('div')
         image.append(img)
         images.append(image)
     container = soup.new_tag('div')
-    container['class'] = 'Container'
+    container['class'] = 'grid-wrapper'
     container.append(images)
     html_root.clear()
     html_root.append(container)
-    # print(html_root)
     item.html_root = html_root
 
 
