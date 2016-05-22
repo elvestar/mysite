@@ -127,7 +127,8 @@ class TimeAnalyzer(object):
         return category, project, thing, level
 
     def dump_all(self):
-        self.dump_clock_items_by_date()
+        # self.dump_clock_items_by_date()
+        self.dump_week_data()
 
     def dump_clock_items_by_date(self):
         start_date = datetime(year=2015, month=4, day=1).date()
@@ -148,18 +149,75 @@ class TimeAnalyzer(object):
                 cis_of_year_dict[ci_date_str] = cis
 
             file_path = os.path.join(self.settings.OUTPUT_DIR, 'time/data/cis_%s.json' % ci_year)
-            try:
-                os.makedirs(os.path.dirname(file_path))
-            except Exception:
-                pass
 
             f = file(file_path, 'w')
             f.write(json.dumps(cis_of_year_dict))
             f.close()
-                # print(ci_date)
-        # for clock_item in clock_items:
-        #     print(clock_item)
-        # while cur_date <= end_date:
-        #     clock_items = ClockItem.query.filter(db.func.date(ClockItem.date) == cur_date).order_by(ClockItem.start_time).all()
-        #
-        #     cur_date += timedelta(days=1)
+
+    def dump_week_data(self):
+        iso_year = 2016
+        start_week = 1
+        end_week = 21
+        for week in range(start_week, end_week + 1):
+            week_data_group_by_category = ClockItem.query. \
+                with_entities(ClockItem.category,
+                              db.func.count(), db.func.sum(ClockItem.time_cost)). \
+                filter_by(iso_year=iso_year, week=week). \
+                group_by(ClockItem.category).order_by(db.desc(db.func.sum(ClockItem.time_cost))).all()
+            week_data_group_by_project = ClockItem.query. \
+                with_entities(ClockItem.category, ClockItem.project,
+                              db.func.count(), db.func.sum(ClockItem.time_cost)). \
+                filter_by(iso_year=iso_year, week=week). \
+                group_by(ClockItem.project).order_by(db.desc(db.func.sum(ClockItem.time_cost))).all()
+
+            categories = ['工作', '学习', '生活', '未归类']
+            legend_data = list(t[0] for t in week_data_group_by_category)
+            legend_data.sort(key=lambda x: categories.index(x))
+            week_data_group_by_category.sort(key=lambda x: categories.index(x[0]))
+            week_data_group_by_project.sort(key=lambda x: legend_data.index(x[0]))
+            inner_data = list({'name': t[0], 'value': t[2]} for t in week_data_group_by_category)
+            outer_data = list({'name': t[1], 'value': t[3]} for t in week_data_group_by_project)
+            option = {
+                'tooltip': {
+                    'trigger': 'item',
+                    'formatter': "{a} <br/>{b}: {c} min ({d}%)"
+                },
+                'legend': {
+                    'orient': 'vertical',
+                    'x': 'left',
+                    'data': legend_data
+                },
+                'series': [
+                    {
+                        'name': '类别耗时',
+                        'type': 'pie',
+                        'radius': [0, '30%'],
+
+                        'label': {
+                            'normal': {
+                                'position': 'inner'
+                            }
+                        },
+                        'labelLine': {
+                            'normal': {
+                                'show': False
+                            }
+                        },
+                        'data': inner_data
+                    },
+                    {
+                        'name': '项目耗时',
+                        'type': 'pie',
+                        'selectedMode': 'single',
+                        'radius': ['35%', '55%'],
+
+                        'data':outer_data
+                    }
+                ]
+            }
+            file_path = os.path.join(self.settings.OUTPUT_DIR,
+                                     'time/data/%dW%d.json' % (iso_year, week))
+            f = file(file_path, 'w')
+            f.write(json.dumps(option))
+            f.close()
+

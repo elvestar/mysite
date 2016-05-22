@@ -97,6 +97,7 @@ event_tag_names = ['h2', 'h2', 'h3', 'h4', 'h5', 'h6']
 def extract_events(item):
     soup = BeautifulSoup()
     html_root = item.html_root
+    print(html_root)
     event_tags = html_root.find_all(event_tag_names, text=re.compile(r'<\d{4}-\d{2}-\d{2}.*>'))
     for event_tag in event_tags:
         event_time = None
@@ -110,7 +111,7 @@ def extract_events(item):
             time_str = m.group(2) + ' ' + m.group(3)
             event_time = datetime.strptime(time_str, '%Y-%m-%d %H:%M')
             event_date = event_time
-            event_anchor = event_time.strftime('%Y%m%d%M%S')
+            event_anchor = event_time.strftime('%Y%m%d-%H%M')
         event_tag['id'] = event_anchor
 
         event_title = m.group(1)

@@ -1,25 +1,3 @@
-{#<!-- index.html -->#}
-{#<!DOCTYPE html>#}
-{#<html>#}
-{#  <head>#}
-{#    <meta charset="utf-8" />#}
-{#    <title>React Tutorial</title>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.2/react.js"></script>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/15.0.2/react-dom.js"></script>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>#}
-{#    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.3.5/marked.min.js"></script>#}
-{#  </head>#}
-{#  <body>#}
-{#    <div id="content"></div>#}
-{#    <script type="text/babel" src="/static/js/tms_react.js"></script>#}
-{#    <script type="text/babel">#}
-{#      // To get started with this tutorial running your own code, simply remove#}
-{#      // the script tag loading scripts/example.js and start writing code here.#}
-{#    </script>#}
-{#  </body>#}
-{#</html>#}
-
 {% extends 'time.html' %}
 
 
@@ -37,17 +15,66 @@
                     </div>
                 </div>
             </fieldset>
-            <fieldset class="m-y-xs">
-                <div class="control-group">
-                    <div class="controls">
-                        <div class="input-prepend input-group">
-                            <span class="add-on input-group-addon"><i class="fa fa-calendar"></i></span>
-                            <input type="text" style="width: 200px" class="form-control" value="2016-05-04"/>
-                        </div>
-                    </div>
-                </div>
-            </fieldset>
         </form>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">按周统计
+                        <small>
+                            {% for week in range(1, 20) %}
+                            <a href="#" onclick="renderPieNestGraph({{ week }})">{{ week }}</a>
+                            {% endfor %}
+                            2016年
+                        </small>
+                    </h3>
+                </div>
+                <div class="panel-body">
+                    <div id="pieNestGraph" style="width: 100%;height:600px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">2016 年各月用时统计</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="yearStatsByMonth" style="width: 100%;height:400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">堆叠区域图</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="areaStackGraph" style="width: 100%;height:400px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">曲线图</h3>
+                </div>
+                <div class="panel-body">
+                    <div id="lineGraph" style="width: 100%;height:400px;"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <div class="row">
@@ -90,12 +117,21 @@
 
 {% block scripts %}
     {{ super() }}
+    <script src="/static/node_modules/chart.js/dist/Chart.min.js"></script>
+    <script src="/static/node_modules/echarts/dist/echarts.min.js"></script>
+    <script src="/static/js/tms.js"></script>
+    <script src="/static/js/tms_echarts.js"></script>
+
     <script type="text/babel" src="/static/js/tms_react.js"></script>
 
     <script>
         $(document).ready(function() {
-            renderWeeksStatsChart()
-            renderMonthsStatsChart()
+            renderYearStatsByMonth();
+            renderWeeksStatsChart();
+            renderMonthsStatsChart();
+            renderAreaStackGraph();
+            renderLineGraph();
+            renderPieNestGraph(10);
         });
     </script>
 {% endblock %}

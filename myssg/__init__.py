@@ -170,7 +170,7 @@ class MySSG(object):
 
         layout_end_time = time.time()
 
-        # self.generate_archives()
+        self.generate_archives()
         archive_end_time = time.time()
 
         end_time = time.time()
@@ -291,7 +291,7 @@ if __name__ == '__main__':
         'content': folder_watcher(settings.CONTENT_DIR, [''], ['.#*']),
         'templates': folder_watcher(settings.TEMPLATES_DIR, [''], ['.#*'])
         }
-    # 'myssg': folder_watcher(settings.SSG_DIR, [''], ['.#*'])
+    # 'mysite': folder_watcher(settings.SSG_DIR, [''], ['.#*'])
     while True:
         modified = {k: next(v) for k, v in watchers.items()}
         if any(modified.values()):
