@@ -11,7 +11,8 @@ def add_toc(item):
     soup = BeautifulSoup()
     html_root = item.html_root
     headings = html_root.find_all(re.compile('^h[2-3]'))
-    toc = soup.new_tag('div', id='toc')
+    toc = soup.new_tag('div')
+    # toc = soup.new_tag('div', id='toc')
     cur_node = toc
 
     # if item.uri == 'notes/chromium-base-library':

@@ -404,6 +404,9 @@ class OrgParser(object):
         new_tag.string = m.group(2)
         if symbol == '_':
             new_tag['class'] = 'underline'
+        elif symbol in ['~', '=']:
+            new_tag['class'] = 'inline-code'
+
         root.append(new_tag)
 
     def parse_emphasis_in_start(self, m, root):

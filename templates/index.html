@@ -1,6 +1,27 @@
 {% extends 'base.html' %}
 
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="/static/node_modules/cal-heatmap/cal-heatmap.css"/>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/node_modules/d3/d3.min.js"></script>
+    <script src="/static/node_modules/cal-heatmap/cal-heatmap.min.js"></script>
+    <script src="/static/js/tms_calendar.js"></script>
+    <script>
+        renderTmsCalendar();
+    </script>
+{% endblock %}
+
+
 {% block content %}
+    <div>
+        <div id="cal-heatmap"></div>
+        <div id="onClick-placeholder"></div>
+    </div>
+
     {% for event in events %}
         <p><a href="{{ item_url(event) }}">{{ event.title }}</a> » {{ item_datetime(event) }}</p>
         <blockquote>{{ event.summary }}</blockquote>

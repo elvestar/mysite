@@ -29,7 +29,7 @@ class Reader(object):
         for file_item in self.get_file_items():
             # if file_item['uri'] not in ['time/time', 'time/analyzer', 'notes/tms-v2']:
             #     continue
-            if file_item['uri'] not in ['life/2016-05']:
+            if file_item['uri'] not in ['index']:
                 continue
             content = file(file_item['path']).read()
             item = Item(uri=file_item['uri'],
@@ -51,9 +51,9 @@ class Reader(object):
     def get_file_items(self):
         for root, dirs, files in os.walk(self.dir, followlinks=True):
             dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
-            # limit = 10
-            # if len(files) > limit:
-            #     files = files[0:limit]
+            limit = 10
+            if len(files) > limit:
+                files = files[0:limit]
             for f in files:
                 if not any(fnmatch.fnmatch(f, ignore) for ignore in self.ignore_files):
                     try:

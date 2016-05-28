@@ -6,28 +6,34 @@
 
 {% block main %}
     <div>
-        <div class="note-header">
-            <div class="container">
-                <div class="row">
-                    <div class="col-md-9">
-                        <h1>{{ item.title }}</h1>
-                        <p>{{ item_date(item) }}</p>
-                    </div>
-                    <div class="col-md-3">
-                    </div>
-                </div>
-            </div>
-        </div>
+{#        <div class="note-header">#}
+{#            <div class="container">#}
+{#                <div class="row">#}
+{#                    <div class="col-md-9">#}
+{#                        <h1>{{ item.title }}</h1>#}
+{#                        <p>{{ item_date(item) }}</p>#}
+{#                    </div>#}
+{#                    <div class="col-md-3">#}
+{#                    </div>#}
+{#                </div>#}
+{#            </div>#}
+{#        </div>#}
 
         <div class="container">
             <div class="row ">
                 <div class="col-md-9 note-content-wrap">
+                    <h1>{{ item.title }}</h1>
                     {{ item.content }}
 
                     {{ macros.render_item_events(item) }}
                 </div>
-                <div class="col-md-3 sidebar-toc">
-                    {{ item.toc }}
+                <div class="col-md-3">
+                    <div id="toc">
+                        <div class="sidebar-toc">
+                            <h2>目录 | 锚点</h2>
+                            {{ item.toc }}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

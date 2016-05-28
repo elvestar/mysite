@@ -229,8 +229,9 @@ class MySSG(object):
         return
 
     def generate_archives(self):
+        pass
         # self.generate_reading_archives()
-        self.generate_time_stats()
+        # self.generate_time_stats()
 
     def generate_reading_archives(self):
         reading_archives_item = Item('reading_archives', 'json')
