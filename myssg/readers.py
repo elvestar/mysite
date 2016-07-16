@@ -29,8 +29,8 @@ class Reader(object):
         for file_item in self.get_file_items():
             # if file_item['uri'] not in ['time/time', 'time/analyzer', 'notes/tms-v2']:
             #     continue
-            if file_item['uri'] not in ['index']:
-                continue
+            # if file_item['uri'] not in ['index']:
+            #     continue
             content = file(file_item['path']).read()
             item = Item(uri=file_item['uri'],
                         extension=file_item['extension'],

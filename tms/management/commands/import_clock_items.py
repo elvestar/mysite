@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import time
 
 from django.core.management.base import BaseCommand
-from django.db.models import Count, Sum, Min
+from django.db.models import Count, Sum, Min, Q
 
 from myssg.utils import Utils
 from tms.models import ClockItem
@@ -64,6 +64,7 @@ def process_org_agenda(agenda_file_paths):
                         start_time=start_time,
                         end_time=end_time,
                         start_hour=start_time.hour,
+                        end_hour=end_time.hour,
                         date=date,
                         year=date.year,
                         month=date.month,
@@ -80,20 +81,23 @@ def process_org_agenda(agenda_file_paths):
 
 
 def export_time_usage():
-    quert_set = ClockItem.objects.filter(date__gt=datetime.now() - timedelta(days=366)). \
-        values('date').annotate(tc_sum=Sum('time_cost_min'),
-                                min_st=Min('start_time'),
-                                min_et=Min('end_time'))
-    print(quert_set)
-    time_usage = dict()
+    start_date = datetime.now() - timedelta(days=366)
     stay_up_range = range(2, 6)
+    quert_set = ClockItem.objects.filter(date__gte=start_date).exclude(category__in=['Life']). \
+        values('date').annotate(tc_sum=Sum('time_cost_min'))
+    stay_up_stats = ClockItem.objects.filter(Q(date__gte=start_date) &
+                                             (Q(start_hour__in=stay_up_range) | Q(end_hour__in=stay_up_range))). \
+        values('date').annotate(count=Count('thing'))
+    time_usage = dict()
     for row in quert_set:
-        print(row['date'], row['tc_sum'])
-        ts = int(time.mktime(row['date'].timetuple()))
-        if row['min_st'].hour in stay_up_range or row['min_et'].hour in stay_up_range:
-            time_usage[str(ts)] = 10000 + row['tc_sum']
+        ts_str = str(int(time.mktime(row['date'].timetuple())))
+        time_usage[ts_str] = row['tc_sum']
+    for row in stay_up_stats:
+        ts_str = str(int(time.mktime(row['date'].timetuple())))
+        if ts_str in time_usage:
+            time_usage[ts_str] += 10000
         else:
-            time_usage[str(ts)] = row['tc_sum']
+            time_usage[ts_str] = 10000
 
     path = '/Users/elvestar/github/elvestar/elvestar.github.io/time/latest_time_usage.json'
     f = file(path, 'w')

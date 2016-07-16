@@ -6,10 +6,11 @@ from django.db import models
 
 
 class ClockItem(models.Model):
-    id = models.IntegerField(primary_key=True)
+    id = models.AutoField(primary_key=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    start_hour = models.IntegerField()
+    start_hour = models.IntegerField(default=-1)
+    end_hour = models.IntegerField(default=-1)
     date = models.DateField(db_index=True)
     year = models.IntegerField()
     month = models.IntegerField()

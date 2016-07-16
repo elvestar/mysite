@@ -33,6 +33,7 @@ from myssg.pyorg.pyorg import PyOrg
 from myssg.settings import Settings
 from myssg.utils import Utils
 from myssg.watcher import file_watcher, folder_watcher
+from myssg.search import Searcher
 
 import signal
 
@@ -42,8 +43,6 @@ g_stop = False
 def signal_handler(signal, frame):
     os._exit(0)
 
-signal.signal(signal.SIGINT, signal_handler)
-
 
 class MySSG(object):
     def __init__(self, settings):
@@ -52,6 +51,8 @@ class MySSG(object):
         self.templates = dict()
         self.reader = Reader(settings)
         self.writer = Writer(settings)
+        self.searcher = Searcher()
+
         self.time_items = list()
         self.blog_items = list()
         self.reading_items = list()
@@ -98,6 +99,8 @@ class MySSG(object):
                 elif item.uri.startswith('photos/'):
                     photos_filter(item)
                 item.content = item.html_root.prettify()
+                # Search indexing
+                self.searcher.add_document(item)
             elif item.extension == 'html':
                 item.html_root = BeautifulSoup(item.content)
                 if item.uri.startswith(('reading/notes/')):
@@ -118,6 +121,7 @@ class MySSG(object):
                 elif item.uri.startswith('photos/'):
                     self.photos_items.append(item)
 
+        self.searcher.commit()
         compile_end_time = time.time()
 
         # Set some global template variables
@@ -287,6 +291,8 @@ class MySSGRequestHandler(SimpleHTTPRequestHandler):
 
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
+
     settings = Settings()
     watchers = {
         'content': folder_watcher(settings.CONTENT_DIR, [''], ['.#*']),
