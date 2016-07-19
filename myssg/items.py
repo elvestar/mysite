@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 class Item(object):
-    def __init__(self, uri, extension, content=None, path=None, mtime=None, html_root=None):
+    def __init__(self, uri, extension, content=None, path=None, mtime=None, html_root=None, title=None):
         self.uri = uri
         self.extension = extension
         self.content = content
@@ -17,7 +17,7 @@ class Item(object):
         self.date = datetime.fromtimestamp(0)
         self.time = None
         self.year = self.date.year
-        self.title = None
+        self.title = title
         self.sub_title = None
         self.summary = None
         self.last_update = None

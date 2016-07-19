@@ -4,6 +4,9 @@ import json
 import operator
 from datetime import datetime, date, timedelta
 
+from jinja2 import Environment
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.core.urlresolvers import reverse
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.db.models import Sum, Count
@@ -14,6 +17,16 @@ import django_filters
 from .serializers import ClockItemSerializer
 from .models import ClockItem
 from myssg.search import Searcher
+from myssg.items import Item
+
+
+def environment(**options):
+    env = Environment(**options)
+    env.globals.update({
+       'static': staticfiles_storage.url,
+       'url': reverse,
+    })
+    return env
 
 CATEGORIES = ['工作', '学习', '生活', '未归类']
 
@@ -48,8 +61,12 @@ def search(request):
     return HttpResponse(json.dumps(results))
 
 
+def tms_search(request):
+    return render(request, 'tms/search.html')
+
+
 def index(request):
-    return render(request, 'tms/index.html')
+    return render(request, 'admin.html')
 
 
 def project(request):
@@ -141,7 +158,7 @@ def week_report(request):
         'next_week': next_week,
         'iso_year_of_next_week': iso_year_of_next_week,
         'report_data': report_data,
-        'daily_overview': daily_overview,
+        # 'daily_overview': daily_overview,
     })
 
 
@@ -223,6 +240,7 @@ def generate_report(clock_items, days_num):
         }
     """
     categories_data = list()
+    project_id = 1
     total_cost = 0
     for clock_item in clock_items:
         category = clock_item.category
@@ -259,8 +277,10 @@ def generate_report(clock_items, days_num):
         if project_data is None:
             project_data = {
                 'name': project,
+                'id': project_id,
                 'cost': time_cost_min
             }
+            project_id += 1
             projects_data.append(project_data)
         else:
             project_data['cost'] += time_cost_min
@@ -300,6 +320,22 @@ def generate_report(clock_items, days_num):
         for project_data in projects_data:
             thing_data = project_data['things']
             thing_data.sort(key=operator.itemgetter('cost'), reverse=True)
+
+    # Change form of time cost
+    for category_data in categories_data:
+        category_time_cost = category_data['cost']
+        if (category_time_cost % 60) < 10:
+            minutes_str = '0' + str(category_time_cost % 60)
+        else:
+            minutes_str = str(category_time_cost % 60)
+        category_data['cost'] = '%d:%s' % (category_time_cost / 60, minutes_str)
+        for project_data in category_data['projects']:
+            project_time_cost = project_data['cost']
+            if (project_time_cost % 60) < 10:
+                minutes_str = '0' + str(project_time_cost % 60)
+            else:
+                minutes_str = str(project_time_cost % 60)
+            project_data['cost'] = '%d:%s' % (project_time_cost / 60, minutes_str)
 
     report_data = {
         'categories': categories_data,

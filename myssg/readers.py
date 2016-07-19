@@ -36,6 +36,9 @@ class Reader(object):
                         extension=file_item['extension'],
                         content=content,
                         path=file_item['path'])
+            if item.uri.startswith(('notes/', 'life/', 'blog/')) and item.extension == 'html':
+                logging.warning('Skip item:%s' % str(item))
+                continue
             item.mtime = self.get_modify_datetime(item)
             items.append(item)
         return items
@@ -51,9 +54,9 @@ class Reader(object):
     def get_file_items(self):
         for root, dirs, files in os.walk(self.dir, followlinks=True):
             dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
-            limit = 10
-            if len(files) > limit:
-                files = files[0:limit]
+            # limit = 10
+            # if len(files) > limit:
+            #     files = files[0:limit]
             for f in files:
                 if not any(fnmatch.fnmatch(f, ignore) for ignore in self.ignore_files):
                     try:

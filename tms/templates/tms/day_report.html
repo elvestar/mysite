@@ -1,97 +1,61 @@
 {% extends 'tms/base.html' %}
 
 {% block main %}
-    <h3>
-    </h3>
-    <nav>
-        <ul class="pager">
-            <li class="previous"><a href="{% url 'tms:day_report' %}?date={{ prev_date_str }}"><span aria-hidden="true">&larr;</span> 上一天</a></li>
-            <li>
-                {{ date_str }}
-                {% if is_cur_day %}
-                    <small>（本日）</small>
-                {% endif %}
-            </li>
-            <li class="next {% if is_cur_day %}disabled{% endif %}">
-                <a {% if not is_cur_week %}href="{% url 'tms:day_report' %}?date={{ next_date_str }}" {% endif %}>下一天 <span aria-hidden="true">&rarr;</span></a>
-            </li>
-        </ul>
-    </nav>
+    <div class="admin-main-wrapper">
+        <div class="admin-main-header m-x">
+            <div class="title">
+                <a href="#">
+                    <i class="fa fa-file-text-o"></i>
+                    我的日报
+                </a>
+            </div>
+        </div>
 
-    <div class="row">
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        本日日报
-                    </h3>
+        <div class="admin-main-body m-x">
+            <div class="report-content m-t-md">
+                <div class="report-header">
+                    <div class="report-control">
+                        <a class="control-arrow" href="{% url 'tms:day_report' %}?date={{ prev_date_str }}"><i class="fa fa-angle-left"></i></a>
+                <span class="report-date">{{ date_str }}
+                    {% if is_cur_day %}
+                        <small>(本日)</small>
+                    {% endif %}
+                </span>
+                        <a class="control-arrow" {% if not is_cur_day %}href="{% url 'tms:day_report' %}?date={{ next_date_str }}" {% endif %}><i class="fa fa-angle-right"></i></a>
+                    </div>
                 </div>
-                <div class="panel-body">
+                <div class="report-body m-y-lg">
                     <ul>
-
                         {% for category in report_data.categories %}
                             <li>
                                 <span><strong style="color: darkred; font-size: 110%; text-decoration: underline;">{{ category.name }}</strong> [<strong style="color: darkgreen">耗时: {{ category.cost }}</strong>][<strong style="color: red">总占比: {{ category.pct }}</strong>]</span>：
                                 <ul>
                                     {% for project in category.projects %}
                                         <li>
-                                            <strong>{{ project.name }}</strong> [耗时: {{ project.cost }}][占比: {{ project.pct }}]：
-                                            <ul>
-                                                {% for thing in project.things %}
-                                                    <li>{{ thing.name }} [耗时: {{ thing.cost }}]</li>
-                                                {% endfor %}
-                                            </ul>
+                                            <div class="project-item">
+                                                <a href="#project{{ project.id }}" class="collapse-header" data-toggle="collapse" aria-expanded="false" aria-controls="project{{ project.id }}">
+                                                    <strong>{{ project.name }}</strong> [耗时: {{ project.cost }}][占比: {{ project.pct }}]：
+                                                </a>
+                                                <ul class="collapse {% if forloop.counter == 1 %} in {% endif %}" id="project{{ project.id }}">
+                                                    {% for thing in project.things %}
+                                                        <li>{{ thing.name }} [耗时: {{ thing.cost }}]</li>
+                                                    {% endfor %}
+                                                </ul>
+                                            </div>
                                         </li>
                                     {% endfor %}
                                 </ul>
                             </li>
                         {% endfor %}
                     </ul>
-
+                </div>
+            </div>
+            <div class="report-aside">
+                <div style="text-align: center;" class="m-t-md">
+                    <img src="https://img3.doubanio.com/lpic/s27978963.jpg" alt=""/>
                 </div>
             </div>
         </div>
-
-        <div class="col-md-6">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        全部计时项 <small>共 {{ clock_items|length }} 个</small>
-                    </h3>
-                </div>
-                <div class="panel-body" style="height: 420px; overflow: scroll">
-                    <table class="table table-condensed table-striped">
-                        <caption>
-                        </caption>
-                        <tr>
-                            <th>THING</th>
-                            <th>耗时</th>
-                            <th>起止时间</th>
-                        </tr>
-                        {% for clock_item in clock_items %}
-                            <tr>
-                                <td class="small">
-                                    {{ clock_item.thing }} <br/>
-                                    <a href="/report">
-                                        {{ clock_item.category }}
-                                    </a>
-                                    ->
-                                    <a href="/report">
-                                        {{ clock_item.project }}
-                                    </a>
-                                </td>
-                                <td>{{ clock_item.time_cost_min }}</td>
-                                <td class="small">
-                                    {{ clock_item.start_time|date:"Y-m-d H:i" }} <br/>
-                                    {{ clock_item.end_time|date:"Y-m-d H:i" }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
-            </div>
-        </div>
-
     </div>
 {% endblock %}
 
@@ -101,10 +65,4 @@
     <script src="/static/node_modules/echarts/dist/echarts.min.js"></script>
     <script src="/static/js/tms.js"></script>
     <script src="/static/js/tms_echarts.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            renderPieNestGraph({{ iso_year }}, {{ week }});
-        });
-    </script>
 {% endblock %}

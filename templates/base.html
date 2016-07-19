@@ -7,7 +7,13 @@
 {% endblock %}
 
 <head>
-    <title>{{ item.title if item.title else item.uri }} - 仲之地</title>
+    <title>
+        {% block title %}
+            {% if title %}
+                {{ item.title if item.title else item.uri }} - 仲之地
+            {% endif %}
+        {% endblock %}
+    </title>
     <link rel="stylesheet" href="/static/node_modules/bootstrap/dist/css/bootstrap.min.css"/>
     <link rel="stylesheet" href="/static/node_modules/font-awesome/css/font-awesome.min.css"/>
     <link rel="stylesheet" href="/static/node_modules/zoom.js/css/zoom.css"/>

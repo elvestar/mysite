@@ -7,8 +7,9 @@ from . import views
 app_name = 'tms'
 urlpatterns = [
     url(r'^clock_items/$', views.ClockItemList.as_view()),
-    url(r'^search/$', views.search),
+    url(r'^search/$', views.tms_search, name='tms_search'),
     url(r'^$', views.index, name='index'),
+    url(r'^about/$', views.calendar, name='about'),
     url(r'^project/$', views.project, name='project'),
     url(r'^calendar/$', views.calendar, name='calendar'),
     url(r'^report/$', views.report, name='report'),
