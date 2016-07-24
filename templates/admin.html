@@ -17,6 +17,14 @@
 {% endblock %}
 
 {% block main %}
+    {% macro admin_nav_item(page_url, icon) %}
+        <li class="nav-item {{ macros.active_if_path_include(page_url) }}">
+            <a href="{{ page_url }}">
+                <i class="fa fa-{{ icon }} fa-lg"></i>
+            </a>
+        </li>
+    {% endmacro %}
+
     <div class="admin-wrapper">
         <div class="admin-nav">
             <div class="admin-nav-top">
@@ -24,21 +32,9 @@
             </div>
             <div class="admin-nav-middle m-t">
                 <ul>
-                    <li>
-                        <a href="">
-                            <i class="fa fa-folder-o fa-lg"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="" class="active">
-                            <i class="fa fa-clock-o fa-lg"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="/tms/search">
-                            <i class="fa fa-search fa-lg"></i>
-                        </a>
-                    </li>
+                    {{ admin_nav_item(url('pkm:index'), 'money') }}
+                    {{ admin_nav_item(url('cms:index'), 'folder-o') }}
+                    {{ admin_nav_item(url('tms:index'), 'clock-o') }}
                 </ul>
 
             </div>
@@ -46,109 +42,64 @@
             </div>
         </div>
 
-        <div class="admin-content" style="position: relative; width: 100%; height: 100%; display: -webkit-flex;">
+        <div class="admin-main" style="position: relative; width: 100%; height: 100%; display: -webkit-flex;">
             <div class="admin-aside" style="">
                 <div class="aside-header">
-                    <span class="m-x" style="color: #333333; font-size: 18px; font-weight: 500; line-height: 50px; float: left">时间管理</span>
-                    <div class="m-x" style="line-height: 48px">
-                        <a href="" style="color: #8f8f8f; float: right; line-height: 48px; text-decoration: none">
-                            <i class="fa fa-cog fa-lg" ></i>
-                        </a>
-                    </div>
+                    {% block admin_aside_header %}
+                        <span class="m-x" style="color: #333333; font-size: 18px; font-weight: 500; line-height: 50px; float: left">
+                        {% block admin_aside_title %}
+                        {% endblock %}
+                        </span>
+                        <div class="m-x" style="line-height: 48px">
+                            <a href="" style="color: #8f8f8f; float: right; line-height: 48px; text-decoration: none">
+                                <i class="fa fa-lg fa-cog" ></i>
+                            </a>
+                        </div>
+                    {% endblock %}
                 </div>
 
                 <div class="aside-body m-t">
-                    <div class="aside-section report-section">
-                        <div class="section-header">
-                            <a href="#reportSectionBody" class="collapse-header" data-toggle="collapse" aria-expanded="false" aria-controls="reportSectionBody">
-                                <i class="fa fa-caret-down"></i>
-                                报表
-                            </a>
-                        </div>
-                        <div class="section-body collapse in" id="reportSectionBody">
-                            <ul class="section-list">
-                                <li class="section-item">
-                                    <a href="{{ url('tms:day_report') }}">
-                                        <i class="fa fa-file-text-o"></i>
-                                        我的日报
-                                    </a>
-                                </li>
-                                <li class="section-item active">
-                                    <a href="{{ url('tms:week_report') }}">
-                                        <i class="fa fa-file-text-o"></i>
-                                        我的周报
-                                    </a>
-                                </li>
-                                <li class="section-item">
-                                    <a href="{{ url('tms:custom_report') }}?start=20160711&end=20160715">
-                                        <i class="fa fa-file-text-o"></i>
-                                        自定制
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
+                    {% block admin_aside_body %}
 
-                    <div class="aside-section project-section">
-                        <div class="section-header">
-                            <a href="#projectSectionBody" class="collapse-header" data-toggle="collapse" aria-expanded="false" aria-controls="projectSectionBody">
-                                <i class="fa fa-caret-down"></i>
-                                项目
-                            </a>
-                        </div>
-                        <div class="section-body collapse in" id="projectSectionBody">
-                            <ul class="section-list">
-                                <li class="section-item">
-                                    <a href="{{ url('tms:project') }}">
-                                        <i class="fa fa-tasks"></i>
-                                        项目分析
-                                    </a>
-                                </li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div class="aside-section">
-                        <div class="section-header">
-                            <a href="{{ url('tms:calendar') }}">
-                                <i class="fa fa-calendar"></i>
-                                时间纪年
-                            </a>
-                        </div>
-                    </div>
-
-                    <div class="aside-section">
-                        <div class="section-header">
-                            <a href="{{ url('tms:about') }}">
-                                <i class="fa fa-info-circle"></i>
-                                关于时间管理
-                            </a>
-                        </div>
-                    </div>
+                    {% endblock %}
                 </div>
 
             </div>
-            <div class="admin-main">
-{#                {% block main %}#}
-{##}
-{#                {% endblock %}#}
+            <div class="admin-content-wrapper">
+                <div class="admin-main-wrapper">
+                    <div class="admin-main-header m-x">
+                        <div class="title">
+                            {% block content_title %}
+                                标题
+                            {% endblock %}
+                        </div>
+                    </div>
+
+                    <div class="admin-main-body m-x m-t">
+                        {% block content %}
+
+                        {% endblock %}
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 {% endblock %}
 
+{% block footer %}
+{% endblock %}
+
 {% block scripts %}
-
-
+    {{ super() }}
     <script>
-        $(document).ready(function() {
-            $('#projectSectionBody, #reportSectionBody').on('hidden.bs.collapse', function () {
-                $(this).prev().find("i.fa").removeClass("fa-caret-down").addClass("fa-caret-right");
-            })
-            $('#reportSectionBody, #projectSectionBody').on('show.bs.collapse', function () {
-                $(this).prev().find("i.fa").removeClass("fa-caret-right").addClass("fa-caret-down");
-            })
-        });
-        {#        hljs.initHighlightingOnLoad();#}
+    var toggleCaretWhenCollapse = function(sections) {
+        sections.on('hidden.bs.collapse', function () {
+            $(this).prev().find("i.fa").removeClass("fa-caret-down").addClass("fa-caret-right");
+        })
+        sections.on('show.bs.collapse', function () {
+            $(this).prev().find("i.fa").removeClass("fa-caret-right").addClass("fa-caret-down");
+        })
+    }
     </script>
 {% endblock %}
+

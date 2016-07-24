@@ -1,0 +1,34 @@
+{% extends 'admin.html' %}
+
+{% block admin_aside_title %}
+    内容管理
+{% endblock %}
+
+{% block admin_aside_body %}
+    {{ macros.admin_aside_section(id='navSection', title='目录浏览', section_items=[
+            (url('tms:day_report'), '文章', 'file-text-o'),
+            (url('tms:week_report'), '笔记', 'file-text-o'),
+            (url('tms:custom_report'), '生活', 'file-text-o'),
+            ] ) }}
+
+    {{ macros.admin_aside_section(id='archivesSection', title='归档', section_items=[
+            (url('tms:project'), '2016', 'archive'),
+            (url('tms:project'), '2015', 'archive'),
+            ] ) }}
+    {{ macros.admin_aside_section(id='mediaSection', title='媒体', section_items=[
+            (url('tms:project'), '照片', 'photo'),
+            (url('tms:project'), '视频', 'play-circle'),
+            (url('tms:project'), '歌单', 'play-circle'),
+            ] ) }}
+    {{ macros.admin_aside_single_section(url('tms:about'), '关于', 'info-circle') }}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+        $(document).ready(function() {
+            toggleCaretWhenCollapse('#navSection, #archivesSection, #mediaSection');
+        });
+    </script>
+{% endblock %}

@@ -68,7 +68,7 @@ class MySSG(object):
         self.env = Environment(loader=FileSystemLoader('./templates', ))
         template_names = ['note', 'blog', 'life',
                           'index', 'archives', 'timeline',
-                          'time', 'tms', 'time_analyzer', 'time_year', 'time_month',
+                          'time', 'time_analyzer',
                           'gallery', 'photos',
                           'reading', 'reading_note', 'reading_archives', 'evernote']
         for name in template_names:

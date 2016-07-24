@@ -1,0 +1,100 @@
+{% extends 'tms/tms.html' %}
+
+{% block content_title %}
+    <a href="#">
+        <i class="fa fa-file-text-o"></i>
+        我的周报
+    </a>
+{% endblock %}
+
+{% block content %}
+    <div class="report-content m-t-md">
+        <div class="report-header">
+            <div class="report-control">
+                <a class="control-arrow" href="{{ url('tms:week_report') }}?year={{ iso_year_of_prev_week }}&week={{ prev_week }}"><i class="fa fa-angle-left"></i></a>
+                <span class="report-date">{{ iso_year }}年第{{ week }}周
+                    {% if is_cur_week %}
+                        <small>(本周)</small>
+                    {% endif %}
+                </span>
+                <a class="control-arrow" {% if not is_cur_week %}href="{{ url('tms:week_report') }}?year={{ iso_year_of_next_week }}&week={{ next_week }}" {% endif %}><i class="fa fa-angle-right"></i></a>
+            </div>
+        </div>
+        {{ macros.report_body(report_data) }}
+    </div>
+    <div class="report-aside">
+        <div style="text-align: center;" class="m-t-lg">
+            <img src="/static/imgs/google-material-ui-example.png" alt=""/>
+        </div>
+    </div>
+
+
+
+    {#    <div class="row">#}
+    {#        <div class="col-md-6">#}
+    {#            <div class="panel panel-default">#}
+    {#                <div class="panel-heading">#}
+    {#                    <h3 class="panel-title">#}
+    {#                        耗时分布图#}
+    {#                    </h3>#}
+    {#                </div>#}
+    {#                <div class="panel-body">#}
+    {#                    <div id="pieNestGraph" style="width: 100%;height:400px;"></div>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#        <div class="col-md-6">#}
+    {#            <div class="panel panel-default">#}
+    {#                <div class="panel-heading">#}
+    {#                    <h3 class="panel-title">#}
+    {#                        全部计时项 <small>共 {{ clock_items|length }} 个</small>#}
+    {#                    </h3>#}
+    {#                </div>#}
+    {#                <div class="panel-body" style="height: 420px; overflow: scroll">#}
+    {#                    <table class="table table-condensed table-striped">#}
+    {#                        <caption>#}
+    {#                        </caption>#}
+    {#                        <tr>#}
+    {#                            <th>THING</th>#}
+    {#                            <th>耗时</th>#}
+    {#                            <th>起止时间</th>#}
+    {#                        </tr>#}
+    {#                        {% for clock_item in clock_items %}#}
+    {#                            <tr>#}
+    {#                                <td class="small">#}
+    {#                                    {{ clock_item.thing }} <br/>#}
+    {#                                    <a href="/report">#}
+    {#                                        {{ clock_item.category }}#}
+    {#                                    </a>#}
+    {#                                    ->#}
+    {#                                    <a href="/report">#}
+    {#                                        {{ clock_item.project }}#}
+    {#                                    </a>#}
+    {#                                </td>#}
+    {#                                <td>{{ clock_item.time_cost_min }}</td>#}
+    {#                                <td class="small">#}
+    {#                                    {{ clock_item.start_time|date:"Y-m-d H:i" }} <br/>#}
+    {#                                    {{ clock_item.end_time|date:"Y-m-d H:i" }}#}
+    {#                                </td>#}
+    {#                            </tr>#}
+    {#                        {% endfor %}#}
+    {#                    </table>#}
+    {#                </div>#}
+    {#            </div>#}
+    {#        </div>#}
+    {#    </div>#}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/node_modules/chart.js/dist/Chart.min.js"></script>
+    <script src="/static/node_modules/echarts/dist/echarts.min.js"></script>
+    <script src="/static/js/tms.js"></script>
+    <script src="/static/js/tms_echarts.js"></script>
+
+    <script>
+        $(document).ready(function() {
+            {#            renderPieNestGraph({{ iso_year }}, {{ week }});#}
+        });
+    </script>
+{% endblock %}

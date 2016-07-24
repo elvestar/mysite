@@ -1,0 +1,37 @@
+{% extends 'tms/tms.html' %}
+
+{% block content_title %}
+    <a href="#">
+        <i class="fa fa-file-text-o"></i>
+        我的日报
+    </a>
+{% endblock %}
+
+{% block content %}
+    <div class="report-content m-t-md">
+        <div class="report-header">
+            <div class="report-control">
+                <a class="control-arrow" href="{{ url('tms:day_report') }}?date={{ prev_date_str }}"><i class="fa fa-angle-left"></i></a>
+                <span class="report-date">{{ date_str }}
+                    {% if is_cur_day %}
+                        <small>(本日)</small>
+                    {% endif %}
+                </span>
+                <a class="control-arrow" {% if not is_cur_day %}href="{{ url('tms:day_report') }}?date={{ next_date_str }}" {% endif %}><i class="fa fa-angle-right"></i></a>
+            </div>
+        </div>
+        {{ macros.report_body(report_data) }}
+    </div>
+    <div class="report-aside">
+        <div style="text-align: center;" class="m-t-md">
+            <img src="https://img3.doubanio.com/lpic/s27978963.jpg" alt=""/>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script src="/static/node_modules/echarts/dist/echarts.min.js"></script>
+    <script src="/static/js/tms.js"></script>
+    <script src="/static/js/tms_echarts.js"></script>
+{% endblock %}

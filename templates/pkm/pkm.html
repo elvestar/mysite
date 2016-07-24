@@ -1,0 +1,30 @@
+{% extends 'admin.html' %}
+
+{% block admin_aside_title %}
+    知识管理
+{% endblock %}
+
+{% block admin_aside_body %}
+    {{ macros.admin_aside_section(id='readingSection', title='读书', section_items=[
+            (url('tms:day_report'), '读书笔记', 'file-text-o'),
+            (url('tms:week_report'), '统计', 'file-text-o'),
+            ] ) }}
+
+    {{ macros.admin_aside_single_section(url('pkm:search'), '搜索', 'search') }}
+    {{ macros.admin_aside_single_section(url('tms:about'), '关于', 'info-circle') }}
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+        $(document).ready(function() {
+            $('#readingSection').on('hidden.bs.collapse', function () {
+                $(this).prev().find("i.fa").removeClass("fa-caret-down").addClass("fa-caret-right");
+            })
+            $('#readingSection').on('show.bs.collapse', function () {
+                $(this).prev().find("i.fa").removeClass("fa-caret-right").addClass("fa-caret-down");
+            })
+        });
+    </script>
+{% endblock %}

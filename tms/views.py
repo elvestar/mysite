@@ -16,7 +16,6 @@ import django_filters
 
 from .serializers import ClockItemSerializer
 from .models import ClockItem
-from myssg.search import Searcher
 from myssg.items import Item
 
 
@@ -47,26 +46,8 @@ class ClockItemList(generics.ListAPIView):
     filter_class = ClockItemFilter
 
 
-def search(request):
-    searcher = Searcher()
-    q = request.GET['q']
-    search_results = searcher.search(q)
-    results = list()
-    for search_result in search_results:
-        results.append({
-            'text': search_result['text'],
-            'title': search_result.get('title', ''),
-            'path': search_result['path']
-        })
-    return HttpResponse(json.dumps(results))
-
-
-def tms_search(request):
-    return render(request, 'tms/search.html')
-
-
 def index(request):
-    return render(request, 'admin.html')
+    return render(request, 'tms/index.html')
 
 
 def project(request):
@@ -183,6 +164,9 @@ def custom_report(request):
         })
 
 
+def year_report(request):
+    return render(request, 'tms/year_report.html')
+
 
 def week_stats(request):
     iso_year = int(request.GET['year'])
@@ -209,6 +193,15 @@ def week_stats(request):
         'legend': legend_data,
         'inner': inner_data,
         'outer': outer_data,
+    })
+
+
+def year_stats_step_by_month(request):
+    year = int(request.GET['year'])
+    time_cost_group_by_month_category = ClockItem.objects.filter(year=year).\
+        values('month', 'category').annotate(Sum('time_cost_min'), Count('time_cost_min'))
+    return JsonResponse({
+        'data': str(time_cost_group_by_month_category)
     })
 
 
