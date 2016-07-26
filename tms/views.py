@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import json
-import operator
+from operator import itemgetter
+from itertools import groupby
 from datetime import datetime, date, timedelta
 
 from jinja2 import Environment
@@ -78,12 +79,14 @@ def get_monday_date_of_iso_week(iso_year, week):
 
 
 def day_report(request):
-    cur_date_str = datetime.now().strftime('%Y-%m-%d')
-    if 'date' not in request.GET:
-        date_str = cur_date_str
-    else:
-        date_str = request.GET['date']
+    if 'date' in request.GET:
+        return day_report_detail(request, request.GET['date'])
+    return render(request, 'tms/day_report.html', {
+        })
 
+
+def day_report_detail(request, date_str):
+    cur_date_str = datetime.now().strftime('%Y-%m-%d')
     if date_str == cur_date_str:
         is_cur_day = True
     else:
@@ -94,7 +97,7 @@ def day_report(request):
 
     clock_items = ClockItem.objects.filter(date=date_str).order_by('start_time')
     report_data = generate_report(clock_items, 1)
-    return render(request, 'tms/day_report.html', {
+    return render(request, 'tms/day_report_detail.html', {
         'is_cur_day': is_cur_day,
         'date_str': date_str,
         'clock_items': clock_items,
@@ -165,7 +168,15 @@ def custom_report(request):
 
 
 def year_report(request):
-    return render(request, 'tms/year_report.html')
+    cur_year = datetime.now().year
+    if 'year' not in request.GET:
+        year = cur_year
+    else:
+        year = request.GET['year']
+
+    return render(request, 'tms/year_report.html', {
+        'year': year
+    })
 
 
 def week_stats(request):
@@ -196,13 +207,78 @@ def week_stats(request):
     })
 
 
-def year_stats_step_by_month(request):
+def year_stats_step_by_month_and_week(request):
+    """
+    data = {
+        'labels': ['一月', '二月', '三月', '...'],
+        'valid_time': [15, 50, 33, ...],
+        'work_time': [1.7, 25, 22, ...],
+        'study_time': [13, 25, 11, ...],
+    }
+    """
     year = int(request.GET['year'])
-    time_cost_group_by_month_category = ClockItem.objects.filter(year=year).\
+    time_cost_group_by_month_category = ClockItem.objects.filter(year=year). \
         values('month', 'category').annotate(Sum('time_cost_min'), Count('time_cost_min'))
-    return JsonResponse({
-        'data': str(time_cost_group_by_month_category)
-    })
+
+    valid_time_of_month = [0] * 12
+    work_time_of_month = [0] * 12
+    study_time_of_montj = [0] * 12
+    for item in time_cost_group_by_month_category:
+        category = item['category']
+        month = item['month']
+        time_cost_min = item['time_cost_min__sum']
+        if category == '工作':
+            work_time_of_month[month - 1] += time_cost_min
+            valid_time_of_month[month - 1] += time_cost_min
+        elif category == '学习':
+            study_time_of_montj[month - 1] += time_cost_min
+            valid_time_of_month[month - 1] += time_cost_min
+    month_labels = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
+    valid_time_of_month = ['%.1f' % (float(i) / 60.0) for i in valid_time_of_month]
+    work_time_of_month = ['%.1f' % (float(i) / 60.0) for i in work_time_of_month]
+    study_time_of_month = ['%.1f' % (float(i) / 60.0) for i in study_time_of_montj]
+
+    # Get last week of year
+    time_cost_group_by_week_category = ClockItem.objects.filter(iso_year=year). \
+        values('week', 'category').annotate(Sum('time_cost_min'), Count('time_cost_min'))
+    last_day_of_year = datetime(year=year, month=12, day=31)
+    last_week = last_day_of_year.isocalendar()[1]
+
+    valid_time_of_week = [0] * last_week
+    work_time_of_week = [0] * last_week
+    study_time_of_montj = [0] * last_week
+    for item in time_cost_group_by_week_category:
+        category = item['category']
+        week = item['week']
+        time_cost_min = item['time_cost_min__sum']
+        if category == '工作':
+            work_time_of_week[week - 1] += time_cost_min
+            valid_time_of_week[week - 1] += time_cost_min
+        elif category == '学习':
+            study_time_of_montj[week - 1] += time_cost_min
+            valid_time_of_week[week - 1] += time_cost_min
+    week_labels = ['W%d' % w for w in range(1, last_week + 1)]
+    valid_time_of_week = ['%.1f' % (float(i) / 60.0) for i in valid_time_of_week]
+    work_time_of_week = ['%.1f' % (float(i) / 60.0) for i in work_time_of_week]
+    study_time_of_week = ['%.1f' % (float(i) / 60.0) for i in study_time_of_montj]
+
+
+    data = {
+        'month': {
+            'labels': month_labels,
+            'valid_time': valid_time_of_month,
+            'work_time': work_time_of_month,
+            'study_time': study_time_of_month,
+            },
+        'week': {
+            'labels': week_labels,
+            'valid_time': valid_time_of_week,
+            'work_time': work_time_of_week,
+            'study_time': study_time_of_week,
+        }
+    }
+
+    return JsonResponse(data)
 
 
 def generate_daily_overview(clock_items):
@@ -309,10 +385,10 @@ def generate_report(clock_items, days_num):
     categories_data.sort(key=lambda x: CATEGORIES.index(x['name']))
     for category_data in categories_data:
         projects_data = category_data['projects']
-        projects_data.sort(key=operator.itemgetter('cost'), reverse=True)
+        projects_data.sort(key=itemgetter('cost'), reverse=True)
         for project_data in projects_data:
             thing_data = project_data['things']
-            thing_data.sort(key=operator.itemgetter('cost'), reverse=True)
+            thing_data.sort(key=itemgetter('cost'), reverse=True)
 
     # Change form of time cost
     for category_data in categories_data:

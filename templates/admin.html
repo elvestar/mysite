@@ -43,7 +43,7 @@
         </div>
 
         <div class="admin-main" style="position: relative; width: 100%; height: 100%; display: -webkit-flex;">
-            <div class="admin-aside" style="">
+            <div class="admin-aside" style="display: none">
                 <div class="aside-header">
                     {% block admin_aside_header %}
                         <span class="m-x" style="color: #333333; font-size: 18px; font-weight: 500; line-height: 50px; float: left">
@@ -66,8 +66,8 @@
 
             </div>
             <div class="admin-content-wrapper">
-                <div class="admin-main-wrapper">
-                    <div class="admin-main-header m-x">
+                <div class="admin-content">
+                    <div class="admin-content-header m-x">
                         <div class="title">
                             {% block content_title %}
                                 标题
@@ -75,7 +75,7 @@
                         </div>
                     </div>
 
-                    <div class="admin-main-body m-x m-t">
+                    <div class="admin-content-body m-x m-t">
                         {% block content %}
 
                         {% endblock %}

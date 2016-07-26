@@ -3,17 +3,32 @@
 {% block content_title %}
     <a href="">
         <i class="fa fa-file-o"></i>
-        年度报表
+        年度报表 - {{ year }}
     </a>
+    <small style="font-size: 10px" class="m-l-xs">
+        <a href="{{ url('tms:year_report') }}?year=2015">2015</a>
+        <a href="{{ url('tms:year_report') }}?year=2016">2016</a>
+    </small>
 {% endblock %}
 
 {% block content %}
-    <div class="admin-panel p-a-xs" style="background: #fff; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,.3)">
-        <div class="admin-panel-heading p-b-xs m-b-xs" style="border-bottom: 1px solid #f3f3f3;">
-            <div>2016 年各月时间</div>
+    <div class="m-r m-b-lg">
+        <div class="admin-panel p-a-xs m-y" style="background: #fff; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,.3)">
+            <div class="admin-panel-heading p-b-xs m-b-xs" style="border-bottom: 1px solid #f3f3f3;">
+                <div>{{ year }} 年各周时间</div>
+            </div>
+            <div class="admin-panel-body">
+                <canvas id="chart1" width="100%" height="30%"></canvas>
+            </div>
         </div>
-        <div class="admin-panel-body">
-            <canvas width="800" id="chart1"></canvas>
+
+        <div class="admin-panel p-a-xs m-y" style="background: #fff; border-radius: 2px; box-shadow: 0 0 2px rgba(0,0,0,.3)">
+            <div class="admin-panel-heading p-b-xs m-b-xs" style="border-bottom: 1px solid #f3f3f3;">
+                <div>{{ year }} 年各月时间</div>
+            </div>
+            <div class="admin-panel-body">
+                <canvas width="600" id="chart2"></canvas>
+            </div>
         </div>
     </div>
 {% endblock %}
@@ -22,46 +37,6 @@
     {{ super() }}
 
     <script>
-        var data = {
-            labels: ["January", "February", "March", "April", "May", "June", "July"],
-            datasets: [
-                {
-                    label: "My First dataset",
-                    fill: false,
-                    lineTension: 0.1,
-                    backgroundColor: "rgba(75,192,192,0.4)",
-                    borderColor: "rgba(75,192,192,1)",
-                    borderCapStyle: 'butt',
-                    borderDash: [],
-                    borderDashOffset: 0.0,
-                    borderJoinStyle: 'miter',
-                    pointBorderColor: "rgba(75,192,192,1)",
-                    pointBackgroundColor: "#fff",
-                    pointBorderWidth: 1,
-                    pointHoverRadius: 5,
-                    pointHoverBackgroundColor: "rgba(75,192,192,1)",
-                    pointHoverBorderColor: "rgba(220,220,220,1)",
-                    pointHoverBorderWidth: 2,
-                    pointRadius: 1,
-                    pointHitRadius: 10,
-                    data: [65, 59, 80, 81, 56, 55, 40],
-                    spanGaps: false,
-                }
-            ]
-        };
-        var myLineChart = new Chart($("#chart1"), {
-            type: 'line',
-            data: data,
-            options: {
-                scales: {
-                    xAxes: [{
-                        display: false
-                    }]
-                }
-            }
-        });
-
-        renderTime();
-
+        renderTime({{ year }});
     </script>
 {% endblock %}

@@ -17,5 +17,6 @@ urlpatterns = [
     url(r'^report/custom/$', views.custom_report, name='custom_report'),
 
     url(r'^api/v1/week_stats/$', views.week_stats, name='week_stats'),
-    url(r'^api/v1/year_stats_step_by_month/$', views.year_stats_step_by_month, name='year_stats_step_by_month'),
+    url(r'^api/v1/year_stats_step_by_month_and_week/$', views.year_stats_step_by_month_and_week,
+        name='year_stats_step_by_month_and_week'),
 ]
