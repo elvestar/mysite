@@ -1,97 +1,28 @@
-{% extends 'tms/base.html' %}
+{% extends 'tms/tms.html' %}
 
-{% block main %}
-    <h3>
-    </h3>
-    <div>
+{% block content %}
+    <div class="report-wrapper">
+        <div class="report-content m-t-md">
+            <div class="report-header">
+                <div class="report-control">
+                <span class="report-date">
     大于等于 {{ start_time_str }} 小于 {{ end_time_str }}，共 {{ days_num }} 天
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        本日日报
-                    </h3>
-                </div>
-                <div class="panel-body">
-                    <ul>
-
-                        {% for category in report_data.categories %}
-                            <li>
-                                <span><strong style="color: darkred; font-size: 110%; text-decoration: underline;">{{ category.name }}</strong> [<strong style="color: darkgreen">耗时: {{ category.cost }}</strong>][<strong style="color: red">总占比: {{ category.pct }}</strong>]</span>：
-                                <ul>
-                                    {% for project in category.projects %}
-                                        <li>
-                                            <strong>{{ project.name }}</strong> [耗时: {{ project.cost }}][占比: {{ project.pct }}]：
-                                            <ul>
-                                                {% for thing in project.things %}
-                                                    <li>{{ thing.name }} [耗时: {{ thing.cost }}]</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </li>
-                        {% endfor %}
-                    </ul>
+                    {% if is_cur_week %}
+                        <small>(本周)</small>
+                    {% endif %}
+                </span>
                 </div>
             </div>
+            {{ macros.report_body(report_data) }}
         </div>
-
-        <div class="col-md-12">
-            <div class="panel panel-default">
-                <div class="panel-heading">
-                    <h3 class="panel-title">
-                        全部计时项 <small>共 {{ clock_items|length }} 个</small>
-                    </h3>
-                </div>
-                <div class="panel-body" style="height: 420px; overflow: scroll">
-                    <table class="table table-condensed table-striped">
-                        <caption>
-                        </caption>
-                        <tr>
-                            <th>THING</th>
-                            <th>耗时</th>
-                            <th>起止时间</th>
-                        </tr>
-                        {% for clock_item in clock_items %}
-                            <tr>
-                                <td class="small">
-                                    {{ clock_item.thing }} <br/>
-                                    <a href="/report">
-                                        {{ clock_item.category }}
-                                    </a>
-                                    ->
-                                    <a href="/report">
-                                        {{ clock_item.project }}
-                                    </a>
-                                </td>
-                                <td>{{ clock_item.time_cost_min }}</td>
-                                <td class="small">
-                                    {{ clock_item.start_time|date:"Y-m-d H:i" }} <br/>
-                                    {{ clock_item.end_time|date:"Y-m-d H:i" }}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </table>
-                </div>
+        <div class="report-aside">
+            <div style="text-align: center;" class="m-t-lg">
+                <img src="/static/imgs/google-material-ui-example.png" alt=""/>
             </div>
         </div>
-
     </div>
 {% endblock %}
 
 {% block scripts %}
-    {{ block.super }}
-    <script src="/static/node_modules/chart.js/dist/Chart.min.js"></script>
-    <script src="/static/node_modules/echarts/dist/echarts.min.js"></script>
-    <script src="/static/js/tms.js"></script>
-    <script src="/static/js/tms_echarts.js"></script>
-
-    <script>
-        $(document).ready(function() {
-            renderPieNestGraph({{ iso_year }}, {{ week }});
-        });
-    </script>
+    {{ super() }}
 {% endblock %}

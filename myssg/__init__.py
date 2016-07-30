@@ -131,8 +131,8 @@ class MySSG(object):
             # Layout
             if item.extension in ['css', 'js', 'json', 'jpg', 'png', 'gif']:
                 item.output = item.content
-            elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives', 'photos',
-                              'time/analyzer', 'time/year', 'time/month']:
+            elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives',
+                              'photos']:
                 self.render_item_by_template(item, item.uri.replace('/', '_'))
             elif item.uri.startswith('notes'):
                 self.render_item_by_template(item, 'note')
@@ -197,8 +197,12 @@ class MySSG(object):
                 self.events.extend(item.events)
         map(lambda it: it.update(), self.events)
         self.events.sort(key=itemgetter('date'), reverse=True)
-        for year, event_of_year in groupby(self.events, itemgetter('year')):
-            self.events_group_by_year.append((year, list(event_of_year)))
+        for year, events_of_year in groupby(self.events, itemgetter('year')):
+            events_group_by_month = list()
+            for month, events_of_month in groupby(events_of_year, itemgetter('month')):
+                events_group_by_month.append((month, list(events_of_month)))
+            self.events_group_by_year.append((year, events_group_by_month))
+
 
         self.reading_items.sort(key=itemgetter('last_update_time'), reverse=True)
         self.blog_items.sort(key=itemgetter('date'), reverse=True)

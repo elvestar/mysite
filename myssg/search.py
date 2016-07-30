@@ -14,6 +14,7 @@ class Searcher(object):
                     text=TEXT(analyzer=StemmingAnalyzer(), stored=True))
 
     def __init__(self):
+        return
         self.index_path = '.index'
         if index.exists_in(self.index_path):
             self.index = index.open_dir(self.index_path)
@@ -24,12 +25,14 @@ class Searcher(object):
         self.index_searcher = self.index.searcher()
 
     def add_document(self, item):
+        return
         self.index_writer.add_document(title=unicode(item.title), text=unicode(item.content), path=unicode(item.uri))
         logging.warning('%s is indexed' % (str(item)))
 
         # self.index_writer.add_document(title=u'ha ha', text=u'he he', path=u'/test')
 
     def commit(self):
+        return
         self.index_writer.commit()
 
     def search(self, q):

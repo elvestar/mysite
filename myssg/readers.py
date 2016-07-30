@@ -54,7 +54,7 @@ class Reader(object):
     def get_file_items(self):
         for root, dirs, files in os.walk(self.dir, followlinks=True):
             dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
-            # limit = 10
+            # limit = 12
             # if len(files) > limit:
             #     files = files[0:limit]
             for f in files:

@@ -81,7 +81,39 @@ def get_monday_date_of_iso_week(iso_year, week):
 def day_report(request):
     if 'date' in request.GET:
         return day_report_detail(request, request.GET['date'])
+
+    days_num = 10
+    cur_date = datetime.now().date()
+    min_date = cur_date - timedelta(days=days_num - 1)
+    days_stats = dict()
+    for i in range(days_num):
+        dt = (min_date + timedelta(days=i)).strftime('%Y-%m-%d')
+        days_stats[dt] = {
+            'all_time': 0,
+            'valid_time': 0,
+            'work_time': 0,
+            'study_time': 0,
+            'items_num': 0,
+        }
+    print(days_stats)
+    group_by_date_category_project = ClockItem.objects.filter(date__gte=min_date). \
+        values('date', 'category', 'project').annotate(Sum('time_cost_min'), Count('time_cost_min'))
+    for it in group_by_date_category_project:
+        dt = it['date'].strftime('%Y-%m-%d')
+        category = it['category']
+        time_cost = it['time_cost_min__sum']
+        days_stats[dt]['all_time'] += time_cost
+        days_stats[dt]['items_num'] += it['time_cost_min__count']
+        if category == '工作':
+            days_stats[dt]['work_time'] += time_cost
+            days_stats[dt]['valid_time'] += time_cost
+        elif category == '学习':
+            days_stats[dt]['study_time'] += time_cost
+            days_stats[dt]['valid_time'] += time_cost
+    print(days_stats)
+
     return render(request, 'tms/day_report.html', {
+        'days_stats': days_stats
         })
 
 

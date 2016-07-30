@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+CHINESE_MONTHS = ['一', '二', 'l']
 
 class Item(object):
     def __init__(self, uri, extension, content=None, path=None, mtime=None, html_root=None, title=None):
@@ -17,6 +18,7 @@ class Item(object):
         self.date = datetime.fromtimestamp(0)
         self.time = None
         self.year = self.date.year
+        self.month = self.date.month
         self.title = title
         self.sub_title = None
         self.summary = None
@@ -33,4 +35,6 @@ class Item(object):
 
     def update(self):
         self.year = self.date.year
+        self.month = self.date.month
+        self.mohth_str = self
 

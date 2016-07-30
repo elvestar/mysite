@@ -1,7 +1,10 @@
 {% extends 'tms/tms.html' %}
 
 {% block content_title %}
-    我的日报
+    <a href="#">
+        <i class="fa fa-file-text-o"></i>
+        我的日报
+    </a>
 {% endblock %}
 
 {% block content %}
@@ -11,23 +14,26 @@
         <tr>
             <th>日期</th>
             <th>简图</th>
-            <th>总体耗时</th>
-            <th>有效耗时</th>
+            <th>全部</th>
+            <th>有效</th>
             <th>工作</th>
             <th>学习</th>
             <th>计时项</th>
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td>2016年7月25日</td>
-            <td>sparkline</td>
-            <td>8H</td>
-            <td>6H</td>
-            <td>2H</td>
-            <td>4H</td>
-            <td>233个</td>
-        </tr>
+        {% for dt, day_stats in days_stats.items() %}
+            <tr onclick="window.location = '{{ url('tms:day_report') }}?date={{ dt }}';">
+                <td>{{ dt }}</td>
+                <td>TODO</td>
+                <td>{{ day_stats.all_time }}</td>
+                <td>{{ day_stats.valid_time }}</td>
+                <td>{{ day_stats.work_time }}</td>
+                <td>{{ day_stats.study_time }}</td>
+                <td>{{ day_stats.items_num }}个</td>
+            </tr>
+        {% endfor %}
+
         </tbody>
     </table>
     </div>
