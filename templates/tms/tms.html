@@ -17,6 +17,10 @@
             (url('tms:project'), '项目分析', 'tasks'),
             ]
     ) }}
+    {{ macros.admin_aside_section(id='gtdSection', title='GTD', section_items=[
+            (url('tms:project'), 'TODO', 'check-square'),
+            ]
+    ) }}
     {{ macros.admin_aside_single_section(url('tms:calendar'), '时间纪年', 'calendar') }}
     {{ macros.admin_aside_single_section(url('tms:about'), '关于', 'info-circle') }}
 
@@ -25,6 +29,7 @@
 {% block scripts %}
     {{ super() }}
     <script src="/static/node_modules/chart.js/dist/Chart.min.js"></script>
+    <script src="/static/node_modules/jquery-sparkline/jquery.sparkline.min.js"></script>
     <script src="/static/js/tms.js"></script>
 
     <script>

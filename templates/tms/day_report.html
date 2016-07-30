@@ -1,40 +1,58 @@
 {% extends 'tms/tms.html' %}
 
 {% block content_title %}
-    <a href="#">
-        <i class="fa fa-file-text-o"></i>
+{#    <a href="#">#}
+{#        <i class="fa fa-file-text-o"></i>#}
         我的日报
-    </a>
+{#    </a>#}
 {% endblock %}
 
 {% block content %}
-    <div class="m-r">
+    <div class="m-r m-t">
     <table class="admin-table">
+        <caption>日报列表</caption>
         <thead>
         <tr>
-            <th>日期</th>
-            <th>简图</th>
-            <th>全部</th>
-            <th>有效</th>
-            <th>工作</th>
-            <th>学习</th>
-            <th>计时项</th>
+            <th width="15%">日期</th>
+            <th width="20%">分时图</th>
+            <th class="time-cost">工作</th>
+            <th class="time-cost">学习</th>
+            <th class="time-cost">有效</th>
+            <th class="time-cost">全部</th>
+            <th></th>
         </tr>
         </thead>
         <tbody>
-        {% for dt, day_stats in days_stats.items() %}
-            <tr onclick="window.location = '{{ url('tms:day_report') }}?date={{ dt }}';">
-                <td>{{ dt }}</td>
-                <td>TODO</td>
-                <td>{{ day_stats.all_time }}</td>
-                <td>{{ day_stats.valid_time }}</td>
-                <td>{{ day_stats.work_time }}</td>
-                <td>{{ day_stats.study_time }}</td>
-                <td>{{ day_stats.items_num }}个</td>
+        {% for day_stats in days_stats %}
+            <tr onclick="window.location = '{{ url('tms:day_report') }}?date={{ day_stats.date_str }}';">
+                <td>
+                    {{ day_stats.date.strftime('%y/%-m/%-d') }}
+                    <span class="extra-info">{{ day_stats.week_day }}</span>
+                </td>
+                <td><span class="bar" id="hourBar{{ day_stats.date_str }}"></span></td>
+                <td class="time-cost">{{ day_stats.work_time }}</td>
+                <td class="time-cost">{{ day_stats.study_time }}</td>
+                <td class="time-cost">{{ day_stats.valid_time }}</td>
+                <td class="time-cost">{{ day_stats.all_time }}</td>
+                <td><span class="extra-info pull-right">共 {{ day_stats.items_num }} 计时项</span></td>
             </tr>
         {% endfor %}
 
         </tbody>
     </table>
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+
+    <script>
+        {% for day_stats in days_stats %}
+            $("#hourBar{{ day_stats.date_str }}").sparkline({{ day_stats.sparkline_data }}, {
+                type: 'bar',
+                height: '20px',
+                stackedBarColor: ['red', 'blue','green', 'black']
+            });
+        {% endfor %}
+    </script>
 {% endblock %}

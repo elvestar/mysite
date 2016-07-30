@@ -170,7 +170,7 @@ class TimeAnalyzer(object):
                 filter_by(iso_year=iso_year, week=week). \
                 group_by(ClockItem.project).order_by(db.desc(db.func.sum(ClockItem.time_cost))).all()
 
-            categories = ['工作', '学习', '生活', '未归类']
+            categories = ['工作', '学习', '生活', '其他']
             legend_data = list(t[0] for t in week_data_group_by_category)
             legend_data.sort(key=lambda x: categories.index(x))
             week_data_group_by_category.sort(key=lambda x: categories.index(x[0]))

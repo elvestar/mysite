@@ -1,6 +1,6 @@
 {% macro render_item_events(item) %}
     {% if item.events %}
-        <div class="timeline">
+        <div class="timeline-content">
             <h2>锚点 <small>共 {{ item.events|length }} 个</small></h2>
             <ul>
                 {% for event in item.events %}

@@ -20,15 +20,17 @@ from .models import ClockItem
 from myssg.items import Item
 
 
-def environment(**options):
-    env = Environment(**options)
-    env.globals.update({
-       'static': staticfiles_storage.url,
-       'url': reverse,
-    })
-    return env
+CATEGORIES = ['工作', '学习', '生活', '其他']
+CATEGORIES_NAME_DICT = {u'工作': 'work', u'学习': 'study', u'生活': 'life', u'其他': 'other'}
+WEEK_DAY_STR = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 
-CATEGORIES = ['工作', '学习', '生活', '未归类']
+
+def time_cost_str(time_cost_min):
+    if (time_cost_min % 60) < 10:
+        minutes_str = '0' + str(time_cost_min % 60)
+    else:
+        minutes_str = str(time_cost_min % 60)
+    return '%d:%s' % (time_cost_min / 60, minutes_str)
 
 
 class ClockItemFilter(filters.FilterSet):
@@ -85,32 +87,70 @@ def day_report(request):
     days_num = 10
     cur_date = datetime.now().date()
     min_date = cur_date - timedelta(days=days_num - 1)
-    days_stats = dict()
+    days_stats_dict = dict()
     for i in range(days_num):
-        dt = (min_date + timedelta(days=i)).strftime('%Y-%m-%d')
-        days_stats[dt] = {
+        dt = min_date + timedelta(days=i)
+        days_stats_dict[dt] = {
+            'date': dt,
+            'date_str': dt.strftime('%Y-%m-%d'),
+            'week_day': WEEK_DAY_STR[dt.weekday()],
             'all_time': 0,
             'valid_time': 0,
             'work_time': 0,
             'study_time': 0,
             'items_num': 0,
+            'hours_stats': [{'work': 0, 'study': 0, 'life': 0, 'other': 0} for i in range(24)]
         }
-    print(days_stats)
-    group_by_date_category_project = ClockItem.objects.filter(date__gte=min_date). \
-        values('date', 'category', 'project').annotate(Sum('time_cost_min'), Count('time_cost_min'))
-    for it in group_by_date_category_project:
-        dt = it['date'].strftime('%Y-%m-%d')
-        category = it['category']
-        time_cost = it['time_cost_min__sum']
-        days_stats[dt]['all_time'] += time_cost
-        days_stats[dt]['items_num'] += it['time_cost_min__count']
+
+    # Fill days_stats_dict
+    clock_items = ClockItem.objects.filter(date__gte=min_date)
+    for clock_item in clock_items:
+        dt = clock_item.date
+        time_cost_min = clock_item.time_cost_min
+        days_stats_dict[dt]['all_time'] += time_cost_min
+        days_stats_dict[dt]['items_num'] += 1
+        category = clock_item.category
         if category == '工作':
-            days_stats[dt]['work_time'] += time_cost
-            days_stats[dt]['valid_time'] += time_cost
+            days_stats_dict[dt]['work_time'] += time_cost_min
+            days_stats_dict[dt]['valid_time'] += time_cost_min
         elif category == '学习':
-            days_stats[dt]['study_time'] += time_cost
-            days_stats[dt]['valid_time'] += time_cost
-    print(days_stats)
+            days_stats_dict[dt]['study_time'] += time_cost_min
+            days_stats_dict[dt]['valid_time'] += time_cost_min
+
+        # Hour stats
+        hours_stats = days_stats_dict[dt]['hours_stats']
+        start_time = clock_item.start_time
+        end_time = clock_item.end_time
+        start_hour = start_time.hour
+        end_hour = end_time.hour
+        category_name = CATEGORIES_NAME_DICT[clock_item.category]
+        if start_hour == end_hour:
+            hours_stats[start_hour][category_name] += end_time.minute - start_time.minute
+        else:
+            for hour in range(start_hour, end_hour + 1):
+                if hour == start_hour:
+                    hours_stats[hour][category_name] += 60 - start_time.minute
+                elif hour == end_hour:
+                    hours_stats[hour][category_name] += end_time.minute
+                else:
+                    hours_stats[hour][category_name] += 60
+    days_stats = list(days_stats_dict.values())
+    days_stats.sort(key=itemgetter('date'), reverse=True)
+
+    # Change time cost format
+    for day_stats in days_stats:
+        day_stats['work_time'] = time_cost_str(day_stats['work_time'])
+        day_stats['study_time'] = time_cost_str(day_stats['study_time'])
+        day_stats['valid_time'] = time_cost_str(day_stats['valid_time'])
+        day_stats['all_time'] = time_cost_str(day_stats['all_time'])
+
+    # Generate sparkline data, see http://omnipotent.net/jquery.sparkline/
+    for day_stats in days_stats:
+        sparkline_data = '['
+        for hour_stats in day_stats['hours_stats']:
+            sparkline_data += '[%d, %d, %d, %d], ' % (hour_stats['work'], hour_stats['study'], hour_stats['life'], hour_stats['other'])
+        sparkline_data += ']'
+        day_stats['sparkline_data'] = sparkline_data
 
     return render(request, 'tms/day_report.html', {
         'days_stats': days_stats
@@ -254,7 +294,7 @@ def year_stats_step_by_month_and_week(request):
 
     valid_time_of_month = [0] * 12
     work_time_of_month = [0] * 12
-    study_time_of_montj = [0] * 12
+    study_time_of_month = [0] * 12
     for item in time_cost_group_by_month_category:
         category = item['category']
         month = item['month']
@@ -263,12 +303,12 @@ def year_stats_step_by_month_and_week(request):
             work_time_of_month[month - 1] += time_cost_min
             valid_time_of_month[month - 1] += time_cost_min
         elif category == '学习':
-            study_time_of_montj[month - 1] += time_cost_min
+            study_time_of_month[month - 1] += time_cost_min
             valid_time_of_month[month - 1] += time_cost_min
     month_labels = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
     valid_time_of_month = ['%.1f' % (float(i) / 60.0) for i in valid_time_of_month]
     work_time_of_month = ['%.1f' % (float(i) / 60.0) for i in work_time_of_month]
-    study_time_of_month = ['%.1f' % (float(i) / 60.0) for i in study_time_of_montj]
+    study_time_of_month = ['%.1f' % (float(i) / 60.0) for i in study_time_of_month]
 
     # Get last week of year
     time_cost_group_by_week_category = ClockItem.objects.filter(iso_year=year). \
@@ -278,7 +318,7 @@ def year_stats_step_by_month_and_week(request):
 
     valid_time_of_week = [0] * last_week
     work_time_of_week = [0] * last_week
-    study_time_of_montj = [0] * last_week
+    study_time_of_month = [0] * last_week
     for item in time_cost_group_by_week_category:
         category = item['category']
         week = item['week']
@@ -287,12 +327,12 @@ def year_stats_step_by_month_and_week(request):
             work_time_of_week[week - 1] += time_cost_min
             valid_time_of_week[week - 1] += time_cost_min
         elif category == '学习':
-            study_time_of_montj[week - 1] += time_cost_min
+            study_time_of_month[week - 1] += time_cost_min
             valid_time_of_week[week - 1] += time_cost_min
     week_labels = ['W%d' % w for w in range(1, last_week + 1)]
     valid_time_of_week = ['%.1f' % (float(i) / 60.0) for i in valid_time_of_week]
     work_time_of_week = ['%.1f' % (float(i) / 60.0) for i in work_time_of_week]
-    study_time_of_week = ['%.1f' % (float(i) / 60.0) for i in study_time_of_montj]
+    study_time_of_week = ['%.1f' % (float(i) / 60.0) for i in study_time_of_month]
 
 
     data = {
@@ -424,19 +464,9 @@ def generate_report(clock_items, days_num):
 
     # Change form of time cost
     for category_data in categories_data:
-        category_time_cost = category_data['cost']
-        if (category_time_cost % 60) < 10:
-            minutes_str = '0' + str(category_time_cost % 60)
-        else:
-            minutes_str = str(category_time_cost % 60)
-        category_data['cost'] = '%d:%s' % (category_time_cost / 60, minutes_str)
+        category_data['cost'] = time_cost_str(category_data['cost'])
         for project_data in category_data['projects']:
-            project_time_cost = project_data['cost']
-            if (project_time_cost % 60) < 10:
-                minutes_str = '0' + str(project_time_cost % 60)
-            else:
-                minutes_str = str(project_time_cost % 60)
-            project_data['cost'] = '%d:%s' % (project_time_cost / 60, minutes_str)
+            project_data['cost'] = time_cost_str(project_data['cost'])
 
     report_data = {
         'categories': categories_data,

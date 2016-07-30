@@ -85,10 +85,10 @@ class Rules(object):
     )
     url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])''')
     emphasis = re.compile(
-        r'^ ([%s])(\S[\s\S]+?)(?:\1 |\1$)' % _emphasis_symbols
+        r'^ ([%s])(\S[\s\S]*?)(?:\1 |\1$)' % _emphasis_symbols
     )
     emphasis_in_start = re.compile(
-        r'^ ?([%s])(\S[\s\S]+?)(?:\1 |\1$)' % _emphasis_symbols
+        r'^ ?([%s])(\S[\s\S]*?)(?:\1 |\1$)' % _emphasis_symbols
     )
     footnote = re.compile(r'^\[\^([^\]]+)\]')
     inline_text = re.compile(
