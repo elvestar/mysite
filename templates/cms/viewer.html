@@ -1,0 +1,26 @@
+{% extends 'cms/cms.html' %}
+
+{% block content_title %}
+    文章
+{% endblock %}
+
+{% block content %}
+    <div class="viewer">
+        <div class="file-list-header">
+            <span class="file-info file-name">文件名</span>
+            <span class="file-info">最后更新</span>
+            <span class="file-info">创建时间</span>
+            <span class="file-info">文件大小</span>
+        </div>
+        <div class="file-list-body">
+            {% for file_item in file_items %}
+                <div class="file-list-row">
+                    <span class="file-info file-name"><a href="{{ file_item.uri }}">{{ file_item.title }}</a></span>
+                    <span class="file-info">{{ file_item.last_update_time }}</span>
+                    <span class="file-info">{{ file_item.date }}</span>
+                    <span class="file-info">{{ file_item.size }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

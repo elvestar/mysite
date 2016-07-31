@@ -203,7 +203,6 @@ class MySSG(object):
                 events_group_by_month.append((month, list(events_of_month)))
             self.events_group_by_year.append((year, events_group_by_month))
 
-
         self.reading_items.sort(key=itemgetter('last_update_time'), reverse=True)
         self.blog_items.sort(key=itemgetter('date'), reverse=True)
         self.life_items.sort(key=itemgetter('date'), reverse=True)

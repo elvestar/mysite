@@ -5,10 +5,10 @@
 {% endblock %}
 
 {% block admin_aside_body %}
-    {{ macros.admin_aside_section(id='navSection', title='目录浏览', section_items=[
-            (url('tms:day_report'), '文章', 'file-text-o'),
-            (url('tms:week_report'), '笔记', 'file-text-o'),
-            (url('tms:custom_report'), '生活', 'file-text-o'),
+    {{ macros.admin_aside_section(id='viewerSection', title='目录浏览', section_items=[
+            (url('cms:blog_viewer'), '文章', 'file-text-o'),
+            (url('cms:notes_viewer'), '笔记', 'file-text-o'),
+            (url('cms:life_viewer'), '生活', 'file-text-o'),
             ] ) }}
 
     {{ macros.admin_aside_section(id='archivesSection', title='归档', section_items=[
@@ -28,7 +28,7 @@
 
     <script>
         $(document).ready(function() {
-            toggleCaretWhenCollapse('#navSection, #archivesSection, #mediaSection');
+            toggleCaretWhenCollapse($('#viewerSection, #archivesSection, #mediaSection'));
         });
     </script>
 {% endblock %}

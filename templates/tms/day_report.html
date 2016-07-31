@@ -51,7 +51,14 @@
             $("#hourBar{{ day_stats.date_str }}").sparkline({{ day_stats.sparkline_data }}, {
                 type: 'bar',
                 height: '20px',
-                stackedBarColor: ['red', 'blue','green', 'black']
+                stackedBarColor: ['red', 'blue','green', 'black'],
+                {% raw %}
+                tooltipFormat: '{{offset:offset}} 点  <span style="color: {{color}}">&#9679;</span> 用时 {{prefix}}{{value}}{{suffix}} 分钟',
+                tooltipValueLookups: {
+                    'offset': {
+                    }
+                }
+                {% endraw %}
             });
         {% endfor %}
     </script>

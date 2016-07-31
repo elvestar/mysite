@@ -9,7 +9,7 @@ from jinja2 import Environment
 from django.contrib.staticfiles.storage import staticfiles_storage
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.db.models import Sum, Count
 from rest_framework import generics, filters
 from rest_framework.response import Response
@@ -50,7 +50,7 @@ class ClockItemList(generics.ListAPIView):
 
 
 def index(request):
-    return render(request, 'tms/index.html')
+    return redirect('tms:day_report')
 
 
 def project(request):
@@ -318,7 +318,7 @@ def year_stats_step_by_month_and_week(request):
 
     valid_time_of_week = [0] * last_week
     work_time_of_week = [0] * last_week
-    study_time_of_month = [0] * last_week
+    study_time_of_week = [0] * last_week
     for item in time_cost_group_by_week_category:
         category = item['category']
         week = item['week']
@@ -327,13 +327,12 @@ def year_stats_step_by_month_and_week(request):
             work_time_of_week[week - 1] += time_cost_min
             valid_time_of_week[week - 1] += time_cost_min
         elif category == '学习':
-            study_time_of_month[week - 1] += time_cost_min
+            study_time_of_week[week - 1] += time_cost_min
             valid_time_of_week[week - 1] += time_cost_min
     week_labels = ['W%d' % w for w in range(1, last_week + 1)]
     valid_time_of_week = ['%.1f' % (float(i) / 60.0) for i in valid_time_of_week]
     work_time_of_week = ['%.1f' % (float(i) / 60.0) for i in work_time_of_week]
-    study_time_of_week = ['%.1f' % (float(i) / 60.0) for i in study_time_of_month]
-
+    study_time_of_week = ['%.1f' % (float(i) / 60.0) for i in study_time_of_week]
 
     data = {
         'month': {
