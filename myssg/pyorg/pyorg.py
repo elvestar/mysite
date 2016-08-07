@@ -78,7 +78,7 @@ class Rules(object):
     # Inline rules
     escape = re.compile(r'^\\([\\`*{}\[\]()#+\-.!_>~|])')  # \* \+ \! ....
     link = re.compile(
-        r'^(#\+(?:CAPTION|ATTR_HTML): .*\n)*'
+        r'^((?:#\+(?:CAPTION|ATTR_HTML): .*\n)*)'
         r'\['
         r'\[([^\]]+)\]'
         r'(\[([^\]]+)\])?'
@@ -370,24 +370,28 @@ class OrgParser(object):
     def parse_link(self, m, root):
         link = m.group(2)
         if link.endswith(('jpg', 'png', 'gif')):
-            link_attr_str = m.group(1)
-            title = link
-            if link_attr_str is not None:
-                for line in link_attr_str.split('\n'):
-                    if '#+CAPTION:' in line:
-                        title = line.replace('#+CAPTION:', '').strip()
 
             img_tag = self.soup.new_tag('img')
             img_tag['src'] = link
             img_tag['alt'] = link
+            img_tag['class'] = 'center'
             img_div_tag = self.soup.new_tag('div')
             img_div_tag.append(img_tag)
-            img_title_tag = self.soup.new_tag('div')
-            img_title_tag.string = title
-            img_title_tag['class'] = 'img-title'
+
             new_tag = self.soup.new_tag('div')
             new_tag.append(img_div_tag)
-            new_tag.append(img_title_tag)
+            if m.group(1) is not None:
+                for line in m.group(1).split('\n'):
+                    if '#+CAPTION:' in line:
+                        title = line.replace('#+CAPTION:', '').strip()
+                        img_title_tag = self.soup.new_tag('div')
+                        img_title_tag.string = title
+                        img_title_tag['class'] = 'img-title'
+                        new_tag.append(img_title_tag)
+                    if '#+ATTR_HTML:' in line:
+                        attr_str = line.replace('#+ATTR_HTML:', '').strip()
+                        for m in re.finditer(r'([^=]+)="([^"]+)"', attr_str):
+                            new_tag[m.group(1)] = m.group(2)
         else:
             new_tag = self.soup.new_tag('a')
             new_tag['href'] = link
