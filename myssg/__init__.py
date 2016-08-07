@@ -88,7 +88,7 @@ class MySSG(object):
 
             # Compile
             if item.extension == 'md':
-                item.content = markdown(item.content)
+                item.output = markdown(item.content)
             elif item.extension == 'org':
                 py_org(item)
                 org_filter(item)
@@ -98,14 +98,14 @@ class MySSG(object):
                     gallery_filter(item)
                 elif item.uri.startswith('photos/'):
                     photos_filter(item)
-                item.content = item.html_root.prettify()
+                item.output = item.html_root.prettify()
                 # Search indexing
                 self.searcher.add_document(item)
             elif item.extension == 'html':
                 item.html_root = BeautifulSoup(item.content)
                 if item.uri.startswith(('reading/notes/')):
                     reading_note_filter(item)
-                item.content = item.html_root.prettify()
+                item.output = item.html_root.prettify()
             else:
                 pass
 
@@ -130,7 +130,7 @@ class MySSG(object):
         for item in self.items:
             # Layout
             if item.extension in ['css', 'js', 'json', 'jpg', 'png', 'gif']:
-                item.output = item.content
+                item.final_output = item.content
             elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives',
                               'photos']:
                 self.render_item_by_template(item, item.uri.replace('/', '_'))
@@ -149,7 +149,7 @@ class MySSG(object):
             elif item.uri.startswith('reading/notes/'):
                 self.render_item_by_template(item, 'evernote')
             else:
-                item.output = item.content
+                item.final_output = item.output
 
             # Router
             if item.extension in ['css', 'js', 'map']:
@@ -232,7 +232,7 @@ class MySSG(object):
 
     def render_item_by_template(self, item, template_name):
         template = self.templates[template_name]
-        item.output = template.render(item=item)
+        item.final_output = template.render(item=item)
         return
 
     def generate_archives(self):

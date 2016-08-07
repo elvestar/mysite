@@ -84,7 +84,10 @@ def day_report(request):
     if 'date' in request.GET:
         return day_report_detail(request, request.GET['date'])
 
-    days_num = 10
+    if 'num' in request.GET:
+        days_num = int(request.GET['num'])
+    else:
+        days_num = 31
     cur_date = datetime.now().date()
     min_date = cur_date - timedelta(days=days_num - 1)
     days_stats_dict = dict()

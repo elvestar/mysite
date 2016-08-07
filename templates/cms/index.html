@@ -1,5 +1,45 @@
 {% extends 'cms/cms.html' %}
 
+{% block content_title %}
+    内容统计
+{% endblock %}
+
 {% block content %}
-    CMS
+    <div class="row">
+        <div class="col-md-6">
+            <div class="admin-panel">
+            <table class="admin-table">
+                <thead>
+                <tr>
+                    <th>类型</th>
+                    <th>个数</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr>
+                    <td>全部</td>
+                    <td>{{ item_count_stats.all }}</td>
+                </tr>
+                <tr>
+                    <td>笔记</td>
+                    <td>{{ item_count_stats.notes }}</td>
+                </tr>
+                <tr>
+                    <td>博客</td>
+                    <td>{{ item_count_stats.blog }}</td>
+                </tr>
+                <tr>
+                    <td>生活</td>
+                    <td>{{ item_count_stats.life }}</td>
+                </tr>
+                <tr>
+                    <td>其他</td>
+                    <td>{{ item_count_stats.other }}</td>
+                </tr>
+                </tbody>
+            </table>
+            </div>
+
+        </div>
+    </div>
 {% endblock %}

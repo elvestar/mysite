@@ -27,6 +27,9 @@ def org_filter(item):
     # Image zoom
     for img in html_root.find_all('img'):
         img['data-action'] = 'zoom'
+        if img['src'].startswith('./imgs/'):
+            img['src'] = '/' + item.uri + img['src'][1:]
+            print(img)
 
     # Set org item meta (such as date, tags)
     for meta in html_root.find_all('meta'):

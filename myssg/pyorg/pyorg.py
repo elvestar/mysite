@@ -78,10 +78,11 @@ class Rules(object):
     # Inline rules
     escape = re.compile(r'^\\([\\`*{}\[\]()#+\-.!_>~|])')  # \* \+ \! ....
     link = re.compile(
-        r'^\['
+        r'^(#\+(?:CAPTION|ATTR_HTML): .*\n)*'
+        r'\['
         r'\[([^\]]+)\]'
         r'(\[([^\]]+)\])?'
-        r'\]'
+        r'\]\n?'
     )
     url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])''')
     emphasis = re.compile(
@@ -104,7 +105,7 @@ class OrgParser(object):
     # ]
     block_rule_keys = [
         'newline', 'heading', 'list_block', 'table',
-        'source', 'begin_xxx', 'clock_block',
+        'source', 'begin_xxx',
         'paragraph', 'text'
     ]
     inline_rule_keys = [
@@ -176,7 +177,6 @@ class OrgParser(object):
                     meta = self.soup.new_tag('meta', content=meta_content)
                     meta['name'] = meta_name
                 self.head.append(meta)
-
 
     def parse_by_block_rules(self, text, root=None):
         return self.parse_by_rules(text, self.block_rule_keys, root)
@@ -309,11 +309,15 @@ class OrgParser(object):
             new_tag = BeautifulSoup(m.group(2), 'html.parser')
         elif symbol in ['example', 'EXAMPLE']:
             new_tag = self.soup.new_tag('pre')
-            new_tag['class'] =  'example'
+            new_tag['class'] = 'example'
             new_tag.string = m.group(2)
         elif symbol in ['quote', 'QUOTE']:
             new_tag = self.soup.new_tag('blockquote')
-            new_tag.string = m.group(2)
+            # new_tag.string = m.group(2)
+            for part in re.split('\n{2,}', m.group(2)):
+                new_p_tag = self.soup.new_tag('p')
+                new_p_tag.string = part
+                new_tag.append(new_p_tag)
         elif symbol in ['verse', 'VERSE']:
             new_tag = self.soup.new_tag('p')
             new_tag['class'] = 'verse'
@@ -364,19 +368,34 @@ class OrgParser(object):
         root.append(new_tag)
 
     def parse_link(self, m, root):
-        link = m.group(1)
+        link = m.group(2)
         if link.endswith(('jpg', 'png', 'gif')):
-            new_tag = self.soup.new_tag('img')
-            new_tag['src'] = link
-            new_tag['alt'] = link
+            link_attr_str = m.group(1)
+            title = link
+            if link_attr_str is not None:
+                for line in link_attr_str.split('\n'):
+                    if '#+CAPTION:' in line:
+                        title = line.replace('#+CAPTION:', '').strip()
+
+            img_tag = self.soup.new_tag('img')
+            img_tag['src'] = link
+            img_tag['alt'] = link
+            img_div_tag = self.soup.new_tag('div')
+            img_div_tag.append(img_tag)
+            img_title_tag = self.soup.new_tag('div')
+            img_title_tag.string = title
+            img_title_tag['class'] = 'img-title'
+            new_tag = self.soup.new_tag('div')
+            new_tag.append(img_div_tag)
+            new_tag.append(img_title_tag)
         else:
             new_tag = self.soup.new_tag('a')
             new_tag['href'] = link
             new_tag['target'] = '_blank'
-            if m.group(2) is None:
-                new_tag.string = m.group(1)
+            if m.group(3) is None:
+                new_tag.string = m.group(2)
             else:
-                new_tag.string = m.group(3)
+                new_tag.string = m.group(4)
         root.append(new_tag)
 
     def parse_url(self, m, root):

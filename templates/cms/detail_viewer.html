@@ -1,0 +1,16 @@
+{% extends 'cms/viewer.html' %}
+
+{% block content_title %}
+    {{ file_item.title }}
+{% endblock %}
+
+{% block content_info %}
+    <a href="{{ url('cms:index') }}viewer/{{ category }}/">返回</a>
+    <a href="/{{ file_item.uri }}" target="_blank">新窗口打开</a>
+{% endblock %}
+
+{% block content %}
+    <div class="detail-viewer">
+        {{ file_item.output|safe }}
+    </div>
+{% endblock %}

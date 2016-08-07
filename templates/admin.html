@@ -7,6 +7,7 @@
 
 {% block styles %}
     <link rel="stylesheet" href="/static/css/admin.css"/>
+    <link rel="stylesheet" href="/static/css/cms.css"/>
 {% endblock %}
 
 {% block body_tag %}
@@ -63,14 +64,19 @@
 
                     {% endblock %}
                 </div>
-
             </div>
+
             <div class="admin-content-wrapper">
                 <div class="admin-content">
                     <div class="admin-content-header m-x">
-                        <div class="title">
+                        <div class="content-title">
                             {% block content_title %}
                                 标题
+                            {% endblock %}
+                        </div>
+                        <div class="content-info">
+                            {% block content_info %}
+                                信息
                             {% endblock %}
                         </div>
                     </div>

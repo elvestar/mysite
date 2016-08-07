@@ -1,20 +1,20 @@
-{% extends "evernote.html" %}
+{% extends "blog.html" %}
 
-{% block aside2_content %}
-    <div class="p-x-xs p-t-xs">
-        <ul class="list-group">
-            {% for it in life_items %}
-                <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="{{ item_url(it) }}">
-                    {{ it.title }}
-                </a>
-            {% endfor %}
-        </ul>
-    </div>
-{% endblock %}
-
-{% block content %}
-    <h1 class="center">{{ item.title }}</h1>
-    {{ item.content }}
-
-    {{ macros.render_item_events(item) }}
-{% endblock %}
+{#{% block aside2_content %}#}
+{#    <div class="p-x-xs p-t-xs">#}
+{#        <ul class="list-group">#}
+{#            {% for it in life_items %}#}
+{#                <a class="list-group-item {% if it.uri == item.uri %} active {% endif %}" href="{{ item_url(it) }}">#}
+{#                    {{ it.title }}#}
+{#                </a>#}
+{#            {% endfor %}#}
+{#        </ul>#}
+{#    </div>#}
+{#{% endblock %}#}
+{##}
+{#{% block content %}#}
+{#    <h1 class="center">{{ item.title }}</h1>#}
+{#    {{ item.content }}#}
+{##}
+{#    {{ macros.render_item_events(item) }}#}
+{#{% endblock %}#}

@@ -24,17 +24,28 @@
         </thead>
         <tbody>
         {% for day_stats in days_stats %}
-            <tr onclick="window.location = '{{ url('tms:day_report') }}?date={{ day_stats.date_str }}';">
+            <tr>
                 <td>
-                    {{ day_stats.date.strftime('%y/%-m/%-d') }}
-                    <span class="extra-info">{{ day_stats.week_day }}</span>
+                    <a href="{{ url('tms:day_report') }}?date={{ day_stats.date_str }}">
+                        {{ day_stats.date.strftime('%y/%-m/%-d') }}
+                        <span class="extra-info">{{ day_stats.week_day }}</span>
+                    </a>
                 </td>
-                <td><span class="bar" id="hourBar{{ day_stats.date_str }}"></span></td>
+                <td>
+                    <span class="bar" id="hourBar{{ day_stats.date_str }}"></span>
+                </td>
                 <td class="time-cost">{{ day_stats.work_time }}</td>
                 <td class="time-cost">{{ day_stats.study_time }}</td>
                 <td class="time-cost">{{ day_stats.valid_time }}</td>
                 <td class="time-cost">{{ day_stats.all_time }}</td>
-                <td><span class="extra-info pull-right">共 {{ day_stats.items_num }} 计时项</span></td>
+                <td>
+                    <span>
+                        <a href="{{ url('tms:day_report') }}?date={{ day_stats.date_str }}" class="extra-info" target="_blank">
+                            <i class="fa fa-link"></i>
+                        </a>
+                    </span>
+                    <span class="extra-info pull-right">共 {{ day_stats.items_num }} 计时项</span>
+                </td>
             </tr>
         {% endfor %}
 

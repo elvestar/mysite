@@ -15,10 +15,10 @@
         <div class="file-list-body">
             {% for file_item in file_items %}
                 <div class="file-list-row">
-                    <span class="file-info file-name"><a href="{{ file_item.uri }}">{{ file_item.title }}</a></span>
-                    <span class="file-info">{{ file_item.last_update_time }}</span>
-                    <span class="file-info">{{ file_item.date }}</span>
-                    <span class="file-info">{{ file_item.size }}</span>
+                    <span class="file-info file-name"><a href="?uri={{ file_item.uri }}">{{ file_item.title }}</a></span>
+                    <span class="file-info">{{ file_item.mtime.strftime('%y-%m-%d %H:%M') }}</span>
+                    <span class="file-info">{{ file_item.date.strftime('%Y年%m月%d日') }}</span>
+                    <span class="file-info">{{ file_item.file_size }}</span>
                 </div>
             {% endfor %}
         </div>
