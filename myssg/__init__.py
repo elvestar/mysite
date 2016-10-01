@@ -94,6 +94,8 @@ class MySSG(object):
                 org_filter(item)
                 if item.uri.startswith(('notes/', 'blog/', 'life/')):
                     add_toc(item)
+                    if item.uri.startswith('life/'):
+                        photos_filter(item)
                 elif item.uri == 'gallery':
                     gallery_filter(item)
                 elif item.uri.startswith('photos/'):

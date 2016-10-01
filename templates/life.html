@@ -1,4 +1,4 @@
-{% extends "blog.html" %}
+{% extends "base.html" %}
 
 {#{% block aside2_content %}#}
 {#    <div class="p-x-xs p-t-xs">#}
@@ -18,3 +18,19 @@
 {##}
 {#    {{ macros.render_item_events(item) }}#}
 {#{% endblock %}#}
+
+{% block main %}
+    <div class="container m-t-lg">
+        <h1>{{ item.title }}</h1>
+        {{ item.output }}
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    <script>
+        $(document).ready(function() {
+            $('.grid').imageGrid();
+        });
+    </script>
+{% endblock %}

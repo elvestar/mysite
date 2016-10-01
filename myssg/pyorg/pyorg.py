@@ -19,6 +19,27 @@ _emphasis_symbols = '\*=_/+~'
 
 
 class Rules(object):
+    # Inline rules
+    escape = re.compile(r'^\\([\\`*{}\[\]()#+\-.!_>~|])')  # \* \+ \! ....
+    link = re.compile(
+        r'^((?:#\+(?:CAPTION|ATTR_HTML): .*\n)*)'
+        r'\['
+        r'\[([^\]]+)\]'
+        r'(\[([^\]]+)\])?'
+        r'\]\n?'
+    )
+    url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])''')
+    emphasis = re.compile(
+        r'^ ([%s])(\S[\s\S]*?)(?:\1 |\1$)' % _emphasis_symbols
+    )
+    emphasis_in_start = re.compile(
+        r'^ ?([%s])(\S[\s\S]*?)(?:\1 |\1$)' % _emphasis_symbols
+    )
+    footnote = re.compile(r'^\[\^([^\]]+)\]')
+    inline_text = re.compile(
+        r'^[\s\S]+?(?= [%s]|\[\[|https?://| {2,}\n|$)' % _emphasis_symbols
+    )
+
     # Block rules
     newline = re.compile(r'^\n+')
     heading = re.compile(r'^(\*{1,6}) +([^\n]+?)(?:\n+|$)')
@@ -74,27 +95,6 @@ class Rules(object):
         )
     )
     text = re.compile(r'^[^\n]+')
-
-    # Inline rules
-    escape = re.compile(r'^\\([\\`*{}\[\]()#+\-.!_>~|])')  # \* \+ \! ....
-    link = re.compile(
-        r'^((?:#\+(?:CAPTION|ATTR_HTML): .*\n)*)'
-        r'\['
-        r'\[([^\]]+)\]'
-        r'(\[([^\]]+)\])?'
-        r'\]\n?'
-    )
-    url = re.compile(r'''^(https?:\/\/[^\s<]+[^<.,:;"')\]\s])''')
-    emphasis = re.compile(
-        r'^ ([%s])(\S[\s\S]*?)(?:\1 |\1$)' % _emphasis_symbols
-    )
-    emphasis_in_start = re.compile(
-        r'^ ?([%s])(\S[\s\S]*?)(?:\1 |\1$)' % _emphasis_symbols
-    )
-    footnote = re.compile(r'^\[\^([^\]]+)\]')
-    inline_text = re.compile(
-        r'^[\s\S]+?(?= [%s]|\[\[|https?://| {2,}\n|$)' % _emphasis_symbols
-    )
 
 
 class OrgParser(object):
@@ -374,7 +374,6 @@ class OrgParser(object):
             img_tag = self.soup.new_tag('img')
             img_tag['src'] = link
             img_tag['alt'] = link
-            img_tag['class'] = 'center'
             img_div_tag = self.soup.new_tag('div')
             img_div_tag.append(img_tag)
 

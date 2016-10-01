@@ -7,7 +7,7 @@
                     <li class="text">
                         <a href="{{ item_url(event) }}">
                             <h3>{{ event.title }}</h3>
-                            <p>{{ event.summary }}</p>
+                            <p>{{ event.summary|escape }}</p>
                         </a>
                     </li>
                 {% endfor %}

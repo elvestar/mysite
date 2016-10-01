@@ -15,12 +15,12 @@
 
 {% block scripts %}
     {{ super() }}
-    <script type="text/javascript" charset="utf-8">
-        $('#toc').affix({
-            offset: {
-                top: $('#toc').offset().top,
-                bottom: ($('#footer').outerHeight(true))
-            }
-        });
-    </script>
+{#    <script type="text/javascript" charset="utf-8">#}
+{#        $('#toc').affix({#}
+{#            offset: {#}
+{#                top: $('#toc').offset().top,#}
+{#                bottom: ($('#footer').outerHeight(true))#}
+{#            }#}
+{#        });#}
+{#    </script>#}
 {% endblock %}

@@ -28,7 +28,7 @@ def org_filter(item):
     for img in html_root.find_all('img'):
         img['data-action'] = 'zoom'
         if img['src'].startswith('./imgs/'):
-            img['src'] = '/' + item.uri + img['src'][1:]
+            img['src'] = '/' + item.uri + '/imgs/' + img['src'].split('/')[-1]
 
     # Set org item meta (such as date, tags)
     for meta in html_root.find_all('meta'):
@@ -66,29 +66,23 @@ def photos_filter(item):
     images = soup.new_tag('div')
     images['class'] = 'grid'
     for img in html_root.find_all('img'):
-        img['data-action'] = 'zoom'
-        # set image size
-        img_path = '/Users/elvestar/github/elvestar/contents/photos/' + img['src']
+        new_img = soup.new_tag('img')
+        new_img['data-action'] = 'zoom'
+        new_img['src'] = img['src']
+        new_img['alt'] = img['alt']
+        # # set image size
+        img_path = '/Users/elvestar/github/elvestar/elvestar.github.io/' + new_img['src']
         im = Image.open(img_path)
-        # h = 290
         width, height = im.size
-        # width = int(h * (float(width) / float(height)))
-        # height = h
-        # print('Resize ', img_path, ' to ', width, 'x', height)
-        # try:
-        #     im = im.resize((width, height))
-        #     im.save(img_path)
-        # except Exception as e:
-        #     pass
-        img['data-width'] = width / 2
-        img['data-height'] = height / 2
+        new_img['data-width'] = width
+        new_img['data-height'] = height
         image = soup.new_tag('div')
-        image.append(img)
+        image.append(new_img)
         images.append(image)
     container = soup.new_tag('div')
     container['class'] = 'grid-wrapper'
     container.append(images)
-    html_root.clear()
+    # html_root.clear()
     html_root.append(container)
     item.html_root = html_root
 

@@ -27,8 +27,10 @@ class Reader(object):
     def read(self):
         items = list()
         for file_item in self.get_file_items():
-            if 'my-site-v' not in file_item['uri']:
+            if file_item['uri'] not in ['life/1609-team-building']:
                 continue
+            # if 'my-site-v' not in file_item['uri']:
+            #     continue
             content = file(file_item['path']).read()
             item = Item(uri=file_item['uri'],
                         extension=file_item['extension'],
