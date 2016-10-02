@@ -374,11 +374,9 @@ class OrgParser(object):
             img_tag = self.soup.new_tag('img')
             img_tag['src'] = link
             img_tag['alt'] = link
-            img_div_tag = self.soup.new_tag('div')
-            img_div_tag.append(img_tag)
 
             new_tag = self.soup.new_tag('div')
-            new_tag.append(img_div_tag)
+            new_tag.append(img_tag)
             if m.group(1) is not None:
                 for line in m.group(1).split('\n'):
                     if '#+CAPTION:' in line:
@@ -391,6 +389,8 @@ class OrgParser(object):
                         attr_str = line.replace('#+ATTR_HTML:', '').strip()
                         for m in re.finditer(r'([^=]+)="([^"]+)"', attr_str):
                             new_tag[m.group(1)] = m.group(2)
+            if not new_tag.has_attr('class'):
+                new_tag['class'] = 'img-default'
         else:
             new_tag = self.soup.new_tag('a')
             new_tag['href'] = link

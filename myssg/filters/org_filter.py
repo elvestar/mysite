@@ -64,7 +64,7 @@ def photos_filter(item):
     soup = BeautifulSoup()
     html_root = item.html_root
     images = soup.new_tag('div')
-    images['class'] = 'grid'
+    images['id'] = 'grid'
     for img in html_root.find_all('img'):
         new_img = soup.new_tag('img')
         new_img['data-action'] = 'zoom'
@@ -79,12 +79,27 @@ def photos_filter(item):
         image = soup.new_tag('div')
         image.append(new_img)
         images.append(image)
-    container = soup.new_tag('div')
-    container['class'] = 'grid-wrapper'
-    container.append(images)
-    # html_root.clear()
-    html_root.append(container)
-    item.html_root = html_root
+    images_container = soup.new_tag('div')
+    images_container['class'] = 'grid-wrapper'
+    images_container.append(images)
+    gallery_tab = soup.new_tag('div')
+    gallery_tab['class'] = 'tab-pane'
+    gallery_tab['id'] = 'gallery'
+    gallery_tab['role'] = 'tabpanel'
+    gallery_tab.append(images_container)
+
+    html_root['class'] = 'inner-container'
+    article_tab = soup.new_tag('div')
+    article_tab['class'] = 'tab-pane active'
+    article_tab['id'] = 'article'
+    article_tab['role'] = 'tabpanel'
+    article_tab.append(html_root)
+
+    new_html_root = soup.new_tag('div')
+    new_html_root['class'] = 'tab-content'
+    new_html_root.append(gallery_tab)
+    new_html_root.append(article_tab)
+    item.html_root = new_html_root
 
 
 event_tag_names = ['h2', 'h2', 'h3', 'h4', 'h5', 'h6']
