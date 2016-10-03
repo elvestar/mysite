@@ -4,22 +4,35 @@
     <body class="life">
 {% endblock %}
 
+{% block styles %}
+    {{ super() }}
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=CAc10b3a8d557c49bc2ffd46a7f2805a"></script>
+{% endblock %}
+
 {% block main %}
-    <div class="container">
-        <div class="inner-container m-t-lg" id="article-title">
+    <div class="container" id="title-wrapper">
+        <div class="inner-container m-t-lg">
             <h1>{{ item.title }}</h1>
         </div>
     </div>
 
-    <div id="article-bar">
-        <ul role="tablist">
-            <li role="presentation" class="active"><a href="#article" role="tab" data-toggle="tab">article</a></li>
-            <li role="presentation"><a href="#gallery" role="tab" data-toggle="tab">gallery</a></li>
-            <li role="presentation"><a href="#map" role="tab" data-toggle="tab">map</a></li>
-        </ul>
+    <div id="article-bar-wrapper">
+        <div id="article-bar">
+            <ul role="tablist">
+                <li role="presentation" class="active">
+                    <a href="#article" role="tab" data-toggle="tab">article</a>
+                </li>
+                <li role="presentation">
+                    <a href="#gallery" role="tab" data-toggle="tab">gallery</a>
+                </li>
+                <li role="presentation">
+                    <a href="#map" role="tab" data-toggle="tab">map</a>
+                </li>
+            </ul>
+        </div>
     </div>
 
-    <div class="container m-t-lg">
+    <div id="article-wrapper">
         {{ item.output }}
     </div>
 {% endblock %}
@@ -52,14 +65,34 @@
         });
 
         function handlePanels(panelId) {
-            if (panelId == 'gallery') {
+            var headerHeight = $('#header').height();
+            var headerTitleHeight = headerHeight + $('#title-wrapper').height();
+            var scrollHeight = 0;
+
+            if (panelId == 'article') {
+                scrollHeight = headerHeight;
+                $('#footer').removeClass('hidden');
+            } else if (panelId == 'gallery') {
+                scrollHeight = headerTitleHeight;
                 $('#grid').imageGrid();
-                $('#article-title').removeClass('inner-container');
-            } else if (panelId == 'article') {
-                $('#article-title').addClass('inner-container');
+                $('#footer').addClass('hidden');
             } else if (panelId == 'map') {
-                $('#article-title').removeClass('inner-container');
+                scrollHeight = headerTitleHeight;
+                $('#footer').addClass('hidden');
             }
+
+            $("html, body").stop().animate({scrollTop: scrollHeight}, '500', 'swing', function() {
+            });
         }
+    </script>
+    <script type="text/javascript">
+        $('#map').height($(window).height() - 50);
+
+        // 百度地图API功能
+        var map = new BMap.Map("map");    // 创建Map实例
+        map.centerAndZoom(new BMap.Point(116.404, 39.915), 11);  // 初始化地图,设置中心点坐标和地图级别
+        map.addControl(new BMap.MapTypeControl());   //添加地图类型控件
+        map.setCurrentCity("北京");          // 设置地图显示的城市 此项是必须设置的
+        map.enableScrollWheelZoom(true);     //开启鼠标滚轮缩放
     </script>
 {% endblock %}

@@ -80,7 +80,7 @@ def photos_filter(item):
         image.append(new_img)
         images.append(image)
     images_container = soup.new_tag('div')
-    images_container['class'] = 'grid-wrapper'
+    images_container['class'] = 'grid-wrapper container'
     images_container.append(images)
     gallery_tab = soup.new_tag('div')
     gallery_tab['class'] = 'tab-pane'
@@ -95,10 +95,16 @@ def photos_filter(item):
     article_tab['role'] = 'tabpanel'
     article_tab.append(html_root)
 
+    map_tab = soup.new_tag('div')
+    map_tab['class'] = 'tab-pane'
+    map_tab['id'] = 'map'
+    map_tab['role'] = 'tabpanel'
+
     new_html_root = soup.new_tag('div')
     new_html_root['class'] = 'tab-content'
-    new_html_root.append(gallery_tab)
     new_html_root.append(article_tab)
+    new_html_root.append(gallery_tab)
+    new_html_root.append(map_tab)
     item.html_root = new_html_root
 
 
