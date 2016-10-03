@@ -7,8 +7,10 @@ from datetime import datetime
 
 from bs4 import BeautifulSoup
 from PIL import Image
+from PIL.ExifTags import TAGS
 
 from myssg.items import Item
+from myssg.utils import Utils
 
 
 def org_filter(item):
@@ -73,6 +75,25 @@ def photos_filter(item):
         # # set image size
         img_path = '/Users/elvestar/github/elvestar/elvestar.github.io/' + new_img['src']
         im = Image.open(img_path)
+        print('\nPrint EXIF of %s' % img['src'])
+        for (k, v) in im._getexif().iteritems():
+            print('%s(%d) = %s' % (TAGS.get(k), k, v))
+            pass
+            # if k == 42034:
+            #     print('%s(%d) = %s' % (TAGS.get(k), k, v))
+            # if img['src'].endswith('test_002.jpg'):
+            #     print('%s(%d) = %s' % (TAGS.get(k), k, v))
+
+
+        # Parse gps info
+        exif_info = im._getexif()
+        camera_str, gps_str = Utils.parse_exif_info(exif_info)
+        new_img['camera'] = camera_str
+        new_img['gps'] = gps_str
+        # print(camera_str)
+        # print(gps_str)
+
+
         width, height = im.size
         new_img['data-width'] = width
         new_img['data-height'] = height

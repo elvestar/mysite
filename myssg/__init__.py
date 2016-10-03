@@ -31,7 +31,7 @@ from myssg.filters.reading_filter import reading_note_filter
 from myssg.pyorg.time_analyzer import TimeAnalyzer
 from myssg.pyorg.pyorg import PyOrg
 from myssg.settings import Settings
-from myssg.utils import Utils
+from myssg.utils import ItemUtils
 from myssg.watcher import file_watcher, folder_watcher
 from myssg.search import Searcher
 
@@ -220,15 +220,15 @@ class MySSG(object):
             events=self.events,
             events_group_by_year=self.events_group_by_year,
 
-            item_url=Utils.item_url,
-            item_date=Utils.item_date,
-            item_date_slash=Utils.item_date_slash,
-            item_date_short=Utils.item_date_short,
-            item_datetime=Utils.item_datetime,
-            to_date=Utils.to_date,
-            to_date_slash=Utils.to_date_slash,
-            to_date_short=Utils.to_date_short,
-            to_datetime=Utils.to_datetime,
+            item_url=ItemUtils.item_url,
+            item_date=ItemUtils.item_date,
+            item_date_slash=ItemUtils.item_date_slash,
+            item_date_short=ItemUtils.item_date_short,
+            item_datetime=ItemUtils.item_datetime,
+            to_date=ItemUtils.to_date,
+            to_date_slash=ItemUtils.to_date_slash,
+            to_date_short=ItemUtils.to_date_short,
+            to_datetime=ItemUtils.to_datetime,
         )
         # self.env.filters['item_date'] = U
 

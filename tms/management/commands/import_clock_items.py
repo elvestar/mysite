@@ -9,7 +9,7 @@ import time
 from django.core.management.base import BaseCommand
 from django.db.models import Count, Sum, Min, Q
 
-from myssg.utils import Utils
+from myssg.utils import ItemUtils
 from tms.models import ClockItem
 
 

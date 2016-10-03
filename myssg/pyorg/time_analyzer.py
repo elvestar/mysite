@@ -12,7 +12,7 @@ from itertools import groupby
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 
-from myssg.utils import Utils
+from myssg.utils import ItemUtils
 
 
 app = Flask(__name__)
@@ -141,8 +141,8 @@ class TimeAnalyzer(object):
             for ci_date, cis_of_date in groupby(clock_items, itemgetter('date')):
                 cis = list()
                 for ci in cis_of_date:
-                    cis.append((Utils.to_datetime(ci.start_time),
-                                Utils.to_datetime(ci.end_time),
+                    cis.append((ItemUtils.to_datetime(ci.start_time),
+                                ItemUtils.to_datetime(ci.end_time),
                                 ci.time_cost,
                                 ci.category, ci.project, ci.thing))
                 ci_date_str = ci_date.strftime('%Y-%m-%d')
