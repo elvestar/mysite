@@ -33,10 +33,9 @@ class Command(BaseCommand):
             if item.extension.lower() in ['jpg', 'png', 'gif'] and ItemUtils.is_life_item(item):
                 if '1609-team-building' in item.uri:
                     photo_items.append(item)
-                    print(item.uri, item.extension)
 
         for item in photo_items:
-            import_photo_item(item, force_update=True)
+            import_photo_item(item, force_update=False)
 
 
 def import_photo_item(photo_item, force_update=False):
@@ -48,7 +47,6 @@ def import_photo_item(photo_item, force_update=False):
         photo = photos[0]
     else:
         photo = Photo(uri=photo_item.uri)
-    print(photo_item.path)
 
     ak = 'CAc10b3a8d557c49bc2ffd46a7f2805a'
     im = Image.open(photo_item.path)
@@ -112,8 +110,6 @@ def import_photo_item(photo_item, force_update=False):
                     if address != '':
                         photo.address = address
 
-
-
         # Camera and lens
         if 272 in exif_info:
             photo.camera = exif_info[272]
@@ -123,7 +119,7 @@ def import_photo_item(photo_item, force_update=False):
             photo.lens = exif_info[42036]
         else:
             photo.lens = 'unknown'
-        photo.focal_length =  (float(exif_info[37386][0]) / float(exif_info[37386][1]))
+        photo.focal_length = float(exif_info[37386][0]) / float(exif_info[37386][1])
         photo.f_number = float(exif_info[33437][0]) / float(exif_info[33437][1])
         photo.exposure_time = float(exif_info[33434][0]) / float(exif_info[33434][1])
         photo.exposure_time_str = '%d/%ds' % (exif_info[33434][0], exif_info[33434][1])
@@ -133,15 +129,5 @@ def import_photo_item(photo_item, force_update=False):
         taken_time = exif_info[36867]
         photo.taken_time = taken_time.replace(':', '-', 2)
 
-
-        focal_length = 'ƒ/%f' % (float(exif_info[37386][0]) / float(exif_info[37386][1]))
-        # photo.focal_length = focal_length.rstrip('0')
-        # photo.f_number = '%.1fmm' % (float(exif_info[33437][0]) / float(exif_info[33437][1]))
-        # photo.exposure_time = '%d/%ds' % (exif_info[33434][0], exif_info[33434][1])
-        # iso = 'ISO %d' % exif_info[34855]
-        # camera_info_str = '%s\t%s\t%s\t%s\t%s\t%s' % (camera, lens, focal_length, f_number, exposure_time, iso)
-        # img_info_str = '%.4f\t%.4f\t%s' % (longitude, latitude, taken_time)
-        # # return camera_info_str, img_info_str
-        # camera_info_str, img_info_str = Utils.parse_exif_info(exif_info)
-
         photo.save()
+        logging.error('Success to import photo: %s' % photo.uri)

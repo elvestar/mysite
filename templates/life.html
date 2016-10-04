@@ -11,8 +11,8 @@
         </div>
     </div>
 
-    <div id="article-bar-wrapper">
-        <div id="article-bar">
+    <div id="articleBar-wrapper">
+        <div id="articleBar">
             <ul role="tablist">
                 <li role="presentation" class="active">
                     <a href="#article" role="tab" data-toggle="tab">article</a>
@@ -29,45 +29,31 @@
 
     <div id="article-wrapper">
         {{ item.output }}
-        <div class="row hidden">
-            <div class="col-md-9">
-                {{ item.output }}
-            </div>
-            <div class="col-md-3">
-                <div class="m-y">
-                    <div class="media" id="demo-photo">
-                        <span class="media-left media-middle" href="#">
-                            <img alt="..." src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2ODc1IiB5PSIzMiIgc3R5bGU9ImZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToxMHB0O2RvbWluYW50LWJhc2VsaW5lOmNlbnRyYWwiPjY0eDY0PC90ZXh0PjwvZz48L3N2Zz4=">
-                        </span>
-                        <div class="media-body">
-                            <p class="media-heading">Middle aligned media</p>
-                            ...
-                        </div>
-                    </div>
-
-                    <div class="media" id="demo-photo">
-                        <span class="media-left media-middle" href="#">
-                            <img alt="..." src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2ODc1IiB5PSIzMiIgc3R5bGU9ImZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToxMHB0O2RvbWluYW50LWJhc2VsaW5lOmNlbnRyYWwiPjY0eDY0PC90ZXh0PjwvZz48L3N2Zz4=">
-                        </span>
-                        <div class="media-body">
-                            <p class="media-heading">Middle aligned media</p>
-                            ...
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 {% endblock %}
 
 {% block scripts %}
     {{ super() }}
     <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=CAc10b3a8d557c49bc2ffd46a7f2805a"></script>
+    <script id="checkpointTpl" type="text/template">
+        <div class="media checkpointItem">
+        <span class="media-left media-middle" href="#">
+                <img alt="..." src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiIHN0YW5kYWxvbmU9InllcyI/PjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+PGRlZnMvPjxyZWN0IHdpZHRoPSI2NCIgaGVpZ2h0PSI2NCIgZmlsbD0iI0VFRUVFRSIvPjxnPjx0ZXh0IHg9IjEzLjQ2ODc1IiB5PSIzMiIgc3R5bGU9ImZpbGw6I0FBQUFBQTtmb250LXdlaWdodDpib2xkO2ZvbnQtZmFtaWx5OkFyaWFsLCBIZWx2ZXRpY2EsIE9wZW4gU2Fucywgc2Fucy1zZXJpZiwgbW9ub3NwYWNlO2ZvbnQtc2l6ZToxMHB0O2RvbWluYW50LWJhc2VsaW5lOmNlbnRyYWwiPjY0eDY0PC90ZXh0PjwvZz48L3N2Zz4=">
+                </span>
+            <div class="media-body">
+                <p class="media-heading"><%= imageInfo[2] %></p>
+                <p><%= imageInfo[3] %></p>
+            </div>
+        </div>
+    </script>
+
     <script>
         $(document).ready(function() {
-            $('#article-bar').affix({
+            var headerHeight = $('#header').height();
+            var headerTitleHeight = headerHeight + $('#title-wrapper').height();
+            $('#articleBar').affix({
                 offset: {
-                    top: $('#article-bar').offset().top,
+                    top: $('#articleBar').offset().top,
                     bottom: ($('#footer').outerHeight(true))
                 }
             });
@@ -75,8 +61,8 @@
             var url = document.location.toString();
             if (url.match('#')) {
                 var panelId = url.split('#')[1];
-                $('#article-bar a[href="#' + panelId + '"]').tab('show');
-                handlePanels(panelId);
+                $('#articleBar a[href="#' + panelId + '"]').tab('show');
+                handlePanels(panelId, headerTitleHeight);
             }
             
             $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
@@ -84,73 +70,75 @@
                 window.location.hash = e.target.hash;
 
                 var panelId = e.target.hash.split('#')[1];
-                handlePanels(panelId);
+                handlePanels(panelId, headerTitleHeight);
             });
 
             // Make map full screen
-            $('#map').height($(window).height() - 50);
+            var mapHeight = $(window).height() - $('#articleBar').height();
+            $('#mapBody, #checkpointList').height(mapHeight);
+
             drawPhotosOnMap();
         });
 
-        function handlePanels(panelId) {
-            var headerHeight = $('#header').height();
-            var headerTitleHeight = headerHeight + $('#title-wrapper').height();
+        function handlePanels(panelId, headerTitleHeight) {
             var scrollHeight = 0;
 
             if (panelId == 'article') {
-                scrollHeight = headerHeight;
+                scrollHeight = headerTitleHeight;
                 $('#footer').removeClass('hidden');
+                $('#header, #title-wrapper').removeClass('hidden');
             } else if (panelId == 'gallery') {
                 scrollHeight = headerTitleHeight;
                 $('#grid').imageGrid();
                 $('#footer').removeClass('hidden');
+                $('#header, #title-wrapper').removeClass('hidden');
+{#                $('#header, #title-wrapper').addClass('hidden');#}
             } else if (panelId == 'map') {
-                scrollHeight = headerTitleHeight;
+                scrollHeight = 0;
                 $('#footer').addClass('hidden');
+                $('#header, #title-wrapper').addClass('hidden');
             }
 
             $("html, body").stop().animate({scrollTop: scrollHeight}, '500', 'swing', function() {
             });
         }
 
+
         function drawPhotosOnMap() {
             // 百度地图API功能
-            var map = new BMap.Map("map");
+            var map = new BMap.Map("mapBody");
             map.enableScrollWheelZoom();
-            map.addControl(new BMap.MapTypeControl({anchor: BMAP_ANCHOR_TOP_LEFT}));
+            map.addControl(new BMap.MapTypeControl({
+                anchor: BMAP_ANCHOR_TOP_LEFT,
+                mapTypes: [BMAP_NORMAL_MAP, BMAP_SATELLITE_MAP, BMAP_HYBRID_MAP]
+            }));
             map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_ZOOM}));
-            var point = new BMap.Point(116.30962489036, 40.055884775236);
-            var marker = new BMap.Marker(point);
-            map.addOverlay(marker);
+            var point = new BMap.Point(117.242610951, 42.5322847651);
             map.centerAndZoom(point, 15);
-{#            marker.addEventListener("click", function(){#}
-{#                this.openInfoWindow(infoWindow);#}
-{#                document.getElementById('imgDemo').onload = function (){#}
-{#                    infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏#}
-{#                }#}
-{#            });#}
-            $('#demo-photo').click(function() {
-                marker.openInfoWindow(infoWindow);
-                //图片加载完毕重绘infowindow
-                document.getElementById('imgDemo').onload = function (){
-                    infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏
-                }
-            });
             $('#grid img').each(function() {
-                var imgInfo = $(this).attr('img-info').split('\t');
-                var point = new BMap.Point(parseFloat(imgInfo[0]), imgInfo[1]);
+                var imageInfo = $(this).attr('image-info').split('\t');
+                var point = new BMap.Point(parseFloat(imageInfo[0]), imageInfo[1]);
                 var marker = new BMap.Marker(point);
                 var content =
                         "<h6 style='margin:0 0 5px 0;padding:0.2em 0'>" + $(this).attr('title') + "</h6>" +
+                                "<p style='margin: 0 0'><small>" + imageInfo[3] + "</small></p>" +
                         "<img style='float:right;margin:4px' id='imgDemo' src='" + $(this).attr('src') + "' width='295' height='221' title='天安门'/>" +
                         "</div>";
                 var infoWindow = new BMap.InfoWindow(content);  // 创建信息窗口对象
                 map.addOverlay(marker);
-                marker.addEventListener("click", function(){
-                    this.openInfoWindow(infoWindow);
-{#                    document.getElementById('imgDemo').onload = function (){#}
-{#                        infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏#}
-{#                    }#}
+                function clickCheckpoint(maker) {
+                    maker.openInfoWindow(infoWindow);
+                    {#                    document.getElementById('imgDemo').onload = function (){#}
+                    {#                        infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏#}
+                    {#                    }#}
+                }
+                marker.addEventListener("click", function() {
+                    clickCheckpoint(this);
+                });
+                var checkpointTpl = _.template($('#checkpointTpl').html());
+                $('#checkpointList').append(checkpointTpl({imageInfo: imageInfo}));
+                $('#checkpointList .checkpointItem:last-child').click(function() {
+                            clickCheckpoint(marker)
                 });
             });
 

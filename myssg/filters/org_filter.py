@@ -4,14 +4,14 @@ from __future__ import print_function
 import copy
 import re
 from datetime import datetime
+import os
 
 from bs4 import BeautifulSoup
-from PIL import Image
-from PIL.ExifTags import TAGS
 
 from myssg.items import Item
 from myssg.utils import Utils
 from myssg.settings import Settings
+from cms.models import Photo
 
 
 def org_filter(item):
@@ -74,29 +74,28 @@ def photos_filter(item):
         new_img['src'] = img['src']
         new_img['alt'] = img['alt']
         new_img['title'] = img['title']
-        # TODO Temp using output dir
-        # img_path = item.path
-        img_path = Settings.OUTPUT_DIR + new_img['src']
-        im = Image.open(img_path)
-        # print('\nPrint EXIF of %s' % img['src'])
-        # for (k, v) in im._getexif().iteritems():
-            # print('%s(%d) = %s' % (TAGS.get(k), k, v))
-            # pass
-            # if k == 42034:
-            #     print('%s(%d) = %s' % (TAGS.get(k), k, v))
-            # if img['src'].endswith('test_002.jpg'):
-            #     print('%s(%d) = %s' % (TAGS.get(k), k, v))
 
+        image_uri, extension = os.path.splitext(new_img['src'].lstrip('/'))
+        photo = Photo.objects.get(uri=image_uri)
 
-        exif_info = im._getexif()
-        camera_info_str, img_info_str = Utils.parse_exif_info(exif_info)
-        # print(img_info_str)
+        # focal_length = 'ƒ/%f' % (float(exif_info[37386][0]) / float(exif_info[37386][1]))
+        # photo.focal_length = focal_length.rstrip('0')
+        # photo.f_number = '%.1fmm' % (float(exif_info[33437][0]) / float(exif_info[33437][1]))
+        # photo.exposure_time = '%d/%ds' % (exif_info[33434][0], exif_info[33434][1])
+        # iso = 'ISO %d' % exif_info[34855]
+        # # return camera_info_str, img_info_str
+        # camera_info_str, img_info_str = Utils.parse_exif_info(exif_info)
+
+        camera_info_str = '%s\t%s\t%fmm\tƒ/%f\t%s\tISO %d' % (photo.camera, photo.lens,
+                                                          photo.focal_length, photo.f_number,
+                                                          photo.exposure_time_str, photo.iso)
+        image_info_str = '%.4f\t%.4f\t%s\t%s\t%s' % (photo.longitude_bd09, photo.latitude_bd09,
+                                                     photo.taken_time.strftime('%Y-%m-%d %H:%M:%S'),
+                                                     photo.address, photo.city)
         new_img['camera-info'] = camera_info_str
-        new_img['img-info'] = img_info_str
-
-        width, height = im.size
-        new_img['data-width'] = width
-        new_img['data-height'] = height
+        new_img['image-info'] = image_info_str
+        new_img['data-width'] = photo.width
+        new_img['data-height'] = photo.height
         image = soup.new_tag('div')
         image.append(new_img)
         images.append(image)
@@ -116,10 +115,27 @@ def photos_filter(item):
     article_tab['role'] = 'tabpanel'
     article_tab.append(html_root)
 
-    map_tab = soup.new_tag('div')
-    map_tab['class'] = 'tab-pane'
-    map_tab['id'] = 'map'
+    map_tab = soup.new_tag('div', id='map')
+    map_tab['class'] = 'tab-pane row'
     map_tab['role'] = 'tabpanel'
+    map_body_tab = soup.new_tag('div', id='mapBody')
+    # map_body_tab['id'] = 'map'
+    map_body_tab['class'] = 'col-md-9'
+    checkpoint_tab = soup.new_tag('div')
+    checkpoint_tab['class'] = 'col-md-3'
+    checkpoint_tab.append(soup.new_tag('div', id='checkpointList'))
+    map_tab.append(map_body_tab)
+    map_tab.append(checkpoint_tab)
+
+# {#        <div class="row">#}
+#     {#            <div class="col-md-9">#}
+#         {#                {{ item.output }}#}
+#             {#            </div>#}
+#                 {#            <div class="col-md-3">#}
+#                     {#                <div id="checkpointList">#}
+#                         {#                </div>#}
+#                             {#            </div>#}
+#                                 {#        </div>#}
 
     new_html_root = soup.new_tag('div')
     new_html_root['class'] = 'tab-content'
