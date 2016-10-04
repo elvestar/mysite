@@ -158,10 +158,7 @@ class MySSG(object):
                 item.output_path = item.uri + '.' + item.extension
             elif item.extension in ['png', 'jpg', 'gif']:
                 m = re.match(r'(.+)/(imgs/(.+)_\d+)', item.uri)
-                if m is None:
-                    item.output_path = item.uri + '.' + item.extension
-                else:
-                    item.output_path = m.group(1) + '/' + m.group(3) + '/' + m.group(2) + '.' + item.extension
+                item.output_path = item.uri + '.' + item.extension
             elif item.uri == 'index':
                 item.output_path = 'index.html'
             elif item.extension in ['org', 'md', 'html']:
@@ -308,8 +305,7 @@ if __name__ == '__main__':
         modified = {k: next(v) for k, v in watchers.items()}
         if any(modified.values()):
             logging.warning(' * Detected change, reloading')
-            settings = Settings()
-            my_ssg = MySSG(settings)
+            my_ssg = MySSG(Settings())
             my_ssg.run()
 
         time.sleep(1)

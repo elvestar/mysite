@@ -24,11 +24,12 @@ class Reader(object):
         self.ignore_dirs = settings.IGNORE_DIRS
         self.ignore_files = settings.IGNORE_FILES
 
-    def read(self):
+    def read(self, force_all=False):
         items = list()
         for file_item in self.get_file_items():
-            if file_item['uri'] not in ['life/1609-team-building']:
-                continue
+            if not force_all:
+                if 'life/1609-team-building' not in file_item['uri']:
+                    continue
             # if 'my-site-v' not in file_item['uri']:
             #     continue
             content = file(file_item['path']).read()
@@ -37,7 +38,7 @@ class Reader(object):
                         content=content,
                         path=file_item['path'])
             if item.uri.startswith(('notes/', 'life/', 'blog/')) and item.extension == 'html':
-                logging.warning('Skip item:%s' % str(item))
+                logging.debug('Skip item:%s' % str(item))
                 continue
             item.mtime = self.get_modify_datetime(item)
             items.append(item)

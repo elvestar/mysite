@@ -11,6 +11,7 @@ from PIL.ExifTags import TAGS
 
 from myssg.items import Item
 from myssg.utils import Utils
+from myssg.settings import Settings
 
 
 def org_filter(item):
@@ -30,7 +31,7 @@ def org_filter(item):
     for img in html_root.find_all('img'):
         img['data-action'] = 'zoom'
         if img['src'].startswith('./imgs/'):
-            img['src'] = '/' + item.uri + '/imgs/' + img['src'].split('/')[-1]
+            img['src'] = '/' + item.uri.split('/')[0] + img['src'].lstrip('.')
 
     # Set org item meta (such as date, tags)
     for meta in html_root.find_all('meta'):
@@ -72,27 +73,26 @@ def photos_filter(item):
         new_img['data-action'] = 'zoom'
         new_img['src'] = img['src']
         new_img['alt'] = img['alt']
-        # # set image size
-        img_path = '/Users/elvestar/github/elvestar/elvestar.github.io/' + new_img['src']
+        new_img['title'] = img['title']
+        # TODO Temp using output dir
+        # img_path = item.path
+        img_path = Settings.OUTPUT_DIR + new_img['src']
         im = Image.open(img_path)
-        print('\nPrint EXIF of %s' % img['src'])
-        for (k, v) in im._getexif().iteritems():
-            print('%s(%d) = %s' % (TAGS.get(k), k, v))
-            pass
+        # print('\nPrint EXIF of %s' % img['src'])
+        # for (k, v) in im._getexif().iteritems():
+            # print('%s(%d) = %s' % (TAGS.get(k), k, v))
+            # pass
             # if k == 42034:
             #     print('%s(%d) = %s' % (TAGS.get(k), k, v))
             # if img['src'].endswith('test_002.jpg'):
             #     print('%s(%d) = %s' % (TAGS.get(k), k, v))
 
 
-        # Parse gps info
         exif_info = im._getexif()
-        camera_str, gps_str = Utils.parse_exif_info(exif_info)
-        new_img['camera'] = camera_str
-        new_img['gps'] = gps_str
-        # print(camera_str)
-        # print(gps_str)
-
+        camera_info_str, img_info_str = Utils.parse_exif_info(exif_info)
+        # print(img_info_str)
+        new_img['camera-info'] = camera_info_str
+        new_img['img-info'] = img_info_str
 
         width, height = im.size
         new_img['data-width'] = width

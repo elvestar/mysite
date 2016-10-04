@@ -28,7 +28,8 @@
     </div>
 
     <div id="article-wrapper">
-        <div class="row">
+        {{ item.output }}
+        <div class="row hidden">
             <div class="col-md-9">
                 {{ item.output }}
             </div>
@@ -61,6 +62,7 @@
 
 {% block scripts %}
     {{ super() }}
+    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=CAc10b3a8d557c49bc2ffd46a7f2805a"></script>
     <script>
         $(document).ready(function() {
             $('#article-bar').affix({
@@ -83,7 +85,11 @@
 
                 var panelId = e.target.hash.split('#')[1];
                 handlePanels(panelId);
-            })
+            });
+
+            // Make map full screen
+            $('#map').height($(window).height() - 50);
+            drawPhotosOnMap();
         });
 
         function handlePanels(panelId) {
@@ -106,39 +112,49 @@
             $("html, body").stop().animate({scrollTop: scrollHeight}, '500', 'swing', function() {
             });
         }
-    </script>
-    <script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=CAc10b3a8d557c49bc2ffd46a7f2805a"></script>
-    <script type="text/javascript">
-        $('#map').height($(window).height() - 50);
 
-        // 百度地图API功能
-        var sContent =
-                "<h4 style='margin:0 0 5px 0;padding:0.2em 0'>天安门</h4>" +
-                "<img style='float:right;margin:4px' id='imgDemo' src='/life/1609-team-building/imgs/IMG_6404.jpg' width='448' height='251' title='天安门'/>" +
-                "<p style='margin:0;line-height:1.5;font-size:13px;text-indent:2em'>天安门坐落在中国北京市中心,故宫的南侧,与天安门广场隔长安街相望,是清朝皇城的大门...</p>" +
-                "</div>";
-        var map = new BMap.Map("map");
-        map.enableScrollWheelZoom();
-        map.addControl(new BMap.MapTypeControl({anchor: BMAP_ANCHOR_TOP_LEFT}));
-        map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_ZOOM}));
-        var point = new BMap.Point(117.1432, 42.5852);
-        var marker = new BMap.Marker(point);
-        var infoWindow = new BMap.InfoWindow(sContent);  // 创建信息窗口对象
-        map.centerAndZoom(point, 15);
-        map.addOverlay(marker);
-        marker.addEventListener("click", function(){
-            this.openInfoWindow(infoWindow);
-            //图片加载完毕重绘infowindow
-            document.getElementById('imgDemo').onload = function (){
-                infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏
-            }
-        });
-        $('#demo-photo').click(function() {
-            marker.openInfoWindow(infoWindow);
-            //图片加载完毕重绘infowindow
-            document.getElementById('imgDemo').onload = function (){
-                infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏
-            }
-        });
+        function drawPhotosOnMap() {
+            // 百度地图API功能
+            var map = new BMap.Map("map");
+            map.enableScrollWheelZoom();
+            map.addControl(new BMap.MapTypeControl({anchor: BMAP_ANCHOR_TOP_LEFT}));
+            map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_ZOOM}));
+            var point = new BMap.Point(116.30962489036, 40.055884775236);
+            var marker = new BMap.Marker(point);
+            map.addOverlay(marker);
+            map.centerAndZoom(point, 15);
+{#            marker.addEventListener("click", function(){#}
+{#                this.openInfoWindow(infoWindow);#}
+{#                document.getElementById('imgDemo').onload = function (){#}
+{#                    infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏#}
+{#                }#}
+{#            });#}
+            $('#demo-photo').click(function() {
+                marker.openInfoWindow(infoWindow);
+                //图片加载完毕重绘infowindow
+                document.getElementById('imgDemo').onload = function (){
+                    infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏
+                }
+            });
+            $('#grid img').each(function() {
+                var imgInfo = $(this).attr('img-info').split('\t');
+                var point = new BMap.Point(parseFloat(imgInfo[0]), imgInfo[1]);
+                var marker = new BMap.Marker(point);
+                var content =
+                        "<h6 style='margin:0 0 5px 0;padding:0.2em 0'>" + $(this).attr('title') + "</h6>" +
+                        "<img style='float:right;margin:4px' id='imgDemo' src='" + $(this).attr('src') + "' width='295' height='221' title='天安门'/>" +
+                        "</div>";
+                var infoWindow = new BMap.InfoWindow(content);  // 创建信息窗口对象
+                map.addOverlay(marker);
+                marker.addEventListener("click", function(){
+                    this.openInfoWindow(infoWindow);
+{#                    document.getElementById('imgDemo').onload = function (){#}
+{#                        infoWindow.redraw();   //防止在网速较慢，图片未加载时，生成的信息框高度比图片的总高度小，导致图片部分被隐藏#}
+{#                    }#}
+                });
+            });
+
+
+        }
     </script>
 {% endblock %}

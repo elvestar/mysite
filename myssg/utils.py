@@ -42,21 +42,38 @@ class ItemUtils(object):
         else:
             return ItemUtils.item_date(item)
 
+    @staticmethod
+    def is_xxx_item(item, category):
+        if item.uri.startswith(category + '/'):
+            return True
+
+    @staticmethod
+    def is_life_item(item):
+        return ItemUtils.is_xxx_item(item, 'life')
+
+    @staticmethod
+    def is_blog_item(item):
+        return ItemUtils.is_xxx_item(item, 'blog')
+
+    @staticmethod
+    def is_note_item(item):
+        return ItemUtils.is_xxx_item(item, 'notes')
+
 
 class Utils(object):
     @staticmethod
     def parse_exif_info(exif_info):
+        pass
+        # Parse gps info
         gps_info = exif_info[34853]
         longitude = gps_info[4]
         longitude = float(longitude[0][0]) / float(longitude[0][1]) + \
                     (float(longitude[1][0]) / float(longitude[1][1])) / 60.0
-        longitude = round(longitude, 4)
         if gps_info[3] == 'W':
             longitude = -longitude
         latitude = gps_info[2]
         latitude = float(latitude[0][0]) / float(latitude[0][1]) + \
                    (float(latitude[1][0]) / float(latitude[1][1])) / 60.0
-        latitude = round(latitude, 4)
         if gps_info[1] == 'S':
             latitude = - latitude
 
@@ -76,6 +93,6 @@ class Utils(object):
         taken_time = exif_info[36867]
         taken_time = taken_time.replace(':', '-', 2)
 
-        camera_str = '%s\t%s\t%s\t%s\t%s\t%s' % (camera, lens, focal_length, f_number, exposure_time, iso)
-        gps_str = '%f\t%f\t%s' % (longitude, latitude, taken_time)
-        return camera_str, gps_str
+        camera_info_str = '%s\t%s\t%s\t%s\t%s\t%s' % (camera, lens, focal_length, f_number, exposure_time, iso)
+        img_info_str = '%.4f\t%.4f\t%s' % (longitude, latitude, taken_time)
+        return camera_info_str, img_info_str

@@ -384,6 +384,7 @@ class OrgParser(object):
                         img_title_tag = self.soup.new_tag('div')
                         img_title_tag.string = title
                         img_title_tag['class'] = 'img-title'
+                        img_tag['title'] = title
                         new_tag.append(img_title_tag)
                     if '#+ATTR_HTML:' in line:
                         attr_str = line.replace('#+ATTR_HTML:', '').strip()
