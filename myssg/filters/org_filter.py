@@ -73,7 +73,8 @@ def photos_filter(item):
         new_img['data-action'] = 'zoom'
         new_img['src'] = img['src']
         new_img['alt'] = img['alt']
-        new_img['title'] = img['title']
+        if 'title' in img:
+            new_img['title'] = img['title']
 
         image_uri, extension = os.path.splitext(new_img['src'].lstrip('/'))
         photo = Photo.objects.get(uri=image_uri)
@@ -126,16 +127,6 @@ def photos_filter(item):
     checkpoint_tab.append(soup.new_tag('div', id='checkpointList'))
     map_tab.append(map_body_tab)
     map_tab.append(checkpoint_tab)
-
-# {#        <div class="row">#}
-#     {#            <div class="col-md-9">#}
-#         {#                {{ item.output }}#}
-#             {#            </div>#}
-#                 {#            <div class="col-md-3">#}
-#                     {#                <div id="checkpointList">#}
-#                         {#                </div>#}
-#                             {#            </div>#}
-#                                 {#        </div>#}
 
     new_html_root = soup.new_tag('div')
     new_html_root['class'] = 'tab-content'

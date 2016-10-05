@@ -113,19 +113,22 @@
                 mapTypes: [BMAP_NORMAL_MAP, BMAP_SATELLITE_MAP, BMAP_HYBRID_MAP]
             }));
             map.addControl(new BMap.NavigationControl({anchor: BMAP_ANCHOR_TOP_RIGHT, type: BMAP_NAVIGATION_CONTROL_ZOOM}));
-            var point = new BMap.Point(117.242610951, 42.5322847651);
+{#            var point = new BMap.Point(117.242610951, 42.5322847651);#}
+{#            var point = new BMap.Point(116.37928775613, 39.938524384133);#}
+            var point = new BMap.Point(116.46770056053, 39.884501899016);
+            map.addOverlay(new BMap.Marker(point));
             map.centerAndZoom(point, 15);
             $('#grid img').each(function() {
                 var imageInfo = $(this).attr('image-info').split('\t');
                 var point = new BMap.Point(parseFloat(imageInfo[0]), imageInfo[1]);
                 var marker = new BMap.Marker(point);
+                map.addOverlay(marker);
                 var content =
                         "<h6 style='margin:0 0 5px 0;padding:0.2em 0'>" + $(this).attr('title') + "</h6>" +
                                 "<p style='margin: 0 0'><small>" + imageInfo[3] + "</small></p>" +
                         "<img style='float:right;margin:4px' id='imgDemo' src='" + $(this).attr('src') + "' width='295' height='221' title='天安门'/>" +
                         "</div>";
                 var infoWindow = new BMap.InfoWindow(content);  // 创建信息窗口对象
-                map.addOverlay(marker);
                 function clickCheckpoint(maker) {
                     maker.openInfoWindow(infoWindow);
                     {#                    document.getElementById('imgDemo').onload = function (){#}
