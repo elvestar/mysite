@@ -95,7 +95,7 @@ class MySSG(object):
                     add_toc(item)
                     if item.uri.startswith('life/'):
                         # pass
-                        photos_filter(item)
+                        photos_filter(item, settings=self.settings)
                 elif item.uri == 'gallery':
                     gallery_filter(item)
                 item.output = item.html_root.prettify()

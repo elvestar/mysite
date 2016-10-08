@@ -15,19 +15,16 @@ def index(request):
 
 def search(request):
     searcher = Searcher()
-    q = request.GET['q']
-    search_results = searcher.search(q)
-    results = list()
-    for search_result in search_results:
-        results.append({
-            'text': search_result['text'],
-            'title': search_result.get('title', ''),
-            'path': search_result['path']
-        })
-    return HttpResponse(json.dumps(results))
+    if 'q' in request.GET:
+        q = request.GET['q']
+        results = searcher.search(q)
+    else:
+        results = None
+    return render(request, 'pkm/search.html', {
+        'q': q,
+        'results': results,
+    })
 
 
-def search(request):
-    return render(request, 'pkm/search.html')
 
 

@@ -1,5 +1,35 @@
 {% extends 'pkm/pkm.html' %}
 
 {% block content %}
-搜索啊啊
+    "{{ q }}" 的搜索结果
+    {% if results %}
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>标题</th>
+                <th>权重</th>
+                <th>高亮段落</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for hit in results.hits.hits %}
+                <tr>
+                    <td>
+                        <a href="/{{ hit._id }}/"> {{ hit._source.title }} </a>
+                    </td>
+                    <td>{{ hit._score }}</td>
+                <td>
+                    <ul>
+                        {% for p in hit.highlight.content %}
+                        <li>{{ p|safe }}</li>
+                        {% endfor %}
+                        
+                    </ul>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+
 {% endblock %}

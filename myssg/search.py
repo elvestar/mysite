@@ -12,9 +12,9 @@ class Searcher(object):
 
     def add_document(self, item):
         doc = {
-           'title': item.title,
-           'summary': item.summary,
-           'content': item.content,
+            'title': item.title,
+            'summary': item.summary,
+            'content': item.content,
         }
         res = self.es.index(index='pkm', doc_type='item', id=item.uri, body=doc)
         print(res)
@@ -23,7 +23,22 @@ class Searcher(object):
         pass
 
     def search(self, q):
-        pass
+        return self.es.search(index='pkm', doc_type='item', body={
+            ''
+            'query': {
+                'match': {
+                    'content': q
+                },
+            },
+            'highlight': {
+                'pre_tags': ['<b>'],
+                'post_tags': ['</b>'],
+                'fields': {
+                    'content': {}
+                }
+            }
+        })
+
 
 if __name__ == '__main__':
     searcher = Searcher()

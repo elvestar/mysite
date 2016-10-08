@@ -7,6 +7,7 @@ from datetime import datetime
 import os
 
 from bs4 import BeautifulSoup
+from PIL import Image
 
 from myssg.items import Item
 from myssg.utils import Utils
@@ -38,7 +39,10 @@ def org_filter(item):
         meta_name = meta['name']
         meta_content = meta['content']
         if meta_name == 'date':
-            item.date = datetime.strptime(meta_content, '%Y-%m-%d')
+            if len(meta_content) == 10:
+                item.date = datetime.strptime(meta_content, '%Y-%m-%d')
+            else:
+                item.date = datetime.strptime(meta_content, '%Y-%m-%d %H:%M:%S')
         elif meta_name == 'filetags':
             item.tags = re.split(r' {2,}', meta_content)
         else:
@@ -63,33 +67,35 @@ def gallery_filter(item):
     pass
 
 
-def photos_filter(item):
+def photos_filter(item, settings=None):
     soup = BeautifulSoup()
     html_root = item.html_root
     images = soup.new_tag('div')
     images['id'] = 'grid'
     for img in html_root.find_all('img'):
-        new_img = soup.new_tag('img')
-        new_img['data-action'] = 'zoom'
-        new_img['src'] = img['src']
-        new_img['alt'] = img['alt']
-        if img.has_attr('title'):
-            new_img['title'] = img['title']
+        # Copy img tag
+        new_img = BeautifulSoup(str(img)).body.contents[0]
 
         image_uri, extension = os.path.splitext(new_img['src'].lstrip('/'))
-        print(image_uri)
-        photo = Photo.objects.get(uri=image_uri)
-
-        camera_info_str = '%s\t%s\t%fmm\tƒ/%f\t%s\tISO %d' % (photo.camera, photo.lens,
+        try:
+            photo = Photo.objects.get(uri=image_uri)
+            camera_info_str = '%s\t%s\t%fmm\tƒ/%f\t%s\tISO %d' % (photo.camera, photo.lens,
                                                           photo.focal_length, photo.f_number,
                                                           photo.exposure_time_str, photo.iso)
-        image_info_str = '%.8f\t%.8f\t%s\t%s\t%s' % (photo.longitude_bd09, photo.latitude_bd09,
+            image_info_str = '%.8f\t%.8f\t%s\t%s\t%s' % (photo.longitude_bd09, photo.latitude_bd09,
                                                      photo.taken_time.strftime('%Y-%m-%d %H:%M:%S'),
                                                      photo.address, photo.city)
-        new_img['camera-info'] = camera_info_str
-        new_img['image-info'] = image_info_str
-        new_img['data-width'] = photo.width
-        new_img['data-height'] = photo.height
+            new_img['camera-info'] = camera_info_str
+            new_img['image-info'] = image_info_str
+            new_img['data-width'] = photo.width
+            new_img['data-height'] = photo.height
+        except Exception as e:
+            image_path = os.path.join(settings.CONTENT_DIR, new_img['src'].lstrip('/'))
+            print(settings.CONTENT_DIR, new_img['src'].lstrip('/'))
+            print(image_path)
+            im = Image.open(image_path)
+            new_img['data-width'], new_img['data-height'] = im.size
+
         image = soup.new_tag('div')
         image.append(new_img)
         images.append(image)
@@ -157,7 +163,6 @@ def extract_events(item):
         while next_sibling is not None and next_sibling.name not in event_tag_names:
             copied_element = BeautifulSoup(str(next_sibling))
             event_html_root.append(copied_element)
-            # event_html_root.append(copy.copy(next_sibling))
             next_sibling = next_sibling.next_sibling
 
         event = Item(uri=item.uri + '/#' + event_anchor,

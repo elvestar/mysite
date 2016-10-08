@@ -27,10 +27,15 @@ class Reader(object):
     def read(self, force_all=False):
         items = list()
         for file_item in self.get_file_items():
-            if not force_all:
-                if file_item['uri'] not in ['life/1609-team-building', 'life/1610',
-                                            'life/1610-guo-qing', 'life/1410-guo-qing', 'life/1510-guo-qing']:
-                    continue
+            # if 'org-mode' not in file_item['uri']:
+            #     continue
+            # if file_item['uri'] not in ['life/1609-team-building', 'life/1610',
+            #                             'life/1610-guo-qing', 'life/1410-guo-qing', 'life/1510-guo-qing']:
+            #     continue
+            # if not force_all:
+            #     if file_item['uri'] not in ['life/1609-team-building', 'life/1610',
+            #                                 'life/1610-guo-qing', 'life/1410-guo-qing', 'life/1510-guo-qing']:
+            #         continue
             # if 'my-site-v' not in file_item['uri']:
             #     continue
             content = file(file_item['path']).read()
