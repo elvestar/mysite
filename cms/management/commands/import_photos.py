@@ -2,10 +2,6 @@
 
 import logging
 import json
-import re
-from datetime import datetime, timedelta
-import time
-import json
 import requests
 
 from django.core.management.base import BaseCommand
@@ -22,6 +18,10 @@ from cms.models import Photo
 class Command(BaseCommand):
     help = 'Import photos to cms, correct gps coordinates, get locations in Chinese by using baidu api'
 
+    def add_arguments(self, parser):
+        parser.add_argument('path', type=str)
+        parser.add_argument('uri', type=str)
+
     def handle(self, *args, **options):
         logging.error('Begin to import photos to cms')
         settings = Settings()
@@ -31,14 +31,15 @@ class Command(BaseCommand):
         photo_items = list()
         for item in reader.read(force_all=True):
             if item.extension.lower() in ['jpg', 'png', 'gif'] and ItemUtils.is_life_item(item):
-                if '1609-team-building' in item.uri:
+                if item.uri.startswith(('life/imgs/1609-', 'life/imgs/1410-', 'life/imgs/1610-', 'life/imgs/1510-')):
                     photo_items.append(item)
 
         for item in photo_items:
-            import_photo_item(item, force_update=False)
+            import_photo_item(item, force_update=True)
 
 
 def import_photo_item(photo_item, force_update=False):
+    logging.error(str(photo_item))
     photos = Photo.objects.filter(uri=photo_item.uri)
     if len(photos) > 0 and not force_update:
         return
@@ -50,10 +51,10 @@ def import_photo_item(photo_item, force_update=False):
 
     ak = 'CAc10b3a8d557c49bc2ffd46a7f2805a'
     im = Image.open(photo_item.path)
-    exif_info = im._getexif()
 
     photo.width, photo.height = im.size
 
+    exif_info = im._getexif()
     # GPS info
     if 34853 not in exif_info:
         photo.has_gps_info = False
@@ -101,7 +102,7 @@ def import_photo_item(photo_item, force_update=False):
                 if len(photo.city) == 0:
                     photo.city = address_component['province']
                 if 'formatted_address' in result and len(result['formatted_address']) > 0:
-                    photo.address = result['formatted_address']
+                    photo.address = result['formatted_address'].rstrip(result['addressComponent']['street_number'])
                 else:
                     address = address_component['country']
                     for k in ['province', 'city', 'district', 'street']:

@@ -73,24 +73,17 @@ def photos_filter(item):
         new_img['data-action'] = 'zoom'
         new_img['src'] = img['src']
         new_img['alt'] = img['alt']
-        if 'title' in img:
+        if img.has_attr('title'):
             new_img['title'] = img['title']
 
         image_uri, extension = os.path.splitext(new_img['src'].lstrip('/'))
+        print(image_uri)
         photo = Photo.objects.get(uri=image_uri)
-
-        # focal_length = 'ƒ/%f' % (float(exif_info[37386][0]) / float(exif_info[37386][1]))
-        # photo.focal_length = focal_length.rstrip('0')
-        # photo.f_number = '%.1fmm' % (float(exif_info[33437][0]) / float(exif_info[33437][1]))
-        # photo.exposure_time = '%d/%ds' % (exif_info[33434][0], exif_info[33434][1])
-        # iso = 'ISO %d' % exif_info[34855]
-        # # return camera_info_str, img_info_str
-        # camera_info_str, img_info_str = Utils.parse_exif_info(exif_info)
 
         camera_info_str = '%s\t%s\t%fmm\tƒ/%f\t%s\tISO %d' % (photo.camera, photo.lens,
                                                           photo.focal_length, photo.f_number,
                                                           photo.exposure_time_str, photo.iso)
-        image_info_str = '%.4f\t%.4f\t%s\t%s\t%s' % (photo.longitude_bd09, photo.latitude_bd09,
+        image_info_str = '%.8f\t%.8f\t%s\t%s\t%s' % (photo.longitude_bd09, photo.latitude_bd09,
                                                      photo.taken_time.strftime('%Y-%m-%d %H:%M:%S'),
                                                      photo.address, photo.city)
         new_img['camera-info'] = camera_info_str

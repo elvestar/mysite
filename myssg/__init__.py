@@ -57,7 +57,6 @@ class MySSG(object):
         self.blog_items = list()
         self.reading_items = list()
         self.life_items = list()
-        self.photos_items = list()
         self.items_group_by_year = list()
         self.events = list()
         self.events_group_by_year = list()
@@ -69,7 +68,7 @@ class MySSG(object):
         template_names = ['note', 'blog', 'life',
                           'index', 'archives', 'timeline',
                           'time', 'time_analyzer',
-                          'gallery', 'photos',
+                          'gallery',
                           'reading', 'reading_note', 'reading_archives', 'evernote']
         for name in template_names:
             template = self.env.get_template('%s.html' % name)
@@ -95,12 +94,10 @@ class MySSG(object):
                 if item.uri.startswith(('notes/', 'blog/', 'life/')):
                     add_toc(item)
                     if item.uri.startswith('life/'):
-                        pass
-                        # photos_filter(item)
+                        # pass
+                        photos_filter(item)
                 elif item.uri == 'gallery':
                     gallery_filter(item)
-                elif item.uri.startswith('photos/'):
-                    photos_filter(item)
                 item.output = item.html_root.prettify()
                 # Search indexing
                 self.searcher.add_document(item)
@@ -121,8 +118,6 @@ class MySSG(object):
                     self.time_items.append(item)
                 elif item.uri.startswith('life/'):
                     self.life_items.append(item)
-                elif item.uri.startswith('photos/'):
-                    self.photos_items.append(item)
 
         self.searcher.commit()
         compile_end_time = time.time()
@@ -134,8 +129,8 @@ class MySSG(object):
             # Layout
             if item.extension in ['css', 'js', 'json', 'jpg', 'png', 'gif']:
                 item.final_output = item.content
-            elif item.uri in ['index', 'timeline', 'gallery', 'reading', 'archives',
-                              'photos']:
+            elif item.uri in ['index', 'timeline', 'gallery', 'reading',
+                              'archives']:
                 self.render_item_by_template(item, item.uri.replace('/', '_'))
             elif item.uri.startswith('notes'):
                 self.render_item_by_template(item, 'note')
@@ -145,8 +140,6 @@ class MySSG(object):
                 self.render_item_by_template(item, 'life')
             elif item.uri.startswith('time'):
                 self.render_item_by_template(item, 'time')
-            elif item.uri.startswith('photos'):
-                self.render_item_by_template(item, 'photos')
             elif item.uri.startswith('gallery/'):
                 self.render_item_by_template(item, 'gallery_album')
             elif item.uri.startswith('reading/notes/'):
@@ -213,7 +206,6 @@ class MySSG(object):
             reading_items=self.reading_items,
             blog_items=self.blog_items,
             life_items=self.life_items,
-            photos_items=self.photos_items,
 
             events=self.events,
             events_group_by_year=self.events_group_by_year,
