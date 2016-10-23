@@ -1,35 +1,53 @@
 {% extends 'pkm/pkm.html' %}
 
+{% block content_title %}
+    <a href="#">
+        <i class="fa fa-search"></i>
+        全文搜索
+    </a>
+{% endblock %}
+
 {% block content %}
-    "{{ q }}" 的搜索结果
+    <div class="m-y">
+        <form role="form" method="get" class="form-horizontal">
+            <div class="row">
+                <div class="col-md-6">
+                    <input id="search" name='q' class="form-control" type="text" value="{{ q }}">
+                </div>
+            </div>
+        </form>
+    </div>
     {% if results %}
-        <table class="admin-table">
-            <thead>
-            <tr>
-                <th>标题</th>
-                <th>权重</th>
-                <th>高亮段落</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for hit in results.hits.hits %}
+        <div class="m-y-xs">
+            <small>共 {{ results.hits.total }} 个搜索结果，本页展示 {{ results.hits.hits|length }} 个</small>
+        </div>
+        <div class="search-result">
+            <table class="table table-condensed">
+                <thead>
                 <tr>
-                    <td>
-                        <a href="/{{ hit._id }}/"> {{ hit._source.title }} </a>
-                    </td>
-                    <td>{{ hit._score }}</td>
-                <td>
-                    <ul>
-                        {% for p in hit.highlight.content %}
-                        <li>{{ p|safe }}</li>
-                        {% endfor %}
-                        
-                    </ul>
-                    </td>
+                    <th width="15%">标题</th>
+                    <th>高亮段落</th>
                 </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        {% endif %}
+                </thead>
+                <tbody>
+                {% for hit in results.hits.hits %}
+                    <tr>
+                        <td>
+                            <a href="/{{ hit._id }}/" target="_blank"> {{ hit._source.title }} </a>
+                        </td>
+                        <td>
+                            {#                        <ul>#}
+                            {% for p in hit.highlight.content %}
+                                <div class="m-y-xs">{{ p|safe }}</div>
+                            {% endfor %}
+
+                            {#                        </ul>#}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
 
 {% endblock %}

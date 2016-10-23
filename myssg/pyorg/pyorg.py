@@ -5,7 +5,7 @@ from __future__ import print_function
 import sys
 import re
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, element
 import pangu
 
 
@@ -84,7 +84,7 @@ class Rules(object):
     )
     paragraph = re.compile(
         r'^((?:[^\n]+\n?(?!'
-        r'%s|%s|%s|%s|%s|%s'
+        r'%s|%s|%s|%s|%s|%s|#\+CAPTION: '
         r'))+)\n*' % (
             _pure_pattern(source).replace(r'\1', r'\2'),
             _pure_pattern(begin_xxx).replace(r'\1', r'\4'),
@@ -306,7 +306,7 @@ class OrgParser(object):
     def parse_begin_xxx(self, m, root):
         symbol = m.group(1)
         if symbol in ['html', 'HTML']:
-            new_tag = BeautifulSoup(m.group(2), 'html.parser')
+            new_tag = BeautifulSoup(m.group(2), 'html.parser').contents[0]
         elif symbol in ['example', 'EXAMPLE']:
             new_tag = self.soup.new_tag('pre')
             new_tag['class'] = 'example'

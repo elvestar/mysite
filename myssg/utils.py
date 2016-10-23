@@ -2,6 +2,9 @@
 from __future__ import print_function, unicode_literals
 
 
+WEEK_DAY_STR = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+
+
 class ItemUtils(object):
     @staticmethod
     def item_url(item):
@@ -22,6 +25,14 @@ class ItemUtils(object):
     @staticmethod
     def to_datetime(dt):
         return dt.strftime('%Y-%m-%d %H:%M')
+
+    @staticmethod
+    def to_weekday_ch(dt):
+        return WEEK_DAY_STR[int(dt.strftime('%w'))]
+
+    @staticmethod
+    def timedelta_min(dt1, dt2):
+        return (dt2 - dt1).seconds / 60
 
     @staticmethod
     def item_date(item):

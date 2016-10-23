@@ -8,7 +8,11 @@ urlpatterns = [
     url(r'^clock_items/$', views.ClockItemList.as_view()),
     url(r'^$', views.index, name='index'),
     url(r'^about/$', views.calendar, name='about'),
+
     url(r'^project/$', views.project, name='project'),
+    url(r'^project/analyzer/$', views.time_analyzer, name='time_analyzer'),
+    url(r'^project/all/$', views.all_projects, name='all_projects'),
+
     url(r'^calendar/$', views.calendar, name='calendar'),
     url(r'^report/$', views.report, name='report'),
     url(r'^report/week/$', views.week_report, name='week_report'),

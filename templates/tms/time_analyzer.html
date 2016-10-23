@@ -1,0 +1,18 @@
+{% extends 'tms/tms.html' %}
+
+{% block content_title %}
+    <a href="#">
+        <i class="fa fa-tasks"></i>
+        项目分析
+    </a>
+{% endblock %}
+
+{% block content %}
+    <div class="m-r m-t">
+    {{ category }} / {{ project }}
+    从 {{ start_time }} 到 {{ end_time }}
+    </div>
+    <div>
+        {{ macros.render_clock_items(clock_items, date=clock_items[0].date) }}
+    </div>
+{% endblock %}

@@ -91,8 +91,6 @@ def photos_filter(item, settings=None):
             new_img['data-height'] = photo.height
         except Exception as e:
             image_path = os.path.join(settings.CONTENT_DIR, new_img['src'].lstrip('/'))
-            print(settings.CONTENT_DIR, new_img['src'].lstrip('/'))
-            print(image_path)
             im = Image.open(image_path)
             new_img['data-width'], new_img['data-height'] = im.size
 

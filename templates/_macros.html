@@ -101,3 +101,102 @@
         </ul>
     </div>
 {% endmacro %}
+
+{% macro render_clock_items(clock_items, date=None) %}
+    <div class="row dayClockItems">
+        <div class="col-md-3 itemStats">
+            <div>
+                <span class="date">
+                    {{ date.strftime('%Y') }} 年 {{ date.strftime('%-m') }} 月 {{ date.strftime('%-d') }} 日
+                </span>
+                <span class="week"> {{ to_weekday_ch(date) }} </span>
+            </div>
+            <div class="info">共 {{ clock_items|length }} 计时项</div>
+            <div class="info">总计 ?? 时 ?? 分</div>
+        </div>
+
+        <div class="col-md-9 itemList">
+            <ul>
+                {% for ci in clock_items %}
+                    {% if last_ci %}
+                        {% if ci.start_time != last_ci.end_time %}
+                            <li class="timeGap">
+                                <span class="time">
+                                    <span>  {{ last_ci.end_time.strftime('%H:%M') }} </span>
+                                    -
+                                    <span>  {{ ci.start_time.strftime('%H:%M') }} </span>
+                                </span>
+                                <span class="pull-right">
+                                    <span class="cost"> {{ timedelta_min(last_ci.end_time, ci.start_time) }} min </span>
+                                </span>
+                            </li>
+                        {% endif %}
+                    {% endif %}
+                    <li class="clockItem">
+                        <span class="time">
+                            <span>  {{ ci.start_time.strftime('%H:%M') }} </span>
+                            -
+                            <span>  {{ ci.end_time.strftime('%H:%M') }} </span>
+                        </span>
+                        <span class="thing">{{ ci.thing }}</span>
+                        <span class="pull-right">
+                            <span class="cost"> {{ ci.time_cost_min }} min </span>
+                            <span class="projectInfo">
+                                {% if ci.category == '工作' %}
+                                    <span class="project text-danger"> {{ ci.project }}  </span>
+                                    <span class="label label-danger">{{ ci.category }}</span>
+                                {% elif ci.category == '学习' %}
+                                    <span class="project text-primary"> {{ ci.project }}  </span>
+                                    <span class="label label-primary">{{ ci.category }}</span>
+                                {% elif ci.category == '生活' %}
+                                    <span class="project text-success"> {{ ci.project }}  </span>
+                                    <span class="label label-success">{{ ci.category }}</span>
+                                {% else %}
+                                    <span class="project text-default"> {{ ci.project }}  </span>
+                                    <span class="label label-default">{{ ci.category }}</span>
+                                {% endif %}
+                            </span>
+                        </span>
+                    </li>
+                    {% set last_ci = ci %}
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+{% endmacro %}
+
+{% macro render_clock_items_table(clock_items, date_str=None, date=None) %}
+    <table class="admin-table">
+        {% if date_str and date %}
+            <caption>日期：{{ date_str }} {{ date.strftime('%A') }}</caption>
+        {% endif %}
+        <thead>
+        <tr>
+            <th>事情</th>
+            <th>开始时间</th>
+            <th>结束时间</th>
+            <th>耗时（分）</th>
+            <th>类别</th>
+            <th>项目</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for ci in clock_items %}
+            <tr>
+                <td>{{ ci.thing }}</td>
+                <td>
+                    {% if date %}
+                        {{ ci.start_time.strftime('%H:%M') }}
+                    {% else %}
+                        {{ ci.start_time.strftime('%y-%m-%d %H:%M') }}
+                    {% endif %}
+                </td>
+                <td>{{ ci.end_time.strftime('%H:%M') }}</td>
+                <td>{{ ci.time_cost_min }}</td>
+                <td>{{ ci.category }}</td>
+                <td>{{ ci.project }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endmacro %}

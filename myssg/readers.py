@@ -29,9 +29,39 @@ class Reader(object):
         for file_item in self.get_file_items():
             # if 'org-mode' not in file_item['uri']:
             #     continue
-            # if file_item['uri'] not in ['life/1609-team-building', 'life/1610',
-            #                             'life/1610-guo-qing', 'life/1410-guo-qing', 'life/1510-guo-qing']:
-            #     continue
+            if not force_all:
+                if file_item['uri'] not in [
+                    'blog/learn-to-play-guitar',
+                    # 'life/16Q1',
+                    # 'life/16Q2',
+                    # 'life/16Q3',
+                    # 'life/1601-yuan-dan',
+                    # 'life/1603-ba-ya',
+                    # 'life/1603-hong-mi-3',
+                    # 'life/1605-pa-huang-shan',
+                    # 'life/16Q4',
+
+                    # 'life/1504-team-building',
+                    # 'life/1503-ikea',
+                    # 'life/1503-feng-huang-ling',
+                    # 'life/1504-qing-ming',
+                    # 'life/1502-sony-e35',
+                    # 'life/15Q1',
+                    # 'life/15Q2',
+                    # 'life/15Q3',
+                    # 'life/15Q4',
+                    # 'life/1502-the-last-day',
+                    # 'notes/python-libs',
+
+                    # 'notes/my-site-v2',
+                    # 'life/1609-team-building',
+                    # 'life/1511-learn-driving',
+
+                    #  'life/1610',
+                    # 'life/1610-guo-qing', 'life/1410-guo-qing',
+                    # 'life/1510-guo-qing'
+                ]:
+                    continue
             # if not force_all:
             #     if file_item['uri'] not in ['life/1609-team-building', 'life/1610',
             #                                 'life/1610-guo-qing', 'life/1410-guo-qing', 'life/1510-guo-qing']:
@@ -60,7 +90,10 @@ class Reader(object):
 
     def get_file_items(self):
         for root, dirs, files in os.walk(self.dir, followlinks=True):
-            dirs[:] = [d for d in dirs if d not in self.ignore_dirs]
+            upper_dir = root.replace(self.settings.CONTENT_DIR, '')
+            if upper_dir != '':
+                upper_dir += '/'
+            dirs[:] = [d for d in dirs if '%s%s' % ((upper_dir, d)) not in self.ignore_dirs]
             # limit = 12
             # if len(files) > limit:
             #     files = files[0:limit]

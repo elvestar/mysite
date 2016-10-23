@@ -54,7 +54,37 @@ def index(request):
 
 
 def project(request):
-    return render(request, 'tms/project.html')
+    return render(request, 'tms/project.html', {
+    })
+
+
+def all_projects(request):
+    year = None
+    all_projects_stats = ClockItem.objects
+    if year is not None:
+        all_projects_stats = all_projects_stats.filter(year=year)
+    all_projects_stats = all_projects_stats.values('category', 'project'). \
+        annotate(tc_count=Count('id'), tc_sum=Sum('time_cost_min')). \
+        order_by('-tc_sum')
+    return render(request, 'tms/all_projects.html', {
+        'all_projects_stats': all_projects_stats,
+        })
+
+
+def time_analyzer(request):
+    category = request.GET['category']
+    project = request.GET['project']
+    clock_items = ClockItem.objects.filter(category=category, project=project).order_by('start_time')
+    cis_num = len(clock_items)
+    start_time = clock_items[0].start_time
+    end_time = clock_items[cis_num - 1].end_time
+    return render(request, 'tms/time_analyzer.html', {
+        'category': category,
+        'project': project,
+        'clock_items': clock_items,
+        'start_time': start_time,
+        'end_time': end_time,
+    })
 
 
 def calendar(request):
@@ -175,6 +205,7 @@ def day_report_detail(request, date_str):
     return render(request, 'tms/day_report_detail.html', {
         'is_cur_day': is_cur_day,
         'date_str': date_str,
+        'date': dt,
         'clock_items': clock_items,
         'prev_date_str': prev_date_str,
         'next_date_str': next_date_str,

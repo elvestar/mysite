@@ -18,9 +18,9 @@
             {{ macros.report_body(report_data) }}
         </div>
         <div class="report-aside">
-            <div style="text-align: center;" class="m-t-md">
-                <img src="https://img3.doubanio.com/lpic/s27978963.jpg" alt=""/>
-            </div>
         </div>
+    </div>
+    <div class="m-x">
+        {{ macros.render_clock_items(clock_items, date) }}
     </div>
 {% endblock %}

@@ -16,15 +16,13 @@ class Searcher(object):
             'summary': item.summary,
             'content': item.content,
         }
-        res = self.es.index(index='pkm', doc_type='item', id=item.uri, body=doc)
-        print(res)
+        return self.es.index(index='pkm', doc_type='item', id=item.uri, body=doc)
 
     def commit(self):
         pass
 
     def search(self, q):
         return self.es.search(index='pkm', doc_type='item', body={
-            ''
             'query': {
                 'match': {
                     'content': q

@@ -18,32 +18,29 @@ from cms.models import Photo
 class Command(BaseCommand):
     help = 'Import photos to cms, correct gps coordinates, get locations in Chinese by using baidu api'
 
-    def add_arguments(self, parser):
-        parser.add_argument('path', type=str)
-        parser.add_argument('uri', type=str)
-
     def handle(self, *args, **options):
         logging.error('Begin to import photos to cms')
         settings = Settings()
-        settings.CONTENT_DIR = '/Users/elvestar/github/elvestar/elvestar.github.io/'
-        settings.IGNORE_DIRS.append('static')
+        settings.CONTENT_DIR = '/Users/elvestar/github/elvestar/contents/life/imgs/'
+        # settings.IGNORE_DIRS.append('static')
+        settings.IGNORE_DIRS = list()
         reader = Reader(settings)
         photo_items = list()
         for item in reader.read(force_all=True):
-            if item.extension.lower() in ['jpg', 'png', 'gif'] and ItemUtils.is_life_item(item):
-                if item.uri.startswith(('life/imgs/1609-', 'life/imgs/1410-', 'life/imgs/1610-', 'life/imgs/1510-')):
-                    photo_items.append(item)
+            if item.extension.lower() in ['jpg', 'png', 'gif']:
+                item.uri = 'life/imgs/%s' % item.uri
+                photo_items.append(item)
 
         for item in photo_items:
-            import_photo_item(item, force_update=True)
+            import_photo_item(item, force_update=False)
 
 
 def import_photo_item(photo_item, force_update=False):
-    logging.error(str(photo_item))
     photos = Photo.objects.filter(uri=photo_item.uri)
     if len(photos) > 0 and not force_update:
         return
 
+    # logging.error('Begin to import photo: %s' % str(photo_item))
     if len(photos) > 0:
         photo = photos[0]
     else:
@@ -54,14 +51,26 @@ def import_photo_item(photo_item, force_update=False):
 
     photo.width, photo.height = im.size
 
+    if not hasattr(im, '_getexif'):
+        logging.warning('%s has no EXIF' % str(photo_item))
+        return
+
     exif_info = im._getexif()
+    if exif_info is None:
+        logging.warning('%s has a None EXIF' % str(photo_item))
+        return
     # GPS info
     if 34853 not in exif_info:
         photo.has_gps_info = False
     else:
         photo.has_gps_info = True
         gps_info = exif_info[34853]
+        if 4 not in gps_info or 2 not in gps_info:
+            logging.warning('There are not longitude or latitude in gps info[%s], item[%s]' %
+                            (str(gps_info), str(photo_item)))
+            return
         longitude = gps_info[4]
+        print(longitude)
         longitude = float(longitude[0][0]) / float(longitude[0][1]) + \
                     (float(longitude[1][0]) / float(longitude[1][1])) / 60.0
         if gps_info[3] == 'W':
@@ -73,6 +82,7 @@ def import_photo_item(photo_item, force_update=False):
             latitude = - latitude
         photo.longitude = longitude
         photo.latitude = latitude
+        print(longitude, latitude)
 
         # Baidu coordinates correction
         photo.longitude_bd09 = longitude
@@ -131,4 +141,5 @@ def import_photo_item(photo_item, force_update=False):
         photo.taken_time = taken_time.replace(':', '-', 2)
 
         photo.save()
+        print(photo.longitude, photo.latitude)
         logging.error('Success to import photo: %s' % photo.uri)

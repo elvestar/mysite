@@ -3,20 +3,26 @@
 {% block content_title %}
     <a href="#">
         <i class="fa fa-tasks"></i>
-    项目分析
+        项目分析
     </a>
 {% endblock %}
 
 {% block content %}
     <div class="m-r m-t">
-        <table>
+        <table class="">
+        <tbody>
             {% for project_stat in all_projects_stats %}
                 <tr>
-                    <td>{{ project_stat.category }}/{{ project_stat.project }}</td>
+                    <td>
+                        <a href="{{ url('tms:time_analyzer') }}?category={{ project_stat.category }}&project={{ project_stat.project }}">
+                            {{ project_stat.category }}/{{ project_stat.project }}
+                        </a>
+                    </td>
                     <td>{{ project_stat.tc_sum }} minutes</td>
                     <td>{{ project_stat.tc_count }}</td>
                 </tr>
             {% endfor %}
+        </tbody>
         </table>
 
     </div>

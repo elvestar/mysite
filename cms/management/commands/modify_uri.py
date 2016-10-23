@@ -29,11 +29,14 @@ class Command(BaseCommand):
         new_fp = os.path.join(path, new_uri + '.org')
         old_img_path = os.path.join(path, 'imgs', old_uri)
         new_img_path = os.path.join(path, 'imgs', new_uri)
+        if not os.path.exists(old_fp):
+            logging.error('Modify failed! Old file path not exist: %s' % old_fp)
+            return
         if os.path.exists(new_fp):
-            logging.error('Modify failed! New file path exists: %s' % new_fp)
+            logging.error('Modify failed! New file path exist: %s' % new_fp)
             return
         if os.path.exists(new_img_path):
-            logging.error('Modify failed! New imgs path exists: %s' % new_img_path)
+            logging.error('Modify failed! New imgs path exist: %s' % new_img_path)
             return
         logging.error('Begin to modify uri, from %s to %s' % (old_uri, new_uri))
 
