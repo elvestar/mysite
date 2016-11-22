@@ -3,6 +3,7 @@
 import logging
 import json
 import requests
+import os
 from os import listdir
 from os.path import isfile, join
 
@@ -19,7 +20,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         path = options['path']
         uri = options['uri']
-        for f in listdir(path):
+        mtime = lambda f: os.stat(os.path.join(path, f)).st_mtime
+        for f in list(sorted(listdir(path), key=mtime)):
             if not isfile(join(path, f)):
                 logging.warning('Not file: %s' % f)
                 continue

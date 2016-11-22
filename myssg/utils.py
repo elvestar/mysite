@@ -35,6 +35,17 @@ class ItemUtils(object):
         return (dt2 - dt1).seconds / 60
 
     @staticmethod
+    def time_cost_sum(clock_items):
+        tc_sum = 0
+        for ci in clock_items:
+            tc_sum += ci.time_cost_min
+        if (tc_sum % 60) < 10:
+            minutes_str = '0' + str(tc_sum % 60)
+        else:
+            minutes_str = str(tc_sum % 60)
+        return '%s 小时 %s 分钟' % (tc_sum / 60, minutes_str)
+
+    @staticmethod
     def item_date(item):
         return ItemUtils.to_date(item.date)
 

@@ -14,5 +14,6 @@ def environment(**options):
         'url': reverse,
         'to_weekday_ch': ItemUtils.to_weekday_ch,
         'timedelta_min': ItemUtils.timedelta_min,
+        'time_cost_sum': ItemUtils.time_cost_sum,
     })
     return env

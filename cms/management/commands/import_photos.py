@@ -63,8 +63,10 @@ def import_photo_item(photo_item, force_update=False):
     if 34853 not in exif_info:
         photo.has_gps_info = False
     else:
+        logging.error('Begin to import photo: %s' % photo.uri)
         photo.has_gps_info = True
         gps_info = exif_info[34853]
+        print(gps_info)
         if 4 not in gps_info or 2 not in gps_info:
             logging.warning('There are not longitude or latitude in gps info[%s], item[%s]' %
                             (str(gps_info), str(photo_item)))
@@ -72,12 +74,14 @@ def import_photo_item(photo_item, force_update=False):
         longitude = gps_info[4]
         print(longitude)
         longitude = float(longitude[0][0]) / float(longitude[0][1]) + \
-                    (float(longitude[1][0]) / float(longitude[1][1])) / 60.0
+                    (float(longitude[1][0]) / float(longitude[1][1])) / 60.0 + \
+                    (float(longitude[2][0]) / float(longitude[2][1])) / 3600
         if gps_info[3] == 'W':
             longitude = -longitude
         latitude = gps_info[2]
         latitude = float(latitude[0][0]) / float(latitude[0][1]) + \
-                   (float(latitude[1][0]) / float(latitude[1][1])) / 60.0
+                   (float(latitude[1][0]) / float(latitude[1][1])) / 60.0 + \
+                   (float(latitude[2][0]) / float(latitude[2][1])) / 3600.0
         if gps_info[1] == 'S':
             latitude = - latitude
         photo.longitude = longitude
@@ -130,11 +134,24 @@ def import_photo_item(photo_item, force_update=False):
             photo.lens = exif_info[42036]
         else:
             photo.lens = 'unknown'
-        photo.focal_length = float(exif_info[37386][0]) / float(exif_info[37386][1])
-        photo.f_number = float(exif_info[33437][0]) / float(exif_info[33437][1])
-        photo.exposure_time = float(exif_info[33434][0]) / float(exif_info[33434][1])
-        photo.exposure_time_str = '%d/%ds' % (exif_info[33434][0], exif_info[33434][1])
-        photo.iso = exif_info[34855]
+        if 37386 not in exif_info:
+            photo.focal_length = -1.0
+        else:
+            photo.focal_length = float(exif_info[37386][0]) / float(exif_info[37386][1])
+        if 33437 not in exif_info:
+            photo.f_number = -1.0
+        else:
+            photo.f_number = float(exif_info[33437][0]) / float(exif_info[33437][1])
+        if 33434 not in exif_info:
+            photo.exposure_time = -1.0
+            photo.exposure_time_str = '-1s'
+        else:
+            photo.exposure_time = float(exif_info[33434][0]) / float(exif_info[33434][1])
+            photo.exposure_time_str = '%d/%ds' % (exif_info[33434][0], exif_info[33434][1])
+        if 34855 not in exif_info:
+            photo.iso = -1
+        else:
+            photo.iso = exif_info[34855]
 
         # Time
         taken_time = exif_info[36867]

@@ -112,23 +112,28 @@
                 <span class="week"> {{ to_weekday_ch(date) }} </span>
             </div>
             <div class="info">共 {{ clock_items|length }} 计时项</div>
-            <div class="info">总计 ?? 时 ?? 分</div>
+            <div class="info">总计 {{ time_cost_sum(clock_items) }}</div>
         </div>
 
         <div class="col-md-9 itemList">
             <ul>
                 {% for ci in clock_items %}
                     {% if last_ci %}
-                        {% if ci.start_time != last_ci.end_time %}
-                            <li class="timeGap">
+                        {% set td = timedelta_min(last_ci.end_time, ci.start_time) %}
+                        {% if td >= 10 %}
+                            {% if td >= 300 %}
+                                <li class="timeGapLg">
+                                    {% elif td >= 60 %}
+                                <li class="timeGapMd">
+                                    {% else %}
+                                <li class="timeGapSm">
+                            {% endif %}
                                 <span class="time">
                                     <span>  {{ last_ci.end_time.strftime('%H:%M') }} </span>
                                     -
                                     <span>  {{ ci.start_time.strftime('%H:%M') }} </span>
                                 </span>
-                                <span class="pull-right">
-                                    <span class="cost"> {{ timedelta_min(last_ci.end_time, ci.start_time) }} min </span>
-                                </span>
+                                <span class="thing">空闲了 {{ td }} 分</span>
                             </li>
                         {% endif %}
                     {% endif %}
