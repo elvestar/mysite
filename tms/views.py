@@ -53,7 +53,7 @@ def index(request):
     return redirect('tms:day_report')
 
 
-def project(request):
+def get_project(request, category, project):
     return render(request, 'tms/project.html', {
     })
 

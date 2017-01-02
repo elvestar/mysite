@@ -2,7 +2,7 @@
 from __future__ import print_function, unicode_literals
 
 
-WEEK_DAY_STR = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+WEEK_DAY_STR = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
 
 
 class ItemUtils(object):

@@ -9,7 +9,7 @@ urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^about/$', views.calendar, name='about'),
 
-    url(r'^project/$', views.project, name='project'),
+    url(r'^project/detail/(?P<category>\w+)/(?P<project>\w+)/$', views.get_project, name='project'),
     url(r'^project/analyzer/$', views.time_analyzer, name='time_analyzer'),
     url(r'^project/all/$', views.all_projects, name='all_projects'),
 

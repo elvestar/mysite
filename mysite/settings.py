@@ -61,7 +61,7 @@ TEMPLATES = [
         'DIRS': [os.path.join(BASE_DIR,  'templates')],
         'APP_DIRS': True,
         'OPTIONS': {'environment': 'mysite.jinja2.environment'},
-        },
+    },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
@@ -74,7 +74,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 ],
             },
-        },
+    },
 ]
 
 TEMPLATE_LOADERS = (
