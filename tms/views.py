@@ -6,17 +6,22 @@ from itertools import groupby
 from datetime import datetime, date, timedelta
 
 from jinja2 import Environment
+
 from django.contrib.staticfiles.storage import staticfiles_storage
+from django.shortcuts import get_object_or_404, get_list_or_404
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
+from django.db import models
 from django.db.models import Sum, Count
 from rest_framework import generics, filters
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import django_filters
 
 from .serializers import ClockItemSerializer
 from .models import ClockItem
+from tms.utils import Utils
 from myssg.items import Item
 
 
@@ -34,27 +39,405 @@ def time_cost_str(time_cost_min):
 
 
 class ClockItemFilter(filters.FilterSet):
-    min_st = django_filters.DateTimeFilter(name='start_time', lookup_type='gte')
-    max_st = django_filters.DateTimeFilter(name='start_time', lookup_type='lt')
+    min_st = django_filters.DateTimeFilter(name='start_time', lookup_expr='gte')
+    max_st = django_filters.DateTimeFilter(name='start_time', lookup_expr='lt')
 
     class Meta:
         model = ClockItem
-        fields = ['min_st', 'max_st', 'date', 'time_cost_min']
+        fields = ['min_st', 'max_st', 'date', 'category', 'project', 'thing']
 
 
 class ClockItemList(generics.ListAPIView):
     queryset = ClockItem.objects.all().order_by('start_time')
     serializer_class = ClockItemSerializer
-    filter_fields = ['date']
     filter_class = ClockItemFilter
+
+
+@api_view(['GET'])
+def api_day_stats(request):
+    date_str = request.GET['date']
+    if 'days_num' in request.GET:
+        days_num = int(request.GET['days_num'])
+    else:
+        days_num = 1
+    min_date = datetime.strptime(date_str, '%Y-%m-%d').date()
+    max_date = min_date + timedelta(days=days_num)
+    clock_items = ClockItem.objects.filter(start_time__gte=min_date, end_time__lt=max_date)
+    days_stats = generate_days_stats(clock_items, min_date, days_num)
+    report = generate_report(clock_items, days_num)
+    return Response({
+        'days_stats': days_stats,
+        'report': report,
+        'clock_items': ClockItemSerializer(clock_items, many=True).data,
+    })
+
+
+
+DEFAULT_MIN_DT = datetime(year=1970, month=1, day=1)
+DEFAULT_MAX_DT = datetime(year=9999, month=12, day=31)
+
+
+@api_view(['GET'])
+def api_project_stats(request):
+    if 'min_dt' in request.GET:
+        min_dt = Utils.parse_dt_str(request.GET['min_dt'])
+    else:
+        min_dt = DEFAULT_MIN_DT
+    if 'max_dt' in request.GET:
+        max_dt = Utils.parse_dt_str(request.GET['max_dt'])
+    else:
+        max_dt = DEFAULT_MAX_DT
+
+    category = request.GET['c']
+    project = request.GET['p']
+    thing = request.GET.get('t', None)
+    clock_items = ClockItem.objects.filter(start_time__gte=min_dt, end_time__lt=max_dt)
+    if category is not None:
+        clock_items = clock_items.filter(category=category)
+    if project is not None:
+        clock_items = clock_items.filter(project=project)
+    if thing is not None:
+        clock_items = clock_items.filter(thing=thing)
+    clock_items = clock_items.order_by('start_time')
+    if min_dt == DEFAULT_MIN_DT:
+        min_dt = clock_items[0].start_time
+    if max_dt == DEFAULT_MAX_DT:
+        last_clock_item = clock_items[len(clock_items) - 1]
+        print(last_clock_item.end_time, last_clock_item.thing)
+        max_dt = last_clock_item.end_time
+    print
+
+    days_num = (max_dt.date() - min_dt.date()).days + 1
+    print(min_dt, max_dt, days_num)
+    if days_num > 500:
+        # Months stats
+        interval = 'month'
+        stats = generate_months_stats(clock_items, min_dt.date(), max_dt.date())
+    elif days_num > 100:
+        # Weeks stats
+        interval = 'week'
+        stats = generate_weeks_stats(clock_items, min_dt.date(), max_dt.date())
+    else:
+        # Days stats
+        interval = 'day'
+        stats = generate_days_stats(clock_items, min_dt.date(), days_num, with_hours_stats=False)
+
+    return Response({
+        'min_dt': min_dt,
+        'max_dt': max_dt,
+        'category': category,
+        'interval': interval,
+        'stats': stats,
+    })
+
+
+def generate_months_stats(clock_items, min_date, max_date):
+    first_first_date = date(year=min_date.year, month=min_date.month, day=1)
+    days_stats_dict = dict()
+    first_date = first_first_date
+    while True:
+        interval_id = Utils.get_month_id(first_date)
+        days_stats_dict[interval_id] = {
+            'id': interval_id,
+            'date': first_date,
+            'all_time': 0,
+            'valid_time': 0,
+            'work_time': 0,
+            'study_time': 0,
+            'items_num': 0,
+            }
+        one_day_next_month = first_date + timedelta(days=32)
+        first_date = date(year=one_day_next_month.year, month=one_day_next_month.month, day=1)
+        if first_date > max_date:
+            break
+
+    # Fill days_stats_dict
+    for clock_item in clock_items:
+        dt = clock_item.date
+        interval_id = Utils.get_month_id(dt)
+        time_cost_min = clock_item.time_cost_min
+        days_stats_dict[interval_id]['all_time'] += time_cost_min
+        days_stats_dict[interval_id]['items_num'] += 1
+        category = clock_item.category
+        if category == '工作':
+            days_stats_dict[interval_id]['work_time'] += time_cost_min
+            days_stats_dict[interval_id]['valid_time'] += time_cost_min
+        elif category == '学习':
+            days_stats_dict[interval_id]['study_time'] += time_cost_min
+            days_stats_dict[interval_id]['valid_time'] += time_cost_min
+
+    weeks_stats = list(days_stats_dict.values())
+    weeks_stats.sort(key=itemgetter('date'))
+
+    return weeks_stats
+
+
+def generate_weeks_stats(clock_items, min_date, max_date):
+    first_monday_date = min_date - timedelta(days=min_date.weekday())
+    days_stats_dict = dict()
+    monday_date = first_monday_date
+    while True:
+        week_id = Utils.get_week_id(monday_date)
+        days_stats_dict[week_id] = {
+            'id': week_id,
+            'date': monday_date,
+            'all_time': 0,
+            'valid_time': 0,
+            'work_time': 0,
+            'study_time': 0,
+            'items_num': 0,
+            }
+        monday_date += timedelta(days=7)
+        if monday_date > max_date:
+            break
+
+    # Fill days_stats_dict
+    for clock_item in clock_items:
+        dt = clock_item.date
+        week_id = Utils.get_week_id(dt)
+        # print(dt)
+        time_cost_min = clock_item.time_cost_min
+        days_stats_dict[week_id]['all_time'] += time_cost_min
+        days_stats_dict[week_id]['items_num'] += 1
+        category = clock_item.category
+        if category == '工作':
+            days_stats_dict[week_id]['work_time'] += time_cost_min
+            days_stats_dict[week_id]['valid_time'] += time_cost_min
+        elif category == '学习':
+            days_stats_dict[week_id]['study_time'] += time_cost_min
+            days_stats_dict[week_id]['valid_time'] += time_cost_min
+
+    weeks_stats = list(days_stats_dict.values())
+    weeks_stats.sort(key=itemgetter('date'))
+
+    return weeks_stats
+
+
+def generate_days_stats(clock_items, min_date, days_num, with_hours_stats=True):
+    days_stats_dict = dict()
+    for i in range(days_num):
+        dt = min_date + timedelta(days=i)
+        days_stats_dict[dt] = {
+            'date': dt,
+            'date_str': dt.strftime('%Y-%m-%d'),
+            'week_day': WEEK_DAY_STR[dt.weekday()],
+            'all_time': 0,
+            'valid_time': 0,
+            'work_time': 0,
+            'study_time': 0,
+            'items_num': 0,
+        }
+        if with_hours_stats:
+            days_stats_dict[dt]['hours_stats'] = [{'work': 0, 'study': 0, 'life': 0, 'other': 0} for i in range(24)]
+
+    # Fill days_stats_dict
+    for clock_item in clock_items:
+        dt = clock_item.date
+        # print(dt)
+        time_cost_min = clock_item.time_cost_min
+        days_stats_dict[dt]['all_time'] += time_cost_min
+        days_stats_dict[dt]['items_num'] += 1
+        category = clock_item.category
+        if category == '工作':
+            days_stats_dict[dt]['work_time'] += time_cost_min
+            days_stats_dict[dt]['valid_time'] += time_cost_min
+        elif category == '学习':
+            days_stats_dict[dt]['study_time'] += time_cost_min
+            days_stats_dict[dt]['valid_time'] += time_cost_min
+
+        if with_hours_stats:
+            # Hour stats
+            hours_stats = days_stats_dict[dt]['hours_stats']
+            start_time = clock_item.start_time
+            end_time = clock_item.end_time
+            start_hour = start_time.hour
+            end_hour = end_time.hour
+            category_name = CATEGORIES_NAME_DICT[clock_item.category]
+            if start_hour == end_hour:
+                hours_stats[start_hour][category_name] += end_time.minute - start_time.minute
+            else:
+                for hour in range(start_hour, end_hour + 1):
+                    if hour == start_hour:
+                        hours_stats[hour][category_name] += 60 - start_time.minute
+                    elif hour == end_hour:
+                        hours_stats[hour][category_name] += end_time.minute
+                    else:
+                        hours_stats[hour][category_name] += 60
+
+    days_stats = list(days_stats_dict.values())
+    days_stats.sort(key=itemgetter('date'))
+
+    return days_stats
+
+
+def generate_report(clock_items, days_num):
+    """
+    Sample data
+        report_data = {
+            'categories': [
+                {
+                    'name': '工作',
+                    'projects': [
+                        {
+                            'name': 'XX项目',
+                            'things': [
+                                {
+                                    'name': 'XXX模块开发',
+                                    'time_cost': 30,
+                                    },
+
+                                ]
+                        }
+                    ]
+                }
+            ]
+        }
+    """
+    categories_data = list()
+    project_id = 1
+    total_cost = 0
+    for clock_item in clock_items:
+        category = clock_item.category
+        project = clock_item.project
+        thing = clock_item.thing
+        time_cost_min = clock_item.time_cost_min
+        total_cost += time_cost_min
+
+        # Find category
+        category_data = None
+        for it in categories_data:
+            if it['name'] == category:
+                category_data = it
+                break
+        if category_data is None:
+            category_data = {
+                'name': category,
+                'cost': time_cost_min
+            }
+            categories_data.append(category_data)
+        else:
+            category_data['cost'] += time_cost_min
+
+        if 'projects' not in category_data:
+            category_data['projects'] = list()
+        projects_data = category_data['projects']
+
+        # Find project
+        project_data = None
+        for it in projects_data:
+            if it['name'] == project:
+                project_data = it
+                break
+        if project_data is None:
+            project_data = {
+                'name': project,
+                'id': project_id,
+                'cost': time_cost_min
+            }
+            project_id += 1
+            projects_data.append(project_data)
+        else:
+            project_data['cost'] += time_cost_min
+
+        if 'things' not in project_data:
+            project_data['things'] = list()
+        things_data = project_data['things']
+
+        # Find thing
+        thing_data = None
+        for it in things_data:
+            if it['name'] == thing:
+                thing_data = it
+                break
+        if thing_data is None:
+            thing_data = {
+                'name': thing,
+                'cost': time_cost_min
+            }
+            things_data.append(thing_data)
+        else:
+            thing_data['cost'] += time_cost_min
+
+    # Calculate percentage
+    minutes_of_days = days_num * 24 * 60
+    for category_data in categories_data:
+        category_data['pct'] = "{0:.1f}%".format(float(category_data['cost'])/minutes_of_days * 100)
+        category_time_cost = category_data['cost']
+        for project_data in category_data['projects']:
+            project_data['pct'] = "{0:.1f}%".format(float(project_data['cost'])/category_time_cost * 100)
+
+    # Sort
+    categories_data.sort(key=lambda x: CATEGORIES.index(x['name']))
+    for category_data in categories_data:
+        projects_data = category_data['projects']
+        projects_data.sort(key=itemgetter('cost'), reverse=True)
+        for project_data in projects_data:
+            thing_data = project_data['things']
+            thing_data.sort(key=itemgetter('cost'), reverse=True)
+
+    # Change form of time cost
+    for category_data in categories_data:
+        category_data['cost'] = time_cost_str(category_data['cost'])
+        for project_data in category_data['projects']:
+            project_data['cost'] = time_cost_str(project_data['cost'])
+
+    report_data = {
+        'categories': categories_data,
+        'total_cost': total_cost
+    }
+
+    return report_data
+
+
+
+@api_view(['GET'])
+def api_week_stats(request):
+    iso_year = int(request.GET['year'])
+    week = int(request.GET['week'])
+    week_data_group_by_category = ClockItem.objects.filter(iso_year=iso_year, week=week). \
+        values('category').annotate(Count('id'), tc_sum=Sum('time_cost_min')). \
+        order_by('-tc_sum')
+    week_data_group_by_category = list((i['category'], i['id__count'], i['tc_sum'])
+                                       for i in week_data_group_by_category)
+    week_data_group_by_project = ClockItem.objects.filter(iso_year=iso_year, week=week). \
+        values('project', 'category').annotate(Count('id'), tc_sum=Sum('time_cost_min')). \
+        order_by('-tc_sum')
+
+    week_data_group_by_project = list((i['category'], i['project'], i['id__count'], i['tc_sum'])
+                                      for i in week_data_group_by_project)
+
+    legend_data = list(t[0] for t in week_data_group_by_category)
+    legend_data.sort(key=lambda x: CATEGORIES.index(x))
+    week_data_group_by_category.sort(key=lambda x: CATEGORIES.index(x[0]))
+    week_data_group_by_project.sort(key=lambda x: legend_data.index(x[0]))
+    inner_data = list({'name': t[0], 'value': t[2]} for t in week_data_group_by_category)
+    outer_data = list({'name': t[1], 'value': t[3]} for t in week_data_group_by_project)
+    return Response({
+        'legend': legend_data,
+        'inner': inner_data,
+        'outer': outer_data,
+        })
 
 
 def index(request):
     return redirect('tms:day_report')
 
 
-def get_project(request, category, project):
+def get_project(request):
+    category = request.GET['c']
+    project = request.GET['p']
+    clock_items = ClockItem.objects.filter(category=category, project=project).order_by('start_time')
+    cis_num = len(clock_items)
+    start_time = clock_items[0].start_time
+    end_time = clock_items[cis_num - 1].end_time
+    days_num = (end_time.date() - start_time.date()).days + 1
     return render(request, 'tms/project.html', {
+        'category': category,
+        'project': project,
+        'clock_items': clock_items,
+        'start_time': start_time,
+        'end_time': end_time,
+        'days_num': days_num
     })
 
 
@@ -64,8 +447,12 @@ def all_projects(request):
     if year is not None:
         all_projects_stats = all_projects_stats.filter(year=year)
     all_projects_stats = all_projects_stats.values('category', 'project'). \
-        annotate(tc_count=Count('id'), tc_sum=Sum('time_cost_min')). \
+        annotate(tc_count=models.Count('id'), tc_sum=models.Sum('time_cost_min'),
+                 start_time_min=models.Min('start_time'), end_time_max=models.Max('end_time')). \
         order_by('-tc_sum')
+    for project_stats in all_projects_stats:
+            project_stats['days_num'] = \
+            (project_stats['end_time_max'].date() - project_stats['start_time_min'].date()).days + 1
     return render(request, 'tms/all_projects.html', {
         'all_projects_stats': all_projects_stats,
         })
@@ -91,7 +478,7 @@ def calendar(request):
     return render(request, 'tms/calendar.html')
 
 
-def report(request):
+def get_report(request):
     dt = datetime.now()
     iso_year, week, weekday = dt.isocalendar()
     year = dt.year
@@ -389,122 +776,4 @@ def year_stats_step_by_month_and_week(request):
 def generate_daily_overview(clock_items):
     pass
 
-
-def generate_report(clock_items, days_num):
-    """
-    Sample data
-        report_data = {
-            'categories': [
-                {
-                    'name': '工作',
-                    'projects': [
-                        {
-                            'name': 'XX项目',
-                            'things': [
-                                {
-                                    'name': 'XXX模块开发',
-                                    'time_cost': 30,
-                                    },
-
-                                ]
-                        }
-                    ]
-                }
-            ]
-        }
-    """
-    categories_data = list()
-    project_id = 1
-    total_cost = 0
-    for clock_item in clock_items:
-        category = clock_item.category
-        project = clock_item.project
-        thing = clock_item.thing
-        time_cost_min = clock_item.time_cost_min
-        total_cost += time_cost_min
-
-        # Find category
-        category_data = None
-        for it in categories_data:
-            if it['name'] == category:
-                category_data = it
-                break
-        if category_data is None:
-            category_data = {
-                'name': category,
-                'cost': time_cost_min
-            }
-            categories_data.append(category_data)
-        else:
-            category_data['cost'] += time_cost_min
-
-        if 'projects' not in category_data:
-            category_data['projects'] = list()
-        projects_data = category_data['projects']
-
-        # Find project
-        project_data = None
-        for it in projects_data:
-            if it['name'] == project:
-                project_data = it
-                break
-        if project_data is None:
-            project_data = {
-                'name': project,
-                'id': project_id,
-                'cost': time_cost_min
-            }
-            project_id += 1
-            projects_data.append(project_data)
-        else:
-            project_data['cost'] += time_cost_min
-
-        if 'things' not in project_data:
-            project_data['things'] = list()
-        things_data = project_data['things']
-
-        # Find thing
-        thing_data = None
-        for it in things_data:
-            if it['name'] == thing:
-                thing_data = it
-                break
-        if thing_data is None:
-            thing_data = {
-                'name': thing,
-                'cost': time_cost_min
-            }
-            things_data.append(thing_data)
-        else:
-            thing_data['cost'] += time_cost_min
-
-    # Calculate percentage
-    minutes_of_days = days_num * 24 * 60
-    for category_data in categories_data:
-        category_data['pct'] = "{0:.1f}%".format(float(category_data['cost'])/minutes_of_days * 100)
-        category_time_cost = category_data['cost']
-        for project_data in category_data['projects']:
-            project_data['pct'] = "{0:.1f}%".format(float(project_data['cost'])/category_time_cost * 100)
-
-    # Sort
-    categories_data.sort(key=lambda x: CATEGORIES.index(x['name']))
-    for category_data in categories_data:
-        projects_data = category_data['projects']
-        projects_data.sort(key=itemgetter('cost'), reverse=True)
-        for project_data in projects_data:
-            thing_data = project_data['things']
-            thing_data.sort(key=itemgetter('cost'), reverse=True)
-
-    # Change form of time cost
-    for category_data in categories_data:
-        category_data['cost'] = time_cost_str(category_data['cost'])
-        for project_data in category_data['projects']:
-            project_data['cost'] = time_cost_str(project_data['cost'])
-
-    report_data = {
-        'categories': categories_data,
-        'total_cost': total_cost
-    }
-
-    return report_data
 

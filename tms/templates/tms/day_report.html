@@ -26,8 +26,10 @@
         {% for day_stats in days_stats %}
             <tr>
                 <td>
-                    <a href="{{ url('tms:day_report') }}?date={{ day_stats.date_str }}">
-                        {{ day_stats.date.strftime('%y/%-m/%-d') }}
+                    <a href="{% url 'tms:day_report' %}?date={{ day_stats.date_str }}">
+{#                        {{ day_stats.date|date:'Y-m-d i:s' }}#}
+                        {{ day_stats.date|date:'y/m/d' }}
+{#                        {{ day_stats.date }}#}
                         <span class="extra-info">{{ day_stats.week_day }}</span>
                     </a>
                 </td>
@@ -40,7 +42,7 @@
                 <td class="time-cost">{{ day_stats.all_time }}</td>
                 <td>
                     <span>
-                        <a href="{{ url('tms:day_report') }}?date={{ day_stats.date_str }}" class="extra-info" target="_blank">
+                        <a href="{% url 'tms:day_report' %}?date={{ day_stats.date_str }}" class="extra-info" target="_blank">
                             <i class="fa fa-link"></i>
                         </a>
                     </span>
@@ -55,7 +57,7 @@
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
+    {{ block.super }}
 
     <script>
         {% for day_stats in days_stats %}
@@ -63,13 +65,13 @@
                 type: 'bar',
                 height: '20px',
                 stackedBarColor: ['red', 'blue','green', 'black'],
-                {% raw %}
+                {% verbatim %}
                 tooltipFormat: '{{offset:offset}} 点  <span style="color: {{color}}">&#9679;</span> 用时 {{prefix}}{{value}}{{suffix}} 分钟',
                 tooltipValueLookups: {
                     'offset': {
                     }
                 }
-                {% endraw %}
+                {% endverbatim %}
             });
         {% endfor %}
     </script>

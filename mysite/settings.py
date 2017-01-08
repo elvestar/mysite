@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_swagger',
     'tms',
     'cms',
 ]
@@ -56,12 +57,12 @@ MIDDLEWARE_CLASSES = [
 ROOT_URLCONF = 'mysite.urls'
 
 TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.jinja2.Jinja2',
-        'DIRS': [os.path.join(BASE_DIR,  'templates')],
-        'APP_DIRS': True,
-        'OPTIONS': {'environment': 'mysite.jinja2.environment'},
-    },
+    # {
+    #     'BACKEND': 'django.template.backends.jinja2.Jinja2',
+    #     'DIRS': [os.path.join(BASE_DIR,  'templates')],
+    #     'APP_DIRS': True,
+    #     'OPTIONS': {'environment': 'mysite.jinja2.environment'},
+    # },
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [],
@@ -142,7 +143,8 @@ STATICFILES_DIRS = (
 )
 
 REST_FRAMEWORK = {
-    'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    # 'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
     # 'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    # 'PAGE_SIZE': 10
+    'PAGE_SIZE': 50
 }

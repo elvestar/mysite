@@ -6,8 +6,9 @@
         年度报表 - {{ year }}
     </a>
     <small style="font-size: 10px" class="m-l-xs">
-        <a href="{{ url('tms:year_report') }}?year=2015">2015</a>
-        <a href="{{ url('tms:year_report') }}?year=2016">2016</a>
+        <a href="{% url 'tms:year_report' %}?year=2015">2015</a>
+        <a href="{% url 'tms:year_report' %}?year=2016">2016</a>
+        <a href="{% url 'tms:year_report' %}?year=2017">2017</a>
     </small>
 {% endblock %}
 
@@ -34,7 +35,7 @@
 {% endblock %}
 
 {% block scripts %}
-    {{ super() }}
+    {{ block.super }}
 
     <script>
         renderTime({{ year }});

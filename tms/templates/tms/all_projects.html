@@ -1,0 +1,38 @@
+{% extends 'tms/tms.html' %}
+
+{% block content_title %}
+    <a href="#">
+        <i class="fa fa-tasks"></i>
+        项目分析
+    </a>
+{% endblock %}
+
+{% block content %}
+    <div class="m-r m-t">
+        <table class="admin-table">
+            <thead>
+            <tr>
+                <th>项目</th>
+                <th>持续天数</th>
+                <th>开始时间</th>
+                <th style="text-align: right">总耗时</th>
+            </tr>
+            </thead>
+        <tbody>
+            {% for project_stat in all_projects_stats %}
+                <tr>
+                    <td>
+                        <a href="{% url 'tms:project' %}?c={{ project_stat.category }}&p={{ project_stat.project }}">
+                            {{ project_stat.category }}/{{ project_stat.project }}
+                        </a>
+                    </td>
+                    <td>{{ project_stat.days_num }}</td>
+                    <td>{{ project_stat.start_time_min|date:'Y-m-d H:i' }}</td>
+                    <td style="text-align: right">{{ project_stat.tc_sum }} minutes</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+        </table>
+
+    </div>
+{% endblock %}

@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'tms/base.html' %}
 
 
 {% block html_tag %}
@@ -18,30 +18,42 @@
 {% endblock %}
 
 {% block main %}
-    {% macro admin_nav_item(page_url, icon) %}
-        <li class="nav-item {{ macros.active_if_path_include(page_url) }}">
-            <a href="{{ page_url }}">
-                <i class="fa fa-{{ icon }} fa-lg"></i>
-            </a>
-        </li>
-    {% endmacro %}
+{#    {% macro admin_nav_item(page_url, icon) %}#}
+{#        <li class="nav-item {{ macros.active_if_path_include(page_url) }}">#}
+{#            <a href="{{ page_url }}">#}
+{#                <i class="fa fa-{{ icon }} fa-lg"></i>#}
+{#            </a>#}
+{#        </li>#}
+{#    {% endmacro %}#}
 
-    <div class="admin-wrapper">
-        <div class="admin-nav">
-            <div class="admin-nav-top">
-                <a href="/" class="p-y-xs">仲</a>
-            </div>
-            <div class="admin-nav-middle m-t">
-                <ul>
-{#                    {{ admin_nav_item(url('pkm:index'), 'money') }}#}
-{#                    {{ admin_nav_item(url('cms:index'), 'folder-o') }}#}
-{#                    {{ admin_nav_item(url('tms:index'), 'clock-o') }}#}
-                </ul>
-
-            </div>
-            <div class="admin-nav-bottom">
-            </div>
-        </div>
+{#    <div class="admin-wrapper">#}
+{#        <div class="admin-nav">#}
+{#            <div class="admin-nav-top">#}
+{#                <a href="/" class="p-y-xs">仲</a>#}
+{#            </div>#}
+{#            <div class="admin-nav-middle m-t">#}
+{#                <ul>#}
+{#                    <li class="nav-item">#}
+{#                        <a href="{% url 'pkm:index' %}">#}
+{#                            <i class="fa fa-money fa-lg"></i>#}
+{#                        </a>#}
+{#                    </li>#}
+{#                    <li class="nav-item">#}
+{#                        <a href="{% url 'cms:index' %}">#}
+{#                            <i class="fa fa-folder-o fa-lg"></i>#}
+{#                        </a>#}
+{#                    </li>#}
+{#                    <li class="nav-item">#}
+{#                        <a href="{% url 'tms:index' %}">#}
+{#                            <i class="fa fa-clock-o fa-lg"></i>#}
+{#                        </a>#}
+{#                    </li>#}
+{#                </ul>#}
+{##}
+{#            </div>#}
+{#            <div class="admin-nav-bottom">#}
+{#            </div>#}
+{#        </div>#}
 
         <div class="admin-main" style="position: relative; width: 100%; height: 100%; display: -webkit-flex;">
             <div class="admin-aside" style="">

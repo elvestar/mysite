@@ -6,5 +6,7 @@ from .models import ClockItem
 
 
 class ClockItemSerializer(serializers.ModelSerializer):
+
     class Meta:
+        exclude = []
         model = ClockItem
