@@ -109,7 +109,8 @@ def api_project_stats(request):
 
     days_num = (max_dt.date() - min_dt.date()).days + 1
     print(min_dt, max_dt, days_num)
-    if days_num > 500:
+    # if days_num > 500:
+    if days_num > 200:
         # Months stats
         interval = 'month'
         stats = generate_months_stats(clock_items, min_dt.date(), max_dt.date())
@@ -420,7 +421,7 @@ def api_week_stats(request):
 
 
 def index(request):
-    return redirect('tms:day_report')
+    return render(request, 'tms/index.html')
 
 
 def get_project(request):

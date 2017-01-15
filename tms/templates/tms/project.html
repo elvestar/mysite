@@ -22,118 +22,126 @@
         </div>
     </div>
     <div class="m-t">
-        <div id="main" style="width: 1000px; height:400px;"></div>
+        <div class="admin-panel p-a-xs m-y">
+            <div class="admin-panel-heading p-b-xs m-b-xs">
+                {{ project }}
+            </div>
+            <div class="admin-panel-body">
+                <div id="main" style="width: 1000px; height:400px;"></div>
+            </div>
+        </div>
     </div>
+
     <div>
-    <table class="admin-table">
-        <tr>
-            <th>开始时间</th>
-            <th>结束时间</th>
-            <th>事情</th>
-            <th>耗时</th>
-        </tr>
-        {% for clock_item in clock_items %}
+        <table class="admin-table">
             <tr>
-                <td>{{ clock_item.start_time|date:'Y-m-d H:i' }}</td>
-                <td>{{ clock_item.end_time|date:'Y-m-d H:i' }}</td>
-                <td>{{ clock_item.thing }}</td>
-                <td>{{ clock_item.time_cost_min }}</td>
+                <th>开始时间</th>
+                <th>结束时间</th>
+                <th>事情</th>
+                <th>耗时</th>
             </tr>
-        {% endfor %}
-    </table>
+            {% for clock_item in clock_items %}
+                <tr>
+                    <td>{{ clock_item.start_time|date:'Y-m-d H:i' }}</td>
+                    <td>{{ clock_item.end_time|date:'Y-m-d H:i' }}</td>
+                    <td>{{ clock_item.thing }}</td>
+                    <td>{{ clock_item.time_cost_min }}</td>
+                </tr>
+            {% endfor %}
+        </table>
     </div>
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
     <script>
-    $(document).ready(function() {
-        $("#startTime, #endTime").datetimepicker({
-            format: 'yyyy-mm-dd',
-            language: 'zh-CN',
-            todayHighlight: true,
-            autoclose: true,
-            minView: 'month'
-        });
+        $(document).ready(function() {
+            $("#startTime, #endTime").datetimepicker({
+                format: 'yyyy-mm-dd',
+                language: 'zh-CN',
+                todayHighlight: true,
+                autoclose: true,
+                minView: 'month'
+            });
 
-        var category = $('#category').text();
-        var project = $('#project').text();
-        $.get('/tms/api/v1/project_stats/?c=' + category + '&p=' + project, function(data) {
-            var stats = data['stats'];
-            var interval = data['interval'];
-            var dateList = [];
-            var allTimeList = [];
-            var validTimeList = [];
-            var workTimeList = [];
-            var studyTimeList = [];
-            for (var i in stats) {
-                if (interval == 'month') {
-                    dateList.push(stats[i]['id']);
-                } else if (interval == 'week') {
-                    dateList.push(stats[i]['id']);
-                } else {
-                    dateList.push(stats[i]['date']);
+            var category = $('#category').text();
+            var project = $('#project').text();
+            $.get('/tms/api/v1/project_stats/?c=' + category + '&p=' + project, function(data) {
+                var stats = data['stats'];
+                var interval = data['interval'];
+                var dateList = [];
+                var allTimeList = [];
+                var validTimeList = [];
+                var workTimeList = [];
+                var studyTimeList = [];
+                for (var i in stats) {
+                    if (interval == 'month') {
+                        dateList.push(stats[i]['id']);
+                    } else if (interval == 'week') {
+                        dateList.push(stats[i]['id']);
+                    } else {
+                        dateList.push(stats[i]['date']);
+                    }
+                    allTimeList.push(stats[i]['all_time'])
+                    validTimeList.push(stats[i]['valid_time'])
+                    workTimeList.push(stats[i]['work_time'])
+                    studyTimeList.push(stats[i]['study_time'])
                 }
-                allTimeList.push(stats[i]['all_time'])
-                validTimeList.push(stats[i]['valid_time'])
-                workTimeList.push(stats[i]['work_time'])
-                studyTimeList.push(stats[i]['study_time'])
-            }
-            var myChart = echarts.init(document.getElementById('main'));
+                var myChart = echarts.init(document.getElementById('main'));
 
-            var option = {
-                title: {
-                    text: project,
-                    subtext: '项目分析图',
-                    link: 'http://localhost:8070/tms/project/all/'
-                },
-                legend: {
-                    data: ['全部时间', '有效时间', '工作时间', '学习时间'],
-                },
-                tooltip: {
-                    trigger: 'axis'
-                },
-                xAxis: [
-                    {
-                        type: 'category',
-                        data: dateList,
-                    }
-                ],
-                yAxis: [
-                    {
-                        type: 'value'
-                    }
-                ],
-                series: [
-                    {
-                        name: '全部时间',
-                        type: 'bar',
-                        data: allTimeList
+                var option = {
+                    title: {
+{#                        text: project,#}
+{#                        subtext: '项目分析图',#}
+                        link: 'http://localhost:8070/tms/project/all/'
                     },
-{#                    {#}
-{#                        name: '有效时间',#}
-{#                        type: 'bar',#}
-{#                        data: validTimeList#}
-{#                    },#}
-{#                    {#}
-{#                        name: '工作时间',#}
-{#                        stack: '分类统计',#}
-{#                        type: 'bar',#}
-{#                        data: workTimeList#}
-{#                    },#}
-{#                    {#}
-{#                        name: '学习时间',#}
-{#                        stack: '分类统计',#}
-{#                        type: 'bar',#}
-{#                        data: studyTimeList#}
-{#                    },#}
-                ]
-            };
+                    legend: {
+                        data: ['全部时间', '有效时间', '工作时间', '学习时间'],
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    xAxis: [
+                        {
+                            type: 'category',
+                            data: dateList,
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            type: 'value'
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '全部时间',
+                            type: 'bar',
+                            data: allTimeList
+                        },
+                        {#                    {#}
+                        {#                        name: '有效时间',#}
+                        {#                        type: 'bar',#}
+                        {#                        data: validTimeList#}
+                        {#                    },#}
+                        {#                    {#}
+                        {#                        name: '工作时间',#}
+                        {#                        stack: '分类统计',#}
+                        {#                        type: 'bar',#}
+                        {#                        data: workTimeList#}
+                        {#                    },#}
+                        {#                    {#}
+                        {#                        name: '学习时间',#}
+                        {#                        stack: '分类统计',#}
+                        {#                        type: 'bar',#}
+                        {#                        data: studyTimeList#}
+                        {#                    },#}
+                    ]
+                };
 
-            // 使用刚指定的配置项和数据显示图表。
-            myChart.setOption(option);
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+            });
+
         });
-
-    });
     </script>
 {% endblock %}

@@ -137,10 +137,10 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, "static"),
-)
+STATIC_URL = '/tms/static/node_modules/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, "node_modules"),
+]
 
 REST_FRAMEWORK = {
     # 'DEFAULT_FILTER_BACKENDS': ('rest_framework.filters.DjangoFilterBackend',),

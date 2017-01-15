@@ -1,0 +1,117 @@
+.tms-calendar {
+  .q1{fill:#d6e685;}
+  .q2{fill:#8cc665;}
+  .q3{fill:#44a340;}
+  .q4{fill:#1e6823;}
+  .q5{fill:#fb8072;}
+}
+
+.dayClockItems {
+  background: #fff;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 2px 0 rgba(0,0,0,.1);
+  padding: 20px;
+  border-radius: 3px;
+  margin-bottom: 10px;
+  color: #222;
+  font-size: 14px;
+
+  .itemStats {
+    padding: 0;
+    .date {
+    }
+    .week {
+      margin-left: 3px;
+      font-size: 80%;
+    }
+    .info {
+      margin-top: 3px
+    }
+
+    .info, .week {
+      color: #888;
+    }
+  }
+
+  .itemList {
+    padding: 0;
+
+    ul {
+      margin: 0;
+      padding: 0;
+    }
+    li {
+      list-style: none;
+      padding: 5px 10px;
+      border-radius: 3px;
+
+      .time {
+        color: #999;
+        margin-right: 15px;
+      }
+      .cost {
+        color: #888;
+        font-size: 80%;
+      }
+      .projectInfo {
+        display: none;
+        .project {
+          margin-right: 3px;
+        }
+        .text-success {
+          color: #60BE29;
+        }
+        .label-success {
+          background-color: #60BE29;
+        }
+        .text-primary {
+          color: #00A0E9;
+        }
+        .label-primary {
+          background-color: #00A0E9;
+        }
+        .text-danger {
+          color: #E01515;
+        }
+        .label-danger {
+          background-color: #E01515;
+        }
+        .text-default {
+          color: #CCCCCC;
+        }
+        .label-default {
+          background-color: #CCCCCC;
+        }
+      }
+    }
+//    li.timeGapSm, li.timeGapMd, li.timeGapLg {
+//      padding-top: 2px;
+//      padding-bottom: 2px;
+//    }
+    li.timeGapLg {
+      .time, .thing {
+        color: #fff;
+      }
+    }
+    li.timeGapSm {
+//      background: rgb(208, 238, 156);
+      background: rgb(236, 236, 236);
+    }
+    li.timeGapMd {
+//      background: rgb(166, 227, 60);
+      background: rgb(236, 236, 236);
+    }
+    li.timeGapLg {
+      background: rgb(112, 212, 69);
+    }
+    li.clockItem:hover {
+      background: #f4f4f4;
+      .cost {
+        display: none;
+      }
+      .projectInfo {
+        display: inline;
+      }
+    }
+  }
+}
