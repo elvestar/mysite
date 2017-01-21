@@ -62,7 +62,7 @@ def api_day_stats(request):
         days_num = 1
     min_date = datetime.strptime(date_str, '%Y-%m-%d').date()
     max_date = min_date + timedelta(days=days_num)
-    clock_items = ClockItem.objects.filter(start_time__gte=min_date, end_time__lt=max_date)
+    clock_items = ClockItem.objects.filter(start_time__gte=min_date, end_time__lt=max_date).order_by('start_time')
     days_stats = generate_days_stats(clock_items, min_date, days_num)
     report = generate_report(clock_items, days_num)
     return Response({
@@ -91,7 +91,7 @@ def api_project_stats(request):
     category = request.GET['c']
     project = request.GET['p']
     thing = request.GET.get('t', None)
-    clock_items = ClockItem.objects.filter(start_time__gte=min_dt, end_time__lt=max_dt)
+    clock_items = ClockItem.objects.filter(start_time__gte=min_dt, end_time__lt=max_dt).order_by('-start_time')
     if category is not None:
         clock_items = clock_items.filter(category=category)
     if project is not None:
@@ -105,7 +105,6 @@ def api_project_stats(request):
         last_clock_item = clock_items[len(clock_items) - 1]
         print(last_clock_item.end_time, last_clock_item.thing)
         max_dt = last_clock_item.end_time
-    print
 
     days_num = (max_dt.date() - min_dt.date()).days + 1
     print(min_dt, max_dt, days_num)

@@ -2,10 +2,9 @@ import React, { Component } from 'react'
 
 import { Router, Route, Link, IndexRoute, browserHistory, hashHistory } from 'react-router'
 
-// import { Layout, Menu, Breadcrumb, Icon, Button } from 'antd';
-// const { Header, Content, Footer, Sider } = Layout;
-
 import { ClockItems } from '../components/common/ClockItems.jsx'
+import { AllComponents } from '../components/AllComponents.jsx'
+import { AdminContentHeader } from '../components/common/Partials.jsx'
 
 class AdminAside extends React.Component {
   render() {
@@ -44,6 +43,12 @@ class AdminAside extends React.Component {
                         项目
                       </Link>
                     </li>
+                    <li className="section-item">
+                      <Link to="/tms/all" activeClassName="active">
+                        <i className="fa fa-list"></i>
+                        全部组件    
+                      </Link>
+                    </li>
                     <ul>
                 </ul>
                   </ul>
@@ -54,22 +59,6 @@ class AdminAside extends React.Component {
     )
   }
 }
-
-class AdminContentHeader extends React.Component {
-  render() {
-    return (
-      <div className="admin-content-header m-x">
-        <div className="content-title">
-          标题
-        </div>
-        <div className="content-info">
-          信息
-        </div>
-      </div>
-    )
-  }
-}
-
 
 class App extends React.Component {
   render() {
@@ -109,6 +98,7 @@ class Report extends React.Component {
       <div>
         <AdminContentHeader />
         <div className="admin-content-body m-x m-t">
+          <ClockItems />
           <div className="m-r m-t">
             <table className="admin-table">
               <caption>日报列表</caption>
@@ -133,12 +123,14 @@ class Report extends React.Component {
   }
 }
 
-var history = process.env.NODE_ENV !== 'production' ? browserHistory : hashHistory
+// var history = process.env.NODE_ENV !== 'production' ? browserHistory : hashHistory
+var history = hashHistory
 export class TMSV2 extends React.Component {
   render() {
     return (
       <Router history={history}>
         <Route path="/tms" component={App}>
+          <Route path="all" component={AllComponents} />
           <Route path="project" component={Project} />
           <Route path="report" component={Report} />
         </Route>

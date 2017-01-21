@@ -26,7 +26,7 @@
     "cal-heatmap": "^3.6.2",
     "chart.js": "^2.4.0",
     "css-loader": "^0.26.1",
-    "echarts": "^3.3.2",
+    "echarts": "^3.4.0",
     "express": "^4.14.0",
     "fancybox": "^3.0.0",
     "font-awesome": "^4.7.0",
