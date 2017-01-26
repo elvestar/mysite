@@ -3,59 +3,72 @@ import React, { Component } from 'react'
 import { Router, Route, Link, IndexRoute, browserHistory, hashHistory } from 'react-router'
 
 import { ClockItems } from '../components/common/ClockItems.jsx'
+import { DayReport } from '../components/common/DayReport.jsx'
 import { AllComponents } from '../components/AllComponents.jsx'
 import { AdminContentHeader } from '../components/common/Partials.jsx'
 
 class AdminAside extends React.Component {
   render() {
     return (
-          <div className="admin-aside">
-            <div className="aside-header">
-              <a href="/tms" className="m-x aside-title">
-                时间管理
+      <div className="admin-aside">
+        <div className="aside-header">
+          <a href="/tms" className="m-x aside-title">
+            时间管理
               </a>
-              <div className="m-x aside-title-extra">
-                <a href="">
-                  <i className="fa fa-lg fa-clock-o" ></i>
-                </a>
-              </div>
-            </div>
-            <div className="aside-body m-t">
+          <div className="m-x aside-title-extra">
+            <a href="">
+              <i className="fa fa-lg fa-clock-o" ></i>
+            </a>
+          </div>
+        </div>
+        <div className="aside-body m-t">
 
-              <div className="aside-section project-section">
-                <div className="section-header">
-                  <a href="#reportSection">
-                    <i className="fa fa-caret-right"></i>
-                    报表
+          <div className="aside-section project-section">
+            <div className="section-header">
+              <a href="#reportSection">
+                <i className="fa fa-caret-right"></i>
+                时间管理
                   </a>
-                </div>
-                <div className="section-body">
-                  <ul className="section-list">
-                    <li className="section-item">
-                      <Link to="/tms/report" activeClassName="active">
-                        <i className="fa fa-file-text-o"></i>
-                        报表
+            </div>
+            <div className="section-body">
+              <ul className="section-list">
+                <li className="section-item">
+                  <Link to="/tms/report" activeClassName="active">
+                    <i className="fa fa-file-text-o"></i>
+                    报表
                       </Link>
-                    </li>
-                    <li className="section-item">
-                      <Link to="/tms/project" activeClassName="active">
-                        <i className="fa fa-file-text-o"></i>
-                        项目
+                </li>
+                <li className="section-item">
+                  <Link to="/tms/report/day" activeClassName="active">
+                    <i className="fa fa-file-text-o"></i>
+                    日报
                       </Link>
-                    </li>
-                    <li className="section-item">
-                      <Link to="/tms/all" activeClassName="active">
-                        <i className="fa fa-list"></i>
-                        全部组件    
+                </li>
+                <li className="section-item">
+                  <Link to="/tms/report/day" activeClassName="active">
+                    <i className="fa fa-file-text-o"></i>
+                    周报
                       </Link>
-                    </li>
-                    <ul>
+                </li>
+                <li className="section-item">
+                  <Link to="/tms/project" activeClassName="active">
+                    <i className="fa fa-file-text-o"></i>
+                    项目
+                      </Link>
+                </li>
+                <li className="section-item">
+                  <Link to="/tms/all" activeClassName="active">
+                    <i className="fa fa-list"></i>
+                    全部组件
+                      </Link>
+                </li>
+                <ul>
                 </ul>
-                  </ul>
-                </div>
-              </div>
+              </ul>
             </div>
           </div>
+        </div>
+      </div>
     )
   }
 }
@@ -65,11 +78,11 @@ class App extends React.Component {
     return (
       <div>
         <div className="admin-main">
-        <AdminAside/>
+          <AdminAside />
 
           <div className="admin-content-wrapper">
-            <div className="admin-content">
-                  {this.props.children}
+            <div className="admin-content m-x m-y">
+              {this.props.children}
             </div>
           </div>
         </div>
@@ -85,7 +98,7 @@ class Project extends React.Component {
       <div>
         <AdminContentHeader />
         <div className="admin-content-body m-x m-t">
-        <ClockItems/>
+          <ClockItems />
         </div>
       </div>
     )
@@ -133,6 +146,7 @@ export class TMSV2 extends React.Component {
           <Route path="all" component={AllComponents} />
           <Route path="project" component={Project} />
           <Route path="report" component={Report} />
+          <Route path="report/day" component={DayReport} />
         </Route>
       </Router>
     )

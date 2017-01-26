@@ -9,16 +9,22 @@ const TabPane = Tabs.TabPane
 import { ClockItems } from './ClockItems.jsx'
 import { Report } from './Report.jsx'
 
+
+
 export class DayReport extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            today: moment(new Date()),
-            date: moment(new Date()),
+            today: moment(),
             clockItems: [],
             report: { categories: [] },
             stats: {},
             rawData: ''
+        }
+        if (this.props.date != null) {
+            this.state.date = moment(this.props.date)
+        } else {
+            this.state.date = moment()
         }
 
         this.pickDate = (date, dateString) => {
@@ -68,9 +74,9 @@ export class DayReport extends React.Component {
             var yesterday = moment(this.state.today).subtract(1, 'days')
             this.pickDate(yesterday)
         }
-        this.pickThisMonday = () => {
-            var thisMonday = moment(this.state.today).startOf('week').add(1, 'days')
-            this.pickDate(thisMonday)
+        this.pickThisSunday = () => {
+            var thisSunday = moment(this.state.today).startOf('week')
+            this.pickDate(thisSunday)
         }
         this.pickSameDayPrevMonth = () => {
             var sameDayPrevMonth = moment(this.state.today).subtract(1, 'months')
@@ -94,7 +100,7 @@ export class DayReport extends React.Component {
     }
 
     componentDidMount() {
-        this.pickDate(this.state.today)
+        this.pickDate(this.state.date)
     }
 
     clickTab(key) {
@@ -126,7 +132,7 @@ export class DayReport extends React.Component {
                     <span className="m-l-xs">
                         <Button.Group>
                             <Button type="ghost" onClick={this.pickYesterday}>昨天</Button>
-                            <Button type="ghost" onClick={this.pickThisMonday}>本周一</Button>
+                            <Button type="ghost" onClick={this.pickThisSunday}>上周日</Button>
                             <Button type="ghost" onClick={this.pickSameDayPrevMonth}>上月今天</Button>
                             <Button type="ghost" onClick={this.pickSameDayPrevYear}>去年今天</Button>
                         </Button.Group>

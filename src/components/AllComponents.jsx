@@ -9,7 +9,6 @@ export class AllComponents extends React.Component {
     render() {
         return (
             <div>
-                <AdminContentHeader/>
                 <Row className="m-t">
                     <Col span={24} className="p-x">
                         <Card title="日报" extra={<a href="#">More</a>}>
