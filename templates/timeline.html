@@ -1,21 +1,19 @@
-{% extends 'base.html' %}
-
-{% block main %}
-    <div class="container timeline">
-        <div class="row">
-            <div class="col-md-9 timeline-content">
-                {% for year, events_group_by_month in events_group_by_year %}
-                    <div id="{{ year }}">
-                        {% for month, events_of_month in events_group_by_month %}
-                            <div id="{{ year }}-{{ month }}">
-                                <h2>{{ year }} 年 {{ month }} 月 <small>共 {{ events_of_month|length }} 篇</small></h2>
-                                <ul>
-                                    {% for event in events_of_month %}
-                                        <li class="text">
-                                            <a href="{{ item_url(event) }}" target="_blank">
-                                                <h3>{{ event.title }}</h3>
-                                                <p>{{ event.summary|escape }}</p>
-                            <span class="info">
+{% extends 'base.html' %} {% block main %}
+<div class="container timeline">
+    <div class="row">
+        <div class="col-md-9 timeline-content">
+            {% for year, events_group_by_month in events_group_by_year %}
+            <div id="{{ year }}">
+                {% for month, events_of_month in events_group_by_month %}
+                <div id="{{ year }}-{{ month }}">
+                    <h2>{{ year }} 年 {{ month }} 月 <small>共 {{ events_of_month|length }} 篇</small></h2>
+                    <ul>
+                        {% for event in events_of_month %}
+                        <li class="text">
+                            <a href="{{ item_url(event) }}" target="_blank">
+                                <h3>{{ event.title }}</h3>
+                                <p>{{ event.summary|escape }}</p>
+                                <span class="info">
                                 <em>{{ event.date.strftime('%-m月%-d日') }}</em>
                                     <small>
                                         {% if event.is_event %}
@@ -28,51 +26,47 @@
                                         {% endif %}
                                     </small>
                             </span>
-                                            </a>
-                                        </li>
-                                    {% endfor %}
-
-                                </ul>
-                            </div>
+                            </a>
+                        </li>
                         {% endfor %}
-                    </div>
+
+                    </ul>
+                </div>
                 {% endfor %}
             </div>
-            <div class="col-md-3">
-                <div id="toc" class="m-t-lg">
-                    <div>
-                        <ul class="nav nav-stacked fixed">
-                            {% for year, events_group_by_month in events_group_by_year %}
-                                <li>
-                                    <a href="#{{ year }}">{{ year }}</a>
-                                    {% for month, events_of_month in events_group_by_month %}
-                                        <ul class="nav nav-stacked">
-                                            <li class="timeline-month-anchor">
-                                                <a href="#{{ year }}-{{ month }}">{{ month }} 月</a>
-                                            </li>
-                                        </ul>
-                                    {% endfor %}
+            {% endfor %}
+        </div>
+        <div class="col-md-3">
+            <div id="toc" class="m-t-lg">
+                <div>
+                    <ul class="nav nav-stacked fixed">
+                        {% for year, events_group_by_month in events_group_by_year %}
+                        <li>
+                            <a href="#{{ year }}">{{ year }}</a> {% for month, events_of_month in events_group_by_month %}
+                            <ul class="nav nav-stacked">
+                                <li class="timeline-month-anchor">
+                                    <a href="#{{ year }}-{{ month }}">{{ month }} 月</a>
                                 </li>
+                            </ul>
                             {% endfor %}
-                        </ul>
-                    </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
                 </div>
             </div>
         </div>
     </div>
-{% endblock %}
-
-{% block scripts %}
-    {{ super() }}
-    <script>
-        $(document).ready(function() {
-            $('#toc').affix({
-                offset: {
-                    top: $('#toc').offset().top,
-                    bottom: ($('#footer').outerHeight(true))
-                }
-            });
-            $('body').scrollspy({ target: '#toc' });
-        })
-    </script>
+</div>
+{% endblock %} {% block scripts %} {{ super() }}
+<script>
+    $(document).ready(function () {
+        $('#toc').affix({
+            offset: {
+                top: $('#toc').offset().top,
+                bottom: ($('#footer').outerHeight(true))
+            }
+        });
+        $('body').scrollspy({ target: '#toc' });
+    })
+</script>
 {% endblock %}
