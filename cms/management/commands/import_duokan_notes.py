@@ -48,17 +48,19 @@ class Command(BaseCommand):
                     if len(note_div_children) == 2:
                         note_time_div, note_content_div = note_div_children
                         single_note['time'] = note_time_div.string
-                        single_note['content'] = note_content_div.string
+                        # single_note['content'] = note_content_div.string
+                        single_note['content'] = note_content_div.get_text('\n')
 
-                    elif len(note_div_children) == 3:
-                        note_time_div, note_content_div, comment_div = note_div_children
-                        single_note['time'] = note_time_div.string
-                        single_note['content'] = note_content_div.string
-                        single_note['comment'] = comment_div.string
+                        if len(single_note_div.find_all('table', recursive=False)) >= 1:
+                            td_1, td_2 = single_note_div.table.find_all('td')
+                            single_note['comment'] = td_2.string
                     else:
                         # 可能是遇到了章节名了
                         if len(list(single_note_div.find_all('span', recursive=False))) == 1:
-                            single_note['chapter'] = single_note_div.span.string
+                            chapter = single_note_div.span.string
+                            if chapter.startswith('多看笔记 来自多看阅读'):
+                                continue
+                            single_note['chapter'] = chapter
                     print(single_note)
                     notes_list.append(single_note)
                 data['notes'] = notes_list
@@ -66,7 +68,9 @@ class Command(BaseCommand):
                 # 将读书笔记以JSON格式写入文件
                 if duokanbookid in book_info_dict:
                     book_uri = book_info_dict[duokanbookid]['uri']
-                    data['title'] = book_uri
+                    data['title'] = book_info_dict[duokanbookid]['title']
+                    data['date'] = book_info_dict[duokanbookid]['date']
+                    data['source'] = note_fn
                     f = open('../msv4/content/reading/notes/%s.json' % book_uri, 'w')
                     f.write(json.dumps(data))
                     f.close()
