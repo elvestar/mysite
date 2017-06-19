@@ -81,6 +81,8 @@ class Command(BaseCommand):
                             min_time_diff = timedelta(days=366)
                             corresponding_note = None
                             for note in data['notes']:
+                                if 'time' not in note:
+                                    continue
                                 note_time = datetime.strptime(note['time'], '%Y-%m-%d %H:%M:%S')
                                 # 我总是先截图，然后记笔记
                                 time_diff = note_time - img_taken_time

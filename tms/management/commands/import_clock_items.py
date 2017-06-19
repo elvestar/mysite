@@ -53,8 +53,10 @@ def process_org_agenda(agenda_file_paths):
                 if m2 is not None:
                     start_clock_str = m2.groupdict()['start_clock']
                     end_clock_str = m2.groupdict()['end_clock']
+                    # print(start_clock_str)
                     start_time = datetime.strptime(start_clock_str[0:10] + ' ' + start_clock_str[-5:],
                                                    '%Y-%m-%d %H:%M')
+                    # print(end_clock_str)
                     end_time = datetime.strptime(end_clock_str[0:10] + ' ' + end_clock_str[-5:],
                                                  '%Y-%m-%d %H:%M')
                     date = start_time.date()

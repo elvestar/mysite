@@ -27,8 +27,8 @@ class Command(BaseCommand):
     def modify_uri(self, path, old_uri, new_uri):
         old_fp = os.path.join(path, old_uri + '.org')
         new_fp = os.path.join(path, new_uri + '.org')
-        old_img_path = os.path.join(path, 'imgs', old_uri)
-        new_img_path = os.path.join(path, 'imgs', new_uri)
+        old_img_path = os.path.join(path, '../static/imgs', old_uri)
+        new_img_path = os.path.join(path, '../static/imgs', new_uri)
         if not os.path.exists(old_fp):
             logging.error('Modify failed! Old file path not exist: %s' % old_fp)
             return
@@ -41,8 +41,8 @@ class Command(BaseCommand):
         logging.error('Begin to modify uri, from %s to %s' % (old_uri, new_uri))
 
         # Modify org file content
-        old_img_str = './imgs/%s/' % old_uri
-        new_img_str = './imgs/%s/' % new_uri
+        old_img_str = 'static/imgs/%s/' % old_uri
+        new_img_str = 'static/imgs/%s/' % new_uri
         text = file(old_fp).read()
         text = text.replace(old_img_str, new_img_str)
         # print(text)
