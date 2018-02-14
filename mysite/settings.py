@@ -123,7 +123,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = 'zh-hans'
 
 TIME_ZONE = 'Asia/Shanghai'
 
@@ -137,9 +137,9 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_URL = '/tms/static/node_modules/'
+STATIC_URL = '/tms/static/'
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "node_modules"),
+    os.path.join(BASE_DIR, ""),
 ]
 
 REST_FRAMEWORK = {

@@ -2,10 +2,10 @@ import React, { Component } from 'react'
 
 import { Router, Route, Link, IndexRoute, browserHistory, hashHistory } from 'react-router'
 
-import { ClockItems } from '../components/common/ClockItems.jsx'
-import { DayReport } from '../components/common/DayReport.jsx'
-import { AllComponents } from '../components/AllComponents.jsx'
-import { AdminContentHeader } from '../components/common/Partials.jsx'
+import ClockItems from '../components/common/ClockItems.jsx'
+import DayReport from '../components/common/DayReport.jsx'
+import AllComponents from '../components/AllComponents.jsx'
+import AdminContentHeader from '../components/common/Partials.jsx'
 
 class AdminAside extends React.Component {
   render() {
@@ -135,6 +135,7 @@ class Report extends React.Component {
     )
   }
 }
+
 
 // var history = process.env.NODE_ENV !== 'production' ? browserHistory : hashHistory
 var history = hashHistory

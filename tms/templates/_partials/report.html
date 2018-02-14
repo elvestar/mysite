@@ -1,0 +1,44 @@
+<div class="report-body ">
+    {% if is_flatten %}
+        <div class="row">
+    {% else %}
+        <ul>
+    {% endif %}
+    {% for category in report_data.categories %}
+        {% if is_flatten %}
+            <div class="col-md-4">
+        {% else %}
+            <li>
+        {% endif %}
+    <span><strong style="color: darkred; font-size: 110%; text-decoration: underline;">{{ category.name }}</strong> [<strong style="color: darkgreen">耗时: {{ category.cost }}</strong>][<strong style="color: red">总占比: {{ category.pct }}</strong>]</span>：
+    <ul>
+        {% for project in category.projects %}
+            <li>
+                <div class="project-item">
+                    <a href="#project{{ project.id }}" class="collapse-header" data-toggle="collapse" aria-expanded="false" aria-controls="project{{ project.id }}">
+                        <strong>{{ project.name }}</strong> [耗时: {{ project.cost }}][占比: {{ project.pct }}]
+                        <a href="{% url 'tms:project' %}?c={{ category.name }}&p={{ project.name }}" target="_blank">
+                            <i class="fa fa-link" style="color: #666"></i>
+                        </a>
+                    </a>
+                    <ul class="collapse {% if loop.index == 1 %} in {% endif %}" id="project{{ project.id }}">
+                        {% for thing in project.things %}
+                            <li>{{ thing.name }} [耗时: {{ thing.cost }}]</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+    {% if is_flatten %}
+        </div>
+    {% else %}
+        </li>
+    {% endif %}
+    {% endfor %}
+    {% if is_flatten %}
+        </div>
+    {% else %}
+        </ul>
+    {% endif %}
+</div>

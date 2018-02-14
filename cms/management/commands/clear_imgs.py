@@ -29,18 +29,39 @@ class Command(BaseCommand):
                 img_path_in_org_file = line.strip('\n').strip().split('/')[-1].rstrip(']')
                 imgs_file_in_org_file.append(img_path_in_org_file)
 
-        dest_dir = os.path.join(root_path, 'bak', uri.split('/')[-1])
+        dest_dir = os.path.join(root_path, '../bak', uri.split('/')[-1])
         try:
             os.mkdir(dest_dir)
         except Exception as e:
             print('%s is existent' % dest_dir)
 
+        print(imgs_dir)
         for img_file in os.listdir(imgs_dir):
+            if img_file in 'small':
+                continue
             if img_file not in imgs_file_in_org_file:
                 print(img_file)
                 img_path = os.path.join(imgs_dir, img_file)
                 dest_path = os.path.join(dest_dir, img_file)
 
                 os.rename(img_path, dest_path)
+
+        small_dest_dir = os.path.join(dest_dir, 'small')
+        try:
+            os.mkdir(small_dest_dir)
+        except Exception as e:
+            print('%s is existent' % small_dest_dir)
+
+        small_imgs_dir = os.path.join(imgs_dir, 'small')
+        for img_file in os.listdir(small_imgs_dir):
+            if img_file in 'small':
+                continue
+            if img_file not in imgs_file_in_org_file:
+                print(img_file)
+                img_path = os.path.join(small_imgs_dir, img_file)
+                dest_path = os.path.join(small_dest_dir, img_file)
+
+                os.rename(img_path, dest_path)
+
                 
 

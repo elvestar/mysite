@@ -3,7 +3,7 @@ import $ from 'jquery'
 import moment from 'moment'
 
 import { DatePicker, Tabs, Tag, Button, Icon } from 'antd'
-import { notification } from 'antd'
+import notification from 'antd'
 const TabPane = Tabs.TabPane
 
 import { ClockItems } from './ClockItems.jsx'
@@ -120,7 +120,7 @@ export class DayReport extends React.Component {
                             <Button type="ghost" onClick={this.pickPrevDate}>
                                 <Icon type="left" />
                             </Button>
-                            <Button onClick={this.pickToday}>今天</Button>
+                            <Button onClick={this.pickToday}>今天呵呵</Button>
                             <Button type="ghost" onClick={this.pickNextDate}>
                                 <Icon type="right" />
                             </Button>

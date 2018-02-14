@@ -1,0 +1,65 @@
+<div class="row dayClockItems">
+    <div class="col-md-3 itemStats">
+        <div>
+                <span class="date">
+                    {{ date|date:'Y' }}年{{ date|date:'m' }}月{{ date|date:'d' }}日 {{ date|date:'D' }}
+                </span>
+{#            <span class="week"> {{ to_weekday_ch(date) }} </span>#}
+        </div>
+        <div class="info">共 {{ clock_items|length }} 计时项</div>
+{#        <div class="info">总计 {{ time_cost_sum(clock_items) }}</div>#}
+    </div>
+
+    <div class="col-md-9 itemList">
+        <ul>
+            {% for ci in clock_items %}
+{#                {% if last_ci %}#}
+{#                    {% set td = timedelta_min(last_ci.end_time, ci.start_time) %}#}
+{#                    {% if td >= 10 %}#}
+{#                        {% if td >= 300 %}#}
+{#                            <li class="timeGapLg">#}
+{#                                {% elif td >= 60 %}#}
+{#                            <li class="timeGapMd">#}
+{#                                {% else %}#}
+{#                            <li class="timeGapSm">#}
+{#                        {% endif %}#}
+{#                    <span class="time">#}
+{#                                    <span>  {{ last_ci.end_time.strftime('%H:%M') }} </span>#}
+{#                                    -#}
+{#                                    <span>  {{ ci.start_time.strftime('%H:%M') }} </span>#}
+{#                                </span>#}
+{#                    <span class="thing">空闲了 {{ td }} 分</span>#}
+{#                    </li>#}
+{#                    {% endif %}#}
+{#                {% endif %}#}
+                <li class="clockItem">
+                        <span class="time">
+                            <span>  {{ ci.start_time|date:'H:i' }} </span>
+                            -
+                            <span>  {{ ci.end_time|date:'H:i' }} </span>
+                        </span>
+                    <span class="thing">{{ ci.thing }}</span>
+                        <span class="pull-right">
+                            <span class="cost"> {{ ci.time_cost_min }} min </span>
+                            <span class="projectInfo">
+                                {% if ci.category == '工作' %}
+                                    <span class="project text-danger"> {{ ci.project }}  </span>
+                                    <span class="label label-danger">{{ ci.category }}</span>
+                                {% elif ci.category == '学习' %}
+                                    <span class="project text-primary"> {{ ci.project }}  </span>
+                                    <span class="label label-primary">{{ ci.category }}</span>
+                                {% elif ci.category == '生活' %}
+                                    <span class="project text-success"> {{ ci.project }}  </span>
+                                    <span class="label label-success">{{ ci.category }}</span>
+                                {% else %}
+                                    <span class="project text-default"> {{ ci.project }}  </span>
+                                    <span class="label label-default">{{ ci.category }}</span>
+                                {% endif %}
+                            </span>
+                        </span>
+                </li>
+{#                {% set last_ci = ci %}#}
+            {% endfor %}
+        </ul>
+    </div>
+</div>

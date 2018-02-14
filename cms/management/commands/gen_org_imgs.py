@@ -20,8 +20,9 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         path = options['path']
         uri = options['uri']
-        mtime = lambda f: os.stat(os.path.join(path, f)).st_mtime
-        for f in list(sorted(listdir(path), key=mtime)):
+        # mtime = lambda f: os.stat(os.path.join(path, f)).st_mtime
+        # for f in list(sorted(listdir(path), key=mtime)):
+        for f in list(sorted(listdir(path))):
             if not isfile(join(path, f)):
                 logging.warning('Not file: %s' % f)
                 continue

@@ -9,11 +9,53 @@
         <a href="{% url 'tms:year_report' %}?year=2015">2015</a>
         <a href="{% url 'tms:year_report' %}?year=2016">2016</a>
         <a href="{% url 'tms:year_report' %}?year=2017">2017</a>
+        <a href="{% url 'tms:year_report' %}?year=2018">2018</a>
     </small>
 {% endblock %}
 
 {% block content %}
-    <div class="m-r m-b-lg">
+
+    <div class="admin-panel p-a-xs m-y">
+        <div class="admin-panel-heading p-b-xs m-b-xs">
+            总体统计
+        </div>
+        <div class="admin-panel-body">
+            <table class="admin-table">
+                <tr>
+                    <th>持续天数</th>
+                    <td>{{ total_stats.days_num }}</td>
+                    <th>总时间</th>
+                    <td>{{ total_stats.all_time }}</td>
+                    <th>开始日期</th>
+                    <td>{{ begin_date }}</td>
+                    <th>结束日期</th>
+                    <td>{{ end_date }}</td>
+                </tr>
+                <tr>
+                    <th>每日平均有效时间</th>
+                    <td>{{ total_stats.avg_valid_time }}</td>
+                    <th>总有效时间</th>
+                    <td>{{ total_stats.valid_time }}</td>
+                    <th>总工作时间</th>
+                    <td>{{ total_stats.work_time }}</td>
+                    <th>总学习时间</th>
+                    <td>{{ total_stats.study_time }}</td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="admin-panel p-a-xs m-y">
+        <div class="admin-panel-heading p-b-xs m-b-xs">
+            年度项目报表 - {{ year }}
+        </div>
+        <div class="admin-panel-body">
+            {% include '_partials/report.html' with report_data=report_data is_flatten=True %}
+        </div>
+    </div>
+
+    <div class="m-b-lg">
         <div class="admin-panel p-a-xs m-y">
             <div class="admin-panel-heading p-b-xs m-b-xs">
                 <div>{{ year }} 年各周时间</div>
@@ -40,8 +82,9 @@
     <script>
         renderTime({{ year }});
         function renderTime(year) {
-    $.get('/tms/api/v1/year_stats_step_by_month_and_week/?year=' + year, function (data) {
-        var months_data = {
+            var url = '{% url 'tms:year_stats_step_by_month_and_week' %}?year=' + year;
+            $.get(url, function (data) {
+                var months_data = {
             labels: data.month.labels,
             datasets: [
                 {

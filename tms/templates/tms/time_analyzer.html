@@ -13,6 +13,7 @@
     从 {{ start_time }} 到 {{ end_time }}
     </div>
     <div>
-        {{ macros.render_clock_items(clock_items, date=clock_items[0].date) }}
+{#        {{ macros.render_clock_items(clock_items, date=clock_items[0].date) }}#}
+        {% include '_partials/clock_items_list.html' with clock_items=clock_items date=date %}
     </div>
 {% endblock %}

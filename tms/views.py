@@ -459,8 +459,8 @@ def all_projects(request):
 
 
 def time_analyzer(request):
-    category = request.GET['category']
-    project = request.GET['project']
+    category = request.GET['c']
+    project = request.GET['p']
     clock_items = ClockItem.objects.filter(category=category, project=project).order_by('start_time')
     cis_num = len(clock_items)
     start_time = clock_items[0].start_time
@@ -661,14 +661,56 @@ def custom_report(request):
 
 
 def year_report(request):
+    tms_begin_date = date(year=2015, month=2, day=20)
+    tms_end_date = datetime.now().date()
     cur_year = datetime.now().year
     if 'year' not in request.GET:
         year = cur_year
     else:
-        year = request.GET['year']
+        year = int(request.GET['year'])
+    clock_items = ClockItem.objects.filter(year=year).order_by('start_time')
+    report_data = generate_report(clock_items, 7)
+
+    # 总体统计
+    total_stats = dict()
+    # 计算总天数
+    begin_date = datetime(year=year, month=1, day=1).date()
+    end_date = datetime(year=year, month=12, day=31).date()
+    if begin_date < tms_begin_date:
+        begin_date = tms_begin_date
+    if end_date > tms_end_date:
+        end_date = tms_end_date
+    days_num = (end_date - begin_date).days + 1
+    total_stats['days_num'] = days_num
+
+    # 计算各项总时间
+    all_time = 0
+    work_time = 0
+    study_time = 0
+    valid_time = 0
+    for clock_item in clock_items:
+        time_cost_min = clock_item.time_cost_min
+        category = clock_item.category
+        all_time += time_cost_min
+        if category in ['工作', '学习']:
+            valid_time += time_cost_min
+        if category in ['工作']:
+            work_time += time_cost_min
+        if category in ['学习']:
+            study_time += time_cost_min
+    total_stats['all_time'] = Utils.min_to_hour(all_time)
+    total_stats['work_time'] = Utils.min_to_hour(work_time)
+    total_stats['study_time'] = Utils.min_to_hour(study_time)
+    total_stats['valid_time'] = Utils.min_to_hour(valid_time)
+    total_stats['avg_valid_time'] = Utils.min_to_hour(valid_time / days_num)
 
     return render(request, 'tms/year_report.html', {
-        'year': year
+        'year': year,
+        'begin_date': begin_date,
+        'end_date': end_date,
+        'clock_items': clock_items,
+        'report_data': report_data,
+        'total_stats': total_stats,
     })
 
 
@@ -735,7 +777,12 @@ def year_stats_step_by_month_and_week(request):
     time_cost_group_by_week_category = ClockItem.objects.filter(iso_year=year). \
         values('week', 'category').annotate(Sum('time_cost_min'), Count('time_cost_min'))
     last_day_of_year = datetime(year=year, month=12, day=31)
-    last_week = last_day_of_year.isocalendar()[1]
+    while True:
+        last_week = last_day_of_year.isocalendar()[1]
+        if last_week != 1:
+            break
+        else:
+            last_day_of_year -= timedelta(days=1)
 
     valid_time_of_week = [0] * last_week
     work_time_of_week = [0] * last_week

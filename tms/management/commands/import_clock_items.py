@@ -21,10 +21,11 @@ class Command(BaseCommand):
         logging.warning('Begin to delete all clock items first')
         ClockItem.objects.all().delete()
         logging.warning('Success to delete all clock items')
-        agenda_file_paths = ['/Users/elvestar/github/elvestar/contents/time/time.org']
+        agenda_file_paths = ['/Users/elvestar/github/elvestar/msv4/time/time.org']
         agenda_file_paths.extend([
-            '/Users/elvestar/github/elvestar/contents/time/2015.org',
-            '/Users/elvestar/github/elvestar/contents/time/2016.org'
+            '/Users/elvestar/github/elvestar/msv4/time/2015.org',
+            '/Users/elvestar/github/elvestar/msv4/time/2016.org',
+            '/Users/elvestar/github/elvestar/msv4/time/2017.org',
         ])
         process_org_agenda(agenda_file_paths)
         export_time_usage()

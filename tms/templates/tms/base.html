@@ -17,17 +17,18 @@
             {% endif %}
         {% endblock %}
     </title>
- {% load staticfiles %}
-<link rel="stylesheet" href="{% static 'bootstrap/dist/css/bootstrap.min.css' %}" />
-<link rel="stylesheet" href="{% static 'font-awesome/css/font-awesome.min.css' %}" />
-<link rel="stylesheet" href="{% static 'zoom.js/css/zoom.css' %}" />
-<link rel="stylesheet" href="{% static 'highlight.js/styles/tomorrow.css' %}" />
-<link rel="stylesheet" href="{% static 'cal-heatmap/cal-heatmap.css' %}" />
-<link rel="stylesheet" href="{% static 'fancybox/dist/css/jquery.fancybox.css' %}" />
-<link rel="stylesheet" href="{% static 'bootstrap-datetimepicker.js/css/bootstrap-datetimepicker.min.css' %}" />
-<!--<link rel="stylesheet" href="{% static 'static/css/styles.css' %}" />-->
-<!--<link rel="stylesheet" href="{% static 'static/css/admin.css' %}"/>-->
-    <script src="{% static 'build/bundle.js' %}"></script>
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static 'node_modules/bootstrap/dist/css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'node_modules/font-awesome/css/font-awesome.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'node_modules/cal-heatmap/cal-heatmap.css' %}" />
+    <link rel="stylesheet" href="{% static 'node_modules/bootstrap-datetimepicker.js/css/bootstrap-datetimepicker.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'static/css/styles.css' %}"/>
+    <link rel="stylesheet" href="{% static 'static/css/admin.css' %}"/>
+
+    {#    <link rel="stylesheet" href="{% static 'node_modules/zoom.js/css/zoom.css' %}" />#}
+    {#    <link rel="stylesheet" href="{% static 'node_modules/highlight.js/styles/tomorrow.css' %}" />#}
+    {#    <link rel="stylesheet" href="{% static 'node_modules/fancybox/dist/css/jquery.fancybox.css' %}" />#}
+    {#    <script src="{% static 'build/bundle.js' %}"></script>#}
 
     {% block styles %}
     {% endblock %}
@@ -62,30 +63,26 @@
 {% endblock %}
 
 {% block scripts %}
-    <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
-    <script src="{% static 'bootstrap/dist/js/bootstrap.min.js' %}"></script>
-    <script src="{% static 'zoom.js/dist/zoom.min.js' %}"></script>
-    <script src="{% static 'moment/min/moment.min.js' %}"></script>
-    <script src="{% static 'underscore/underscore-min.js' %}"></script>
-    <script src="{% static 'fancybox/dist/js/jquery.fancybox.pack.js' %}"></script>
+    <script src="{% static 'node_modules/jquery/dist/jquery.min.js' %}"></script>
+    <script src="{% static 'node_modules/bootstrap/dist/js/bootstrap.min.js' %}"></script>
+    <script src="{% static 'node_modules/moment/min/moment.min.js' %}"></script>
 
-    <script src="{% static 'highlight.js/lib/highlight.js' %}"></script>
-    <script src="{% static 'bootstrap-datetimepicker.js/js/bootstrap-datetimepicker.min.js' %}"></script>
-    <script src="{% static 'bootstrap-datetimepicker.js/js/locales/bootstrap-datetimepicker.zh-CN.js' %}"></script>
-    <script src="{% static 'echarts/dist/echarts.min.js' %}"></script>
-    <script src="{% static 'chart.js/dist/Chart.min.js' %}"></script>
-    <script src="{% static 'jquery-sparkline/jquery.sparkline.min.js' %}"></script>
-    
+    <script src="{% static 'node_modules/highlight.js/lib/highlight.js' %}"></script>
+    <script src="{% static 'node_modules/bootstrap-datetimepicker.js/js/bootstrap-datetimepicker.min.js' %}"></script>
+    <script src="{% static 'node_modules/bootstrap-datetimepicker.js/js/locales/bootstrap-datetimepicker.zh-CN.js' %}"></script>
+    <script src="{% static 'node_modules/echarts/dist/echarts.min.js' %}"></script>
+    <script src="{% static 'node_modules/chart.js/dist/Chart.min.js' %}"></script>
+    <script src="{% static 'node_modules/jquery-sparkline/jquery.sparkline.min.js' %}"></script>
+
+    {#    <script src="{% static 'node_modules/zoom.js/dist/zoom.min.js' %}"></script>#}
+    {#    <script src="{% static 'node_modules/static/js/imagegrid.js' %}"></script>#}
+    {#    <script src="{% static 'node_modules/underscore/underscore-min.js' %}"></script>#}
+    {#    <script src="{% static 'node_modules/fancybox/dist/js/jquery.fancybox.pack.js' %}"></script>#}
     <!--<script src="/static/js/browser.min.js"></script>-->
 
-    <script src="{% static 'static/js/imagegrid.js' %}"></script>
 
     <script>
         $(document).ready(function() {
-            $('pre code').each(function(i, block) {
-                hljs.highlightBlock(block);
-            });
-            $(".fancybox").fancybox();
         });
     </script>
 {% endblock %}

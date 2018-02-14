@@ -21,33 +21,8 @@
                     <a class="control-arrow" {% if not is_cur_week %}href="{% url 'tms:week_report' %}?year={{ iso_year_of_next_week }}&week={{ next_week }}" {% endif %}><i class="fa fa-angle-right"></i></a>
                 </div>
             </div>
-            <div class="report-body m-y-lg">
-                <ul>
-                    {% for category in report_data.categories %}
-                        <li>
-                            <span><strong style="color: darkred; font-size: 110%; text-decoration: underline;">{{ category.name }}</strong> [<strong style="color: darkgreen">耗时: {{ category.cost }}</strong>][<strong style="color: red">总占比: {{ category.pct }}</strong>]</span>：
-                            <ul>
-                                {% for project in category.projects %}
-                                    <li>
-                                        <div class="project-item">
-                                            <a href="#project{{ project.id }}" class="collapse-header" data-toggle="collapse" aria-expanded="false" aria-controls="project{{ project.id }}">
-                                                <strong>{{ project.name }}</strong> [耗时: {{ project.cost }}][占比: {{ project.pct }}]
-                                                <a href="{% url 'tms:project' %}?c={{ category.name }}&p={{ project.name }}" target="_blank">
-                                                    <i class="fa fa-link" style="color: #666"></i>
-                                                </a>
-                                            </a>
-                                            <ul class="collapse {% if loop.index == 1 %} in {% endif %}" id="project{{ project.id }}">
-                                                {% for thing in project.things %}
-                                                    <li>{{ thing.name }} [耗时: {{ thing.cost }}]</li>
-                                                {% endfor %}
-                                            </ul>
-                                        </div>
-                                    </li>
-                                {% endfor %}
-                            </ul>
-                        </li>
-                    {% endfor %}
-                </ul>
+            <div class="m-y-lg">
+                {% include '_partials/report.html' with report_data=report_data %}
             </div>
         </div>
         <div class="report-aside">
