@@ -20,9 +20,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # photos_dir = '/Users/elvestar/Downloads/照片导出/WOW截图/'
         # photos_dir = '/Users/elvestar/Downloads/照片导出/FF10截图'
-        photos_dir = '/Users/elvestar/Downloads/照片导出/iqiyi_jietu'
+        # photos_dir = '/Users/elvestar/Downloads/照片导出/iqiyi_jietu'
+        photos_dir = '/Users/elvestar/Pictures/华为导出'
         for f in listdir(photos_dir):
-            self.correct_iqiyi_screenshot_time(photos_dir, f)
+            self.correct_huawei_screenshot_time(photos_dir, f)
+
+    def correct_huawei_screenshot_time(self, photos_dir, f):
+        if not f.endswith('.jpg'):
+            return
+        photo_path = os.path.join(photos_dir, f)
+        img = pexif.JpegFile.fromFile(photo_path)
+        dt = datetime.strptime(f, "Screenshot_%Y%m%d-%H%M%S.jpg")
+        img.exif.primary.Model = 'HUAWEI Mate 10'
+        img.exif.primary.DateTime = dt.strftime('%Y:%m:%d %H:%M:%S')
+        img.writeFile(photo_path)
+        print(f, dt)
 
     def correct_iqiyi_screenshot_time(self, photos_dir, f):
         if not f.endswith('.jpg'):

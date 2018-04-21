@@ -24,3 +24,10 @@ class Utils(object):
     def min_to_hour(time_min):
         return round(float(time_min) / 60.0, 1)
 
+    @staticmethod
+    def min_to_hour2(time_min):
+        if (time_min % 60) < 10:
+            minutes_str = '0' + str(time_min % 60)
+        else:
+            minutes_str = str(time_min % 60)
+        return '%d:%s' % (time_min / 60, minutes_str)

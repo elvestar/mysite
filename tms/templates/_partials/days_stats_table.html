@@ -1,0 +1,61 @@
+<table class="admin-table">
+    <caption>日报列表</caption>
+    <thead>
+    <tr>
+        <th width="15%">日期</th>
+        <th width="20%">分时图</th>
+        <th class="time-cost">工作</th>
+        <th class="time-cost">学习</th>
+        <th class="time-cost">有效</th>
+        <th class="time-cost">全部</th>
+        <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for day_stats in days_stats %}
+        <tr>
+            <td>
+                <a href="{% url 'tms:day_report' %}?date={{ day_stats.date_str }}">
+                    {{ day_stats.date|date:'y/m/d' }}
+                    <span class="extra-info">{{ day_stats.week_day }}</span>
+                </a>
+            </td>
+            <td>
+                <span class="bar" id="hourBar{{ day_stats.date_str }}"></span>
+            </td>
+            <td class="time-cost">{{ day_stats.work_time_str }}</td>
+            <td class="time-cost">{{ day_stats.study_time_str }}</td>
+            <td class="time-cost">{{ day_stats.valid_time_str }}</td>
+            <td class="time-cost">{{ day_stats.all_time_str }}</td>
+            <td>
+                    <span>
+                        <a href="{% url 'tms:day_report' %}?date={{ day_stats.date_str }}" class="extra-info" target="_blank">
+                            <i class="fa fa-link"></i>
+                        </a>
+                    </span>
+                <span class="extra-info pull-right">共 {{ day_stats.items_num }} 计时项</span>
+            </td>
+        </tr>
+    {% endfor %}
+
+    </tbody>
+</table>
+
+<script>
+    window.onload = function() {
+        {% for day_stats in days_stats %}
+            $("#hourBar{{ day_stats.date_str }}").sparkline({{ day_stats.sparkline_data }}, {
+                type: 'bar',
+                height: '20px',
+                stackedBarColor: ['red', 'blue','green', 'black'],
+            {% verbatim %}
+            tooltipFormat: '{{offset:offset}} 点  <span style="color: {{color}}">&#9679;</span> 用时 {{prefix}}{{value}}{{suffix}} 分钟',
+                    tooltipValueLookups: {
+            'offset': {
+            }
+        }
+            {% endverbatim %}
+            });
+        {% endfor %}
+    }
+</script>

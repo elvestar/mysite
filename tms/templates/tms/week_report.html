@@ -29,63 +29,22 @@
         </div>
     </div>
 
+    <div class="m-r">
+        {% include '_partials/days_stats_table.html' with days_stats=days_stats %}
+    </div>
+
+    <h2><small>计时项列表</small></h2>
+    <div class="m-x">
+        {% for clock_items_of_day in clock_items_list %}
+            {% include '_partials/clock_items_list.html' with clock_items=clock_items_of_day.clock_items date=clock_items_of_day.date %}
+        {% endfor %}
+
+    </div>
 
 
-    {#    <div class="row">#}
-    {#        <div class="col-md-6">#}
-    {#            <div class="panel panel-default">#}
-    {#                <div class="panel-heading">#}
-    {#                    <h3 class="panel-title">#}
-    {#                        耗时分布图#}
-    {#                    </h3>#}
-    {#                </div>#}
-    {#                <div class="panel-body">#}
-    {#                    <div id="pieNestGraph" style="width: 100%;height:400px;"></div>#}
-    {#                </div>#}
-    {#            </div>#}
-    {#        </div>#}
-    {#        <div class="col-md-6">#}
-    {#            <div class="panel panel-default">#}
-    {#                <div class="panel-heading">#}
-    {#                    <h3 class="panel-title">#}
-    {#                        全部计时项 <small>共 {{ clock_items|length }} 个</small>#}
-    {#                    </h3>#}
-    {#                </div>#}
-    {#                <div class="panel-body" style="height: 420px; overflow: scroll">#}
-    {#                    <table class="table table-condensed table-striped">#}
-    {#                        <caption>#}
-    {#                        </caption>#}
-    {#                        <tr>#}
-    {#                            <th>THING</th>#}
-    {#                            <th>耗时</th>#}
-    {#                            <th>起止时间</th>#}
-    {#                        </tr>#}
-    {#                        {% for clock_item in clock_items %}#}
-    {#                            <tr>#}
-    {#                                <td class="small">#}
-    {#                                    {{ clock_item.thing }} <br/>#}
-    {#                                    <a href="/report">#}
-    {#                                        {{ clock_item.category }}#}
-    {#                                    </a>#}
-    {#                                    ->#}
-    {#                                    <a href="/report">#}
-    {#                                        {{ clock_item.project }}#}
-    {#                                    </a>#}
-    {#                                </td>#}
-    {#                                <td>{{ clock_item.time_cost_min }}</td>#}
-    {#                                <td class="small">#}
-    {#                                    {{ clock_item.start_time|date:"Y-m-d H:i" }} <br/>#}
-    {#                                    {{ clock_item.end_time|date:"Y-m-d H:i" }}#}
-    {#                                </td>#}
-    {#                            </tr>#}
-    {#                        {% endfor %}#}
-    {#                    </table>#}
-    {#                </div>#}
-    {#            </div>#}
-    {#        </div>#}
-    {#    </div>#}
 {% endblock %}
 
 {% block scripts %}
     {{ block.super }}
+
 {% endblock %}

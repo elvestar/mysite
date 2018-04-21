@@ -26,6 +26,7 @@ class Command(BaseCommand):
             '/Users/elvestar/github/elvestar/msv4/time/2015.org',
             '/Users/elvestar/github/elvestar/msv4/time/2016.org',
             '/Users/elvestar/github/elvestar/msv4/time/2017.org',
+            '/Users/elvestar/github/elvestar/msv4/time/2018.org',
         ])
         process_org_agenda(agenda_file_paths)
         export_time_usage()

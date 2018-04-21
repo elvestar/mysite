@@ -30,14 +30,6 @@ CATEGORIES_NAME_DICT = {u'工作': 'work', u'学习': 'study', u'生活': 'life'
 WEEK_DAY_STR = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
 
 
-def time_cost_str(time_cost_min):
-    if (time_cost_min % 60) < 10:
-        minutes_str = '0' + str(time_cost_min % 60)
-    else:
-        minutes_str = str(time_cost_min % 60)
-    return '%d:%s' % (time_cost_min / 60, minutes_str)
-
-
 class ClockItemFilter(filters.FilterSet):
     min_st = django_filters.DateTimeFilter(name='start_time', lookup_expr='gte')
     max_st = django_filters.DateTimeFilter(name='start_time', lookup_expr='lt')
@@ -51,6 +43,67 @@ class ClockItemList(generics.ListAPIView):
     queryset = ClockItem.objects.all().order_by('start_time')
     serializer_class = ClockItemSerializer
     filter_class = ClockItemFilter
+
+
+def index(request):
+    tms_begin_date = TMS_BEGIN_DATE
+    tms_end_date = datetime.now().date()
+
+    # week_data_group_by_category = ClockItem.objects.filter(iso_year=iso_year, week=week). \
+    #     values('category').annotate(Count('id'), tc_sum=Sum('time_cost_min')). \
+    #     order_by('-tc_sum')
+
+    years_stats_dict = dict()
+    tms_data_group_by_year_category = ClockItem.objects.values('year', 'category').\
+        annotate(Count('time_cost_min'), tc_sum=Sum('time_cost_min'))
+    for item in tms_data_group_by_year_category:
+        year = item['year']
+        category = item['category']
+        tc_sum = item['tc_sum']
+        if year not in years_stats_dict:
+            years_stats_dict[year] = {
+                'year': year,
+                'work_time': 0,
+                'study_time': 0,
+                'all_time': 0,
+                'valid_time': 0,
+            }
+        year_stats = years_stats_dict[year]
+        if category == '工作':
+            year_stats['work_time'] += tc_sum
+            year_stats['valid_time'] += tc_sum
+        elif category == '学习':
+            year_stats['study_time'] += tc_sum
+            year_stats['valid_time'] += tc_sum
+        year_stats['all_time'] += tc_sum
+    years_stats = list(year_stats for (year, year_stats) in years_stats_dict.items())
+    years_stats.sort(key=itemgetter('year'), reverse=True)
+    for year_stats in years_stats:
+        year = year_stats['year']
+
+        # 计算本年总天数
+        begin_date = datetime(year=year, month=1, day=1).date()
+        end_date = datetime(year=year, month=12, day=31).date()
+        if begin_date < tms_begin_date:
+            begin_date = tms_begin_date
+        if end_date > tms_end_date:
+            end_date = tms_end_date
+        days_num = (end_date - begin_date).days + 1
+        year_stats['days_num'] = days_num
+        year_stats['avg_valid_time'] = Utils.min_to_hour(year_stats['valid_time'] / days_num)
+        year_stats['all_time'] = Utils.min_to_hour(year_stats['all_time'])
+        year_stats['work_time'] = Utils.min_to_hour(year_stats['work_time'])
+        year_stats['study_time'] = Utils.min_to_hour(year_stats['study_time'])
+        year_stats['valid_time'] = Utils.min_to_hour(year_stats['valid_time'])
+
+    cur_dt = datetime.now()
+    return render(request, 'tms/index.html', {
+        'years_stats': years_stats,
+        'cur_dt': cur_dt,
+        'cur_year': cur_dt.year,
+        'cur_month': cur_dt.month
+
+    })
 
 
 @api_view(['GET'])
@@ -75,6 +128,7 @@ def api_day_stats(request):
 
 DEFAULT_MIN_DT = datetime(year=1970, month=1, day=1)
 DEFAULT_MAX_DT = datetime(year=9999, month=12, day=31)
+TMS_BEGIN_DATE = date(year=2015, month=2, day=20)
 
 
 @api_view(['GET'])
@@ -213,7 +267,8 @@ def generate_weeks_stats(clock_items, min_date, max_date):
     return weeks_stats
 
 
-def generate_days_stats(clock_items, min_date, days_num, with_hours_stats=True):
+def generate_days_stats(clock_items, min_date, days_num,
+                        with_hours_stats=True, with_sparkline_data=False):
     days_stats_dict = dict()
     for i in range(days_num):
         dt = min_date + timedelta(days=i)
@@ -256,16 +311,41 @@ def generate_days_stats(clock_items, min_date, days_num, with_hours_stats=True):
             if start_hour == end_hour:
                 hours_stats[start_hour][category_name] += end_time.minute - start_time.minute
             else:
+                if end_hour < start_hour:
+                    end_hour += 24
                 for hour in range(start_hour, end_hour + 1):
+                    if hour >= 24:
+                        next_dt = dt + timedelta(days=1)
+                        if next_dt not in days_stats_dict:
+                            continue
+                        hours_stats = days_stats_dict[next_dt]['hours_stats']
+                        hour -= 24
                     if hour == start_hour:
                         hours_stats[hour][category_name] += 60 - start_time.minute
-                    elif hour == end_hour:
+                    elif hour == end_hour or hour == end_hour - 24:
                         hours_stats[hour][category_name] += end_time.minute
                     else:
                         hours_stats[hour][category_name] += 60
 
     days_stats = list(days_stats_dict.values())
-    days_stats.sort(key=itemgetter('date'))
+    days_stats.sort(key=itemgetter('date'), reverse=True)
+
+    # 额外信息
+    for day_stats in days_stats:
+        day_stats['work_time_str'] = Utils.min_to_hour2(day_stats['work_time'])
+        day_stats['study_time_str'] = Utils.min_to_hour2(day_stats['study_time'])
+        day_stats['valid_time_str'] = Utils.min_to_hour2(day_stats['valid_time'])
+        day_stats['all_time_str'] = Utils.min_to_hour2(day_stats['all_time'])
+
+    # Sparkline data
+    if with_sparkline_data:
+        # Generate sparkline data, see http://omnipotent.net/jquery.sparkline/
+        for day_stats in days_stats:
+            sparkline_data = '['
+            for hour_stats in day_stats['hours_stats']:
+                sparkline_data += '[%d, %d, %d, %d], ' % (hour_stats['work'], hour_stats['study'], hour_stats['life'], hour_stats['other'])
+            sparkline_data += ']'
+            day_stats['sparkline_data'] = sparkline_data
 
     return days_stats
 
@@ -377,9 +457,9 @@ def generate_report(clock_items, days_num):
 
     # Change form of time cost
     for category_data in categories_data:
-        category_data['cost'] = time_cost_str(category_data['cost'])
+        category_data['cost'] = Utils.min_to_hour2(category_data['cost'])
         for project_data in category_data['projects']:
-            project_data['cost'] = time_cost_str(project_data['cost'])
+            project_data['cost'] = Utils.min_to_hour2(project_data['cost'])
 
     report_data = {
         'categories': categories_data,
@@ -417,10 +497,6 @@ def api_week_stats(request):
         'inner': inner_data,
         'outer': outer_data,
         })
-
-
-def index(request):
-    return render(request, 'tms/index.html')
 
 
 def get_project(request):
@@ -507,70 +583,8 @@ def day_report(request):
         days_num = 31
     cur_date = datetime.now().date()
     min_date = cur_date - timedelta(days=days_num - 1)
-    days_stats_dict = dict()
-    for i in range(days_num):
-        dt = min_date + timedelta(days=i)
-        days_stats_dict[dt] = {
-            'date': dt,
-            'date_str': dt.strftime('%Y-%m-%d'),
-            'week_day': WEEK_DAY_STR[dt.weekday()],
-            'all_time': 0,
-            'valid_time': 0,
-            'work_time': 0,
-            'study_time': 0,
-            'items_num': 0,
-            'hours_stats': [{'work': 0, 'study': 0, 'life': 0, 'other': 0} for i in range(24)]
-        }
-
-    # Fill days_stats_dict
     clock_items = ClockItem.objects.filter(date__gte=min_date)
-    for clock_item in clock_items:
-        dt = clock_item.date
-        time_cost_min = clock_item.time_cost_min
-        days_stats_dict[dt]['all_time'] += time_cost_min
-        days_stats_dict[dt]['items_num'] += 1
-        category = clock_item.category
-        if category == '工作':
-            days_stats_dict[dt]['work_time'] += time_cost_min
-            days_stats_dict[dt]['valid_time'] += time_cost_min
-        elif category == '学习':
-            days_stats_dict[dt]['study_time'] += time_cost_min
-            days_stats_dict[dt]['valid_time'] += time_cost_min
-
-        # Hour stats
-        hours_stats = days_stats_dict[dt]['hours_stats']
-        start_time = clock_item.start_time
-        end_time = clock_item.end_time
-        start_hour = start_time.hour
-        end_hour = end_time.hour
-        category_name = CATEGORIES_NAME_DICT[clock_item.category]
-        if start_hour == end_hour:
-            hours_stats[start_hour][category_name] += end_time.minute - start_time.minute
-        else:
-            for hour in range(start_hour, end_hour + 1):
-                if hour == start_hour:
-                    hours_stats[hour][category_name] += 60 - start_time.minute
-                elif hour == end_hour:
-                    hours_stats[hour][category_name] += end_time.minute
-                else:
-                    hours_stats[hour][category_name] += 60
-    days_stats = list(days_stats_dict.values())
-    days_stats.sort(key=itemgetter('date'), reverse=True)
-
-    # Change time cost format
-    for day_stats in days_stats:
-        day_stats['work_time'] = time_cost_str(day_stats['work_time'])
-        day_stats['study_time'] = time_cost_str(day_stats['study_time'])
-        day_stats['valid_time'] = time_cost_str(day_stats['valid_time'])
-        day_stats['all_time'] = time_cost_str(day_stats['all_time'])
-
-    # Generate sparkline data, see http://omnipotent.net/jquery.sparkline/
-    for day_stats in days_stats:
-        sparkline_data = '['
-        for hour_stats in day_stats['hours_stats']:
-            sparkline_data += '[%d, %d, %d, %d], ' % (hour_stats['work'], hour_stats['study'], hour_stats['life'], hour_stats['other'])
-        sparkline_data += ']'
-        day_stats['sparkline_data'] = sparkline_data
+    days_stats = generate_days_stats(clock_items, min_date, days_num, with_sparkline_data=True)
 
     return render(request, 'tms/day_report.html', {
         'days_stats': days_stats
@@ -614,38 +628,66 @@ def week_report(request):
     else:
         is_cur_week = False
 
-    dt = get_monday_date_of_iso_week(iso_year, week)
-    dt_of_prev_monday = dt - timedelta(days=7)
-    dt_of_next_monday = dt + timedelta(days=7)
+    dt_of_this_monday = get_monday_date_of_iso_week(iso_year, week)
+    dt_of_prev_monday = dt_of_this_monday - timedelta(days=7)
+    dt_of_next_monday = dt_of_this_monday + timedelta(days=7)
     iso_year_of_prev_week, prev_week, weekday = dt_of_prev_monday.isocalendar()
     iso_year_of_next_week, next_week, weekday = dt_of_next_monday.isocalendar()
 
     clock_items = ClockItem.objects.filter(iso_year=iso_year, week=week).order_by('start_time')
+    clock_items_list = list()
+    for dt, clock_items_of_day in groupby(clock_items, itemgetter('date')):
+        clock_items_list.append({
+            'date': dt,
+            'clock_items': list(clock_items_of_day),
+        })
 
+
+    print('This monday: ', dt_of_this_monday)
     report_data = generate_report(clock_items, 7)
-    daily_overview = generate_daily_overview(clock_items)
+    days_stats = generate_days_stats(clock_items, min_date=dt_of_this_monday.date(),
+                                     days_num=7, with_sparkline_data=True)
+    days_stats.sort(key=itemgetter('date'))
 
     return render(request, 'tms/week_report.html', {
         'is_cur_week': is_cur_week,
         'iso_year': iso_year,
         'week': week,
         'clock_items': clock_items,
+        'clock_items_list': clock_items_list,
         'prev_week': prev_week,
         'iso_year_of_prev_week': iso_year_of_prev_week,
         'next_week': next_week,
         'iso_year_of_next_week': iso_year_of_next_week,
         'report_data': report_data,
+        'days_stats': days_stats,
         # 'daily_overview': daily_overview,
     })
 
 
 def custom_report(request):
-    start_time_str = request.GET['start']
-    start_time = datetime.strptime(start_time_str, '%Y%m%d')
-    start_time_str = start_time.strftime('%Y-%m-%d')
-    end_time_str = request.GET['end']
-    end_time = datetime.strptime(end_time_str, '%Y%m%d') + timedelta(days=1)
-    end_time_str = end_time.strftime('%Y-%m-%d')
+    # 默认取上周五中午到本周五中午作为start_time和end_time
+    today = datetime.now().date()
+    # 获取本周四14点的datetime
+    end_dt_of_work_week = datetime(year=today.year, month=today.month, day=today.day,
+                                   hour=14, minute=0, second=0)
+    end_dt_of_work_week += timedelta(3 - today.weekday())
+    # 获取上周四14点的datetime
+    begin_dt_of_work_week = end_dt_of_work_week - timedelta(weeks=1)
+
+    start_time_str = request.GET.get('start', None)
+    if start_time_str is None:
+        start_time = begin_dt_of_work_week
+    else:
+        start_time = datetime.strptime(start_time_str, '%Y%m%d')
+    start_time_str = start_time.strftime('%Y-%m-%d %H:%M')
+
+    end_time_str = request.GET.get('end', None)
+    if end_time_str is None:
+        end_time = end_dt_of_work_week
+    else:
+        end_time = datetime.strptime(end_time_str, '%Y%m%d') + timedelta(days=1)
+    end_time_str = end_time.strftime('%Y-%m-%d %H:%M')
 
     clock_items = ClockItem.objects.filter(start_time__gte=start_time, end_time__lt=end_time).order_by('start_time')
     days_num = (end_time - start_time).days
@@ -661,7 +703,7 @@ def custom_report(request):
 
 
 def year_report(request):
-    tms_begin_date = date(year=2015, month=2, day=20)
+    tms_begin_date = TMS_BEGIN_DATE
     tms_end_date = datetime.now().date()
     cur_year = datetime.now().year
     if 'year' not in request.GET:
@@ -669,7 +711,6 @@ def year_report(request):
     else:
         year = int(request.GET['year'])
     clock_items = ClockItem.objects.filter(year=year).order_by('start_time')
-    report_data = generate_report(clock_items, 7)
 
     # 总体统计
     total_stats = dict()
@@ -704,6 +745,9 @@ def year_report(request):
     total_stats['valid_time'] = Utils.min_to_hour(valid_time)
     total_stats['avg_valid_time'] = Utils.min_to_hour(valid_time / days_num)
 
+    # 生成报表
+    report_data = generate_report(clock_items, days_num)
+
     return render(request, 'tms/year_report.html', {
         'year': year,
         'begin_date': begin_date,
@@ -728,6 +772,7 @@ def week_stats(request):
 
     week_data_group_by_project = list((i['category'], i['project'], i['id__count'], i['tc_sum'])
                                       for i in week_data_group_by_project)
+
 
     legend_data = list(t[0] for t in week_data_group_by_category)
     legend_data.sort(key=lambda x: CATEGORIES.index(x))
@@ -819,8 +864,5 @@ def year_stats_step_by_month_and_week(request):
 
     return JsonResponse(data)
 
-
-def generate_daily_overview(clock_items):
-    pass
 
 
