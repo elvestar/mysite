@@ -38,54 +38,50 @@
     <div class="admin-panel p-a-xs m-y">
         <div class="admin-panel-heading p-b-xs m-b-xs">
             本年各月简报
-            <div class="pull-right" style="font-size: 30%; margin-top: 5px">生成时间：{{ cur_dt|date:'Y-m-d H:i:s' }}</div>
+            <div class="pull-right" style="font-size: 30%; margin-top: 8px; color: grey">生成时间：{{ cur_dt|date:'Y-m-d H:i:s' }}</div>
         </div>
         <div class="admin-panel-body">
             <table class="admin-table">
                 <tr>
                     <th>月份</th>
-                    <th>一月</th>
-                    <th style="color: red">二月</th>
-                    <th>三月</th>
-                    <th>四月</th>
-                    <th>五月</th>
-                    <th>六月</th>
-                    <th>六月</th>
-                    <th>六月</th>
-                    <th>六月</th>
-                    <th>十月</th>
-                    <th>十一月</th>
-                    <th>十二月</th>
+                    {% for month_stats in months_stats %}
+                        {% if month_stats.month == cur_month %}
+                            <th style="color: red">{{ month_stats.month_str }}</th>
+                        {% else %}
+                            <th>{{ month_stats.month_str }}</th>
+                        {% endif %}
+                    {% endfor %}
+
+                </tr>
+                <tr>
+                    <th>持续天数</th>
+                    {% for month_stats in months_stats %}
+                        {% if month_stats.month == cur_month %}
+                            <td style="color: red">{{ month_stats.days_num }}</td>
+                        {% else %}
+                            <td>{{ month_stats.days_num }}</td>
+                        {% endif %}
+                    {% endfor %}
                 </tr>
                 <tr>
                     <th>总有效时间</th>
-                    <td>11212</td>
-                    <td style="color: red">365</td>
-                    <td>2332</td>
-                    <td>200</td>
-                    <td>100</td>
-                    <td>100</td>
-                    <td>2016</td>
-                    <td>365</td>
-                    <td>5.2</td>
-                    <td>200</td>
-                    <td>100</td>
-                    <td>100</td>
+                    {% for month_stats in months_stats %}
+                        {% if month_stats.month == cur_month %}
+                            <td style="color: red">{{ month_stats.valid_time }}</td>
+                        {% else %}
+                            <td>{{ month_stats.valid_time }}</td>
+                        {% endif %}
+                    {% endfor %}
                 </tr>
                 <tr>
                     <th>日均有效时间</th>
-                    <td>2016</td>
-                    <td style="color: red">365</td>
-                    <td>5.2</td>
-                    <td>200</td>
-                    <td>100</td>
-                    <td>100</td>
-                    <td>2016</td>
-                    <td>365</td>
-                    <td>5.2</td>
-                    <td>200</td>
-                    <td>100</td>
-                    <td>100</td>
+                    {% for month_stats in months_stats %}
+                        {% if month_stats.month == cur_month %}
+                            <td style="color: red">{{ month_stats.avg_valid_time }}</td>
+                        {% else %}
+                            <td>{{ month_stats.avg_valid_time }}</td>
+                        {% endif %}
+                    {% endfor %}
                 </tr>
             </table>
         </div>

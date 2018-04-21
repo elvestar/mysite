@@ -28,6 +28,7 @@ from myssg.items import Item
 CATEGORIES = ['工作', '学习', '生活', '其他']
 CATEGORIES_NAME_DICT = {u'工作': 'work', u'学习': 'study', u'生活': 'life', u'其他': 'other'}
 WEEK_DAY_STR = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+MONTHS_STR = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月']
 
 
 class ClockItemFilter(filters.FilterSet):
@@ -46,13 +47,11 @@ class ClockItemList(generics.ListAPIView):
 
 
 def index(request):
+    cur_dt = datetime.now()
     tms_begin_date = TMS_BEGIN_DATE
-    tms_end_date = datetime.now().date()
+    tms_end_date = cur_dt.date()
 
-    # week_data_group_by_category = ClockItem.objects.filter(iso_year=iso_year, week=week). \
-    #     values('category').annotate(Count('id'), tc_sum=Sum('time_cost_min')). \
-    #     order_by('-tc_sum')
-
+    # 各年简报
     years_stats_dict = dict()
     tms_data_group_by_year_category = ClockItem.objects.values('year', 'category').\
         annotate(Count('time_cost_min'), tc_sum=Sum('time_cost_min'))
@@ -81,7 +80,7 @@ def index(request):
     for year_stats in years_stats:
         year = year_stats['year']
 
-        # 计算本年总天数
+        # 计算各年总天数
         begin_date = datetime(year=year, month=1, day=1).date()
         end_date = datetime(year=year, month=12, day=31).date()
         if begin_date < tms_begin_date:
@@ -96,9 +95,64 @@ def index(request):
         year_stats['study_time'] = Utils.min_to_hour(year_stats['study_time'])
         year_stats['valid_time'] = Utils.min_to_hour(year_stats['valid_time'])
 
-    cur_dt = datetime.now()
+    # 本年各月简报
+    cur_year = cur_dt.year
+    months_stats_dict = dict()
+    for month in range(1, 13):
+        months_stats_dict[month] = {
+            'month': month,
+            'month_str': MONTHS_STR[month - 1],
+            'work_time': 0,
+            'study_time': 0,
+            'all_time': 0,
+            'valid_time': 0,
+            }
+    cur_year_data_group_by_month_category = ClockItem.objects.filter(year=cur_year).values('month', 'category'). \
+        annotate(Count('time_cost_min'), tc_sum=Sum('time_cost_min'))
+    for item in cur_year_data_group_by_month_category:
+        month = item['month']
+        category = item['category']
+        tc_sum = item['tc_sum']
+
+        month_stats = months_stats_dict[month]
+        if category == '工作':
+            month_stats['work_time'] += tc_sum
+            month_stats['valid_time'] += tc_sum
+        elif category == '学习':
+            month_stats['study_time'] += tc_sum
+            month_stats['valid_time'] += tc_sum
+        month_stats['all_time'] += tc_sum
+    months_stats = list(month_stats for (month, month_stats) in months_stats_dict.items())
+    months_stats.sort(key=itemgetter('month'))
+    for month_stats in months_stats:
+        month = month_stats['month']
+
+        # 计算本年各月总天数
+        begin_date = datetime(year=cur_year, month=month, day=1).date()
+        if month == 12:
+            end_date = datetime(year=cur_year, month=12, day=31).date()
+        else:
+            end_date = datetime(year=cur_year, month=month + 1, day=1).date() - timedelta(days=1)
+        if begin_date < tms_begin_date:
+            begin_date = tms_begin_date
+        if end_date > tms_end_date:
+            end_date = tms_end_date
+        days_num = (end_date - begin_date).days + 1
+        if days_num < 0:
+            days_num = 0
+            month_stats['avg_valid_time'] = 0
+            month_stats['valid_time'] = 0
+        else:
+            month_stats['avg_valid_time'] = Utils.min_to_hour(month_stats['valid_time'] / days_num)
+            month_stats['valid_time'] = Utils.min_to_hour(month_stats['valid_time'])
+        month_stats['days_num'] = days_num
+        month_stats['all_time'] = Utils.min_to_hour(month_stats['all_time'])
+        month_stats['work_time'] = Utils.min_to_hour(month_stats['work_time'])
+        month_stats['study_time'] = Utils.min_to_hour(month_stats['study_time'])
+
     return render(request, 'tms/index.html', {
         'years_stats': years_stats,
+        'months_stats': months_stats,
         'cur_dt': cur_dt,
         'cur_year': cur_dt.year,
         'cur_month': cur_dt.month
