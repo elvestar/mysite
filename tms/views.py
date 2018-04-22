@@ -89,7 +89,7 @@ def index(request):
             end_date = tms_end_date
         days_num = (end_date - begin_date).days + 1
         year_stats['days_num'] = days_num
-        year_stats['avg_valid_time'] = Utils.min_to_hour(year_stats['valid_time'] / days_num)
+        year_stats['avg_valid_time'] = Utils.min_to_hour(float(year_stats['valid_time']) / float(days_num), 2)
         year_stats['all_time'] = Utils.min_to_hour(year_stats['all_time'])
         year_stats['work_time'] = Utils.min_to_hour(year_stats['work_time'])
         year_stats['study_time'] = Utils.min_to_hour(year_stats['study_time'])
@@ -106,7 +106,7 @@ def index(request):
             'study_time': 0,
             'all_time': 0,
             'valid_time': 0,
-            }
+        }
     cur_year_data_group_by_month_category = ClockItem.objects.filter(year=cur_year).values('month', 'category'). \
         annotate(Count('time_cost_min'), tc_sum=Sum('time_cost_min'))
     for item in cur_year_data_group_by_month_category:
@@ -143,19 +143,42 @@ def index(request):
             month_stats['avg_valid_time'] = 0
             month_stats['valid_time'] = 0
         else:
-            month_stats['avg_valid_time'] = Utils.min_to_hour(month_stats['valid_time'] / days_num)
+            month_stats['avg_valid_time'] = Utils.min_to_hour(float(month_stats['valid_time']) / float(days_num), 2)
             month_stats['valid_time'] = Utils.min_to_hour(month_stats['valid_time'])
         month_stats['days_num'] = days_num
         month_stats['all_time'] = Utils.min_to_hour(month_stats['all_time'])
         month_stats['work_time'] = Utils.min_to_hour(month_stats['work_time'])
         month_stats['study_time'] = Utils.min_to_hour(month_stats['study_time'])
 
+    # 本日的统计
+    today_work_time = 0
+    today_study_time = 0
+    today_data_group_by_month_category = ClockItem.objects.filter(date=cur_dt).values('category'). \
+        annotate(Count('time_cost_min'), tc_sum=Sum('time_cost_min'))
+    for item in today_data_group_by_month_category:
+        category = item['category']
+        tc_sum = item['tc_sum']
+        if category == '工作':
+            today_work_time += tc_sum
+        elif category == '学习':
+            today_study_time += tc_sum
+    today_work_time = Utils.min_to_hour(today_work_time)
+    today_study_time = Utils.min_to_hour(today_study_time)
+
+    clock_items = ClockItem.objects.filter(date=cur_dt).order_by('-start_time')
+    latest_clock_item = None
+    if len(clock_items) >= 1:
+        latest_clock_item = clock_items[0]
+
     return render(request, 'tms/index.html', {
         'years_stats': years_stats,
         'months_stats': months_stats,
         'cur_dt': cur_dt,
         'cur_year': cur_dt.year,
-        'cur_month': cur_dt.month
+        'cur_month': cur_dt.month,
+        'today_work_time': today_work_time,
+        'today_study_time': today_study_time,
+        'latest_clock_item': latest_clock_item
 
     })
 
@@ -797,7 +820,7 @@ def year_report(request):
     total_stats['work_time'] = Utils.min_to_hour(work_time)
     total_stats['study_time'] = Utils.min_to_hour(study_time)
     total_stats['valid_time'] = Utils.min_to_hour(valid_time)
-    total_stats['avg_valid_time'] = Utils.min_to_hour(valid_time / days_num)
+    total_stats['avg_valid_time'] = Utils.min_to_hour(float(valid_time) / float(days_num), 2)
 
     # 生成报表
     report_data = generate_report(clock_items, days_num)

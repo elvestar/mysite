@@ -21,8 +21,8 @@ class Utils(object):
         return '%sM%s' % (d.year, d.month)
 
     @staticmethod
-    def min_to_hour(time_min):
-        return round(float(time_min) / 60.0, 1)
+    def min_to_hour(time_min, precision=1):
+        return round(float(time_min) / 60.0, precision)
 
     @staticmethod
     def min_to_hour2(time_min):

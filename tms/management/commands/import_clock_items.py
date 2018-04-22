@@ -33,6 +33,7 @@ class Command(BaseCommand):
 
 
 def process_org_agenda(agenda_file_paths):
+    unfinished_clock_count = 0
     for agenda_file_path in agenda_file_paths:
         h1 = 'null h1'
         h2 = 'null h2'
@@ -51,16 +52,30 @@ def process_org_agenda(agenda_file_paths):
                     h2 = headline
             else:
                 clock_regex = '^ +CLOCK: \[(?P<start_clock>.+)\]--\[(?P<end_clock>.+)\] =>.+'
+                unfinished_clock_regex = '^ +CLOCK: \[(?P<start_clock>.+)\]'
                 m2 = re.match(clock_regex, line)
-                if m2 is not None:
-                    start_clock_str = m2.groupdict()['start_clock']
-                    end_clock_str = m2.groupdict()['end_clock']
-                    # print(start_clock_str)
-                    start_time = datetime.strptime(start_clock_str[0:10] + ' ' + start_clock_str[-5:],
-                                                   '%Y-%m-%d %H:%M')
+                m3 = re.match(unfinished_clock_regex, line)
+                if m2 is not None or m3 is not None:
+                    if m2 is not None:
+                        start_clock_str = m2.groupdict()['start_clock']
+                        end_clock_str = m2.groupdict()['end_clock']
+                        start_time = datetime.strptime(start_clock_str[0:10] + ' ' + start_clock_str[-5:],
+                                                       '%Y-%m-%d %H:%M')
+                        end_time = datetime.strptime(end_clock_str[0:10] + ' ' + end_clock_str[-5:],
+                                                     '%Y-%m-%d %H:%M')
+                    else:
+                        unfinished_clock_count += 1
+                        if unfinished_clock_count > 1:
+                            print('Find another unfinished clock item! It is impossible. '
+                                  'Clock item: %s in file %s' % (line, agenda_file_path))
+                            return False
+
+                        start_clock_str = m3.groupdict()['start_clock']
+                        start_time = datetime.strptime(start_clock_str[0:10] + ' ' + start_clock_str[-5:],
+                                                       '%Y-%m-%d %H:%M')
+                        end_time = datetime.now()
                     # print(end_clock_str)
-                    end_time = datetime.strptime(end_clock_str[0:10] + ' ' + end_clock_str[-5:],
-                                                 '%Y-%m-%d %H:%M')
+                    # print(start_clock_str)
                     date = start_time.date()
                     iso_year, week, weekday = date.isocalendar()
                     time_cost_min = (end_time - start_time).total_seconds() / 60
@@ -82,12 +97,17 @@ def process_org_agenda(agenda_file_paths):
                         project=h2,
                         time_cost_min=time_cost_min)
                     clock_item.save()
+                else:
+                    print('Find an unmatched clock item. '
+                          'Clock item: %s in file %s' % (line, agenda_file_path))
+
+    return True
 
 
 def export_time_usage():
     start_date = datetime.now() - timedelta(days=366)
     stay_up_range = range(2, 6)
-    quert_set = ClockItem.objects.filter(date__gte=start_date).exclude(category__in=['Life']). \
+    quert_set = ClockItem.objects.filter(date__gte=start_date).exclude(category__in=['生活']). \
         values('date').annotate(tc_sum=Sum('time_cost_min'))
     stay_up_stats = ClockItem.objects.filter(Q(date__gte=start_date) &
                                              (Q(start_hour__in=stay_up_range) | Q(end_hour__in=stay_up_range))). \
@@ -103,7 +123,7 @@ def export_time_usage():
         else:
             time_usage[ts_str] = 10000
 
-    path = '/Users/elvestar/github/elvestar/elvestar.github.io/time/latest_time_usage.json'
+    path = '/Users/elvestar/github/elvestar/mysite/static/data/latest_time_usage.json'
     f = file(path, 'w')
     f.write(json.dumps(time_usage))
     f.close()
